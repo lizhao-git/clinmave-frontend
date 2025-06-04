@@ -77,9 +77,9 @@
                 
                 <v-col cols="12" sm="6">
                   <EffectBar
-                    :strength="High"
+                    :strength="selectedStrength"
                     :bar-height="12"
-                    :labels="['None', 'Low', 'Medium', 'High']"
+                    :labels="['No effects', 'Weak', 'Moderate', 'Strong']"
                     :colors="{
                       blue: '#1E88E5',
                       purple: '#7B1FA2',
@@ -89,6 +89,9 @@
                       strongText: '#D32F2F'
                     }"
                   />
+                  <span>Score: 0.14</span><br>
+                  <span>Consequence: 0.14</span><br>
+                  <span>Description: The reduced essentiatility in HAP1</span>
                 </v-col>
                </v-row>
                <v-sheet>
@@ -106,7 +109,7 @@
             <v-expansion-panel>
               <v-expansion-panel-title>
                 <v-icon icon="mdi-dna" class="mr-2" color="primary"></v-icon>
-                <span class="text-h6 font-weight-bold">Variant Details</span>
+                <span class="text-h6 font-weight-bold">In-silico prediction</span>
               </v-expansion-panel-title>
               <v-expansion-panel-text>
                 <v-table density="comfortable" class="no-border">
@@ -221,8 +224,12 @@
 </style>
 
 <script setup>
-import DensityPlot from '@/components/Visualization/densityPlot.vue';
-import EffectBar from '@/components/Visualization/EffectBar.vue';
+  import { ref } from 'vue';
+  import DensityPlot from '@/components/Visualization/densityPlot.vue';
+  import EffectBar from '@/components/Visualization/EffectBar.vue';
+
+  const selectedStrength = ref('Moderate');
+
   const breadcrumbs = [
       {
         title: 'Home',
