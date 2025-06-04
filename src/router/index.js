@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import VariantPage from '@/views/VariantPage.vue'
 import ScoreDensity from '@/views/ScoreDensity.vue'
+import VariantAll from '@/views/VariantAll.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,9 +13,15 @@ const router = createRouter({
       component: Home,
     },
     {
-      path: '/variant',
-      name: 'variant',
+      path: '/browse/variant/:identifier',
+      name: 'variantDetail',
       component: VariantPage,
+    },
+
+    {
+      path: '/browse/variant',
+      name: 'variantAll',
+      component: VariantAll,
     },
     {
       path: '/density',

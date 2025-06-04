@@ -10,24 +10,23 @@ import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 
+// VxeTable
+import VxeUITable from 'vxe-table'
+import 'vxe-table/lib/style.css'
+
+// VXE-Table UI
+import VxeUI from 'vxe-pc-ui';
+import enUS from 'vxe-pc-ui/lib/language/en-US'
+import 'vxe-pc-ui/lib/style.css';
+
+// Set VXE-Table language to English
+VxeUI.setI18n('en-US', enUS);
+VxeUI.setLanguage('en-US')
+VxeUI.getLanguage()
+
 const vuetify = createVuetify({
   theme: {
-    defaultTheme: 'CustomTheme',
-    themes: {
-      CustomTheme: {
-        dark: false,
-        colors: {
-          background: '#f5f5f5',
-          primary: '#1976D2',
-          secondary: '#424242',
-          accent: '#82B1FF',
-          error: '#FF5252',
-          info: '#2196F3',
-          success: '#4CAF50',
-          warning: '#FFC107',
-        },
-      },
-    },
+    defaultTheme: 'light',
   },
   components,
   directives,
@@ -41,5 +40,7 @@ const app = createApp(App)
 
 app.use(router)
 app.use(vuetify)
+app.use(VxeUI)
+app.use(VxeUITable)
 
 app.mount('#app')
