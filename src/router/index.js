@@ -3,6 +3,7 @@ import Home from '../views/Home.vue'
 import VariantPage from '@/views/VariantPage.vue'
 import ScoreDensity from '@/views/ScoreDensity.vue'
 import VariantAll from '@/views/VariantAll.vue'
+import Publication from '@/views/Publication.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -27,6 +28,11 @@ const router = createRouter({
       path: '/density',
       name: 'density',
       component: ScoreDensity,
+    },
+    {
+      path: '/browse/publication',
+      name: 'publication',
+      component: Publication,
     },
     {
       path: '/downloads',
