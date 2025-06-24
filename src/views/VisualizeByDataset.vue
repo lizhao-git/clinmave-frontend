@@ -197,9 +197,9 @@
                   </div>
                 </template>
 
-                <template v-else-if="hasClinVarBinData">
-                  <ClinVarBin
-                    :inputData="ClinVarBinArray"
+                <template v-else-if="hasConsequenceDensityData">
+                  <ConsequenceDensity
+                    :data="consequenceArray" 
                   />
                 </template>
 
@@ -231,6 +231,7 @@ import 'vxe-table/lib/style.css'
 
 import Scatter2d from '@/components/Visualization/Scatter2d.vue'
 import ClinVarBin from '@/components/Visualization/ClinVarBin.vue'
+import ConsequenceDensity from '@/components/Visualization/ConsequenceDensity.vue'
 
 const breadcrumbs = [
   {
@@ -268,6 +269,10 @@ const scatterLoading = ref(false)
 const clinVarBinLoading = ref(false)
 const ClinVarBinArray = ref([])
 
+const consequenceDensityLoading = ref(false)
+const consequenceDensityArray = ref([])
+const consequenceArray = ref([])
+
 const toolbarRef = ref()
 const tableRef = ref()
 const tableData = ref([]) 
@@ -283,6 +288,7 @@ const sortParams = ref({
 const debouncedFetchDatasetId = debounce(fetchDatasetIdOptions, 300)
 const debouncedFetchClinVarBinData = debounce(fetchClinVarBinData, 300)
 const debouncedFetchScatterData = debounce(fetchScatterData, 300)
+const debouncedFetchConsequenceDensityData = debounce(fetchConsequenceDensityData, 300)
 
 const hasOncoprintData = computed(() => {
   return oncoprintMap.value &&
@@ -306,6 +312,12 @@ const hasScatterData = computed(() => {
          scatterArray.value.length > 0 &&
          scatterArray.value[0].af !== undefined &&
          scatterArray.value[0].score !== undefined;
+})
+
+const hasConsequenceDensityData = computed(() => {
+  return consequenceArray.value &&
+         Array.isArray(consequenceArray.value) &&
+         consequenceArray.value.length > 0;
 })
 
 async function fetchDatasetIdOptions(query = '') {
@@ -361,6 +373,24 @@ async function fetchClinVarBinData(query = '') {
   }
 }
 
+async function fetchConsequenceDensityData(query = '') {
+  consequenceDensityLoading.value = true;
+  try {
+    loadingDatasetId.value = true;
+    const response = await axios.get('/api/fugedb/visualize/bydataset/consequencedensity', {
+      params: { datasetId: !query ? '' : query },
+    });
+    consequenceArray.value = response.data || [];
+    console.log('[Scatter Array]', consequenceArray);
+  } catch (error) {
+    VxeUI.message.error('Failed to load oncoprint data');
+    consequenceArray.value = []
+  } finally {
+    loadingDatasetId.value = false;
+    consequenceDensityLoading.value = false;
+  }
+}
+
 const loadData = async () => {
   loading.value = true;
   try {
@@ -406,6 +436,7 @@ const applyFilters = () => {
   currentPage.value = 1;
   debouncedFetchClinVarBinData(filters.value.datasetId);
   debouncedFetchScatterData(filters.value.datasetId);
+  debouncedFetchConsequenceDensityData(filters.value.datasetId);
   loadData();
   showResults.value = true;
 }
