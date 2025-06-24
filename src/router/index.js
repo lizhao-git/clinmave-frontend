@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
-import Variant from '@/views/VariantCopy.vue'
+import Variant from '@/views/Variant.vue'
 import Variants from '@/views/Variants.vue'
 import datasets from '@/views/Datasets.vue'
 import Dataset from '@/views/Dataset.vue'
