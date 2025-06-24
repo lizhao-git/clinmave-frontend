@@ -1,21 +1,8 @@
 <template>
   <v-container>
-    <v-card class="pa-4">
-      <div ref="chartWrapper" style="position: relative; width: 100%;">
-        <svg ref="svg" :height="height"></svg>
-
-        <!-- Tooltip -->
-        <v-card
-          v-if="tooltip.visible"
-          class="ma-2 pa-2"
-          :style="{ position: 'absolute', left: `${tooltip.x}px`, top: `${tooltip.y}px`, zIndex: 10 }"
-        >
-          <div><strong>ID:</strong> {{ tooltip.data.identifier }}</div>
-          <div><strong>Type:</strong> {{ tooltip.data.type }}</div>
-          <div><strong>Dataset:</strong> {{ tooltip.data.dataset }}</div>
-        </v-card>
-      </div>
-    </v-card>
+    <div ref="chartWrapper" style="position: relative; width: 100%;">
+      <svg ref="svg" :height="height"></svg>
+    </div>
   </v-container>
 </template>
 
