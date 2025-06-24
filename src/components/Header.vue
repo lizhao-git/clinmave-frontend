@@ -7,7 +7,7 @@
   >
     <v-row class="mt-4 d-flex align-center">
       <span style="color: white;font-size: 36px;font-family: 'Arial';padding-right: 15px;margin-left: 30px !important;margin-right: 30px !important;">ClinMAVE</span>
-      <span style="color: white;font-size: 20px;font-family: 'Arial'">Community curation of long non-coding RNAs</span>
+      <span style="color: white;font-size: 20px;font-family: 'Arial'">MAVE for clinics Database</span>
     </v-row>
 
     <v-row align-center>
