@@ -11,7 +11,7 @@
               <template v-slot:item="{ item }">
                 <v-breadcrumbs-item
                 >
-                  <!-- 自定义图标 -->
+                  
                   <span>
                     {{ item.title }}
                   </span>
@@ -20,95 +20,167 @@
             </v-breadcrumbs>
           </v-card>
         </v-col>
-        
+      </v-row>
+      
+      <v-row class="mt-2" align="stretch">
+        <v-col cols="12" md="12">
+          <v-card 
+            flat
+            height="100%"
+          >
+            <v-card-title class="py-3">
+              <v-icon icon="mdi-alert-circle-outline" class="mr-2" color="blue"></v-icon>
+              <span class="text-h6 font-weight-bold">Dataset Details</span>
+            </v-card-title>
+            <v-card-text>
+              <v-row>
+                <v-col cols="12" md="6" sm="12">
+                  <v-table density="comfortable" class="no-border">
+                    <tbody>
+                      <tr>
+                        <td class="text-subtitle-1 font-weight-bold">Gene: </td>
+                        <td class="text-body-1">{{ variantData.geneName }}</td>
+                      </tr>
+                      <tr>
+                        <td class="text-subtitle-1 font-weight-bold">Ensembl ID: </td>
+                        <td class="text-body-1"><a :href="variantData.ensemblLink" target="_blank">{{ variantData.ensemblId }}<v-icon small color="primary">mdi-share</v-icon></a></td>
+                      </tr>
+                      <tr>
+                        <td class="text-subtitle-1 font-weight-bold">NCBI ID: </td>
+                        <td class="text-body-1"><a :href="variantData.ncbiLink" target="_blank">{{ variantData.ncbiId }}<v-icon small color="primary">mdi-share</v-icon></a></td>
+                      </tr>
+                      <tr>
+                        <td class="text-subtitle-1 font-weight-bold">HGNC ID: </td>
+                        <td class="text-body-1"><a :href="variantData.hgncLink" target="_blank">{{ variantData.hgncId }}<v-icon small color="primary">mdi-share</v-icon></a></td>
+                      </tr>
+                      <tr>
+                        <td class="text-subtitle-1 font-weight-bold">UniprotKB ID: </td>
+                        <td class="text-body-1"><a :href="variantData.uniprotkbLink" target="_blank">{{ variantData.uniprotkbId }}<v-icon small color="primary">mdi-share</v-icon></a></td>
+                      </tr>
+                    </tbody>
+                  </v-table>
+                  <v-divider class="mb-4"></v-divider>
+                  <v-chip class="mr-2"><a :href="variantData.omimLink" target="_blank">OMIM</a></v-chip>
+                  <v-chip class="mr-2"><a :href="variantData.dicipherLink" target="_blank">DECIPHER</a></v-chip>
+                  <v-chip class="mr-2"><a :href="variantData.g2pLink" target="_blank">Gene2Phenotype</a></v-chip>
+
+                  <v-chip class="mr-2"><a :href="variantData.cosmicLink" target="_blank">COSMIC</a></v-chip>
+                  <v-chip class="mr-2"><a :href="variantData.clinvarLink" target="_blank">ClinVar</a></v-chip>
+                  <v-chip class="mr-2"><a :href="variantData.monarchLink" target="_blank">Monarch Initiative</a></v-chip>
+
+                </v-col>
+
+                <v-col cols="12" md="6" sm="12">
+                  <v-table density="comfortable" class="no-border">
+                    <tbody>
+                      <tr>
+                        <td class="text-subtitle-1 font-weight-bold">Full name: </td>
+                        <td class="text-body-1 text-justify">{{ variantData.fullName }}</td>
+                      </tr>
+                      <tr>
+                        <td class="text-subtitle-1 font-weight-bold">Gene summary: </td>
+                        <td class="text-body-1 text-justify">{{ variantData.geneSummary }}</td>
+                      </tr>
+                    </tbody>
+                  </v-table>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
+        </v-col>
+
       </v-row>
 
       <v-row class="mt-2" align="stretch">
-        <v-col cols="12" sm="12" md="6" lg="6">
-          <v-card
-            flat
-            height="100%"
-          >
-            <v-card-title class="py-3">
-              <v-icon icon="mdi-cactus" class="mr-2" color="teal"></v-icon>
-              <span class="text-h6 font-weight-bold">Germeline pathogenicity</span>
-            </v-card-title>
-            <v-card-text>
 
-              <v-table density="comfortable" class="no-border">
-                <tbody>
-                  <tr>
-                    <td class="text-subtitle-1 font-weight-bold">ClinVar: </td>
-                    <td class="text-body-1">{{ variantData.identifier }}</td>
-                  </tr>
-                  <tr>
-                    <td class="text-subtitle-1 font-weight-bold">Classification: </td>
-                    <td class="text-body-1">{{ variantData.typeAndLength }}</td>
-                  </tr>
-                  <tr>
-                    <td class="text-subtitle-1 font-weight-bold">Clinical significance: </td>
-                    <td class="text-body-1">{{ variantData.location }} <a href="variantData.ucscHg38" target="_blank">[UCSC]</a></td>
-                  </tr>
-                  <tr>
-                    <td class="text-subtitle-1 font-weight-bold">Review status: </td>
-                    <td class="text-body-1"><v-chip>{{ variantData.consequenceClass }}</v-chip></td>
-                  </tr>
-                </tbody>
-              </v-table>
+        <!-- Table Content -->
+        <v-col cols="12">
+          <v-sheet class="pa-3">
+
+            <!-- Table -->
+            <vxe-toolbar ref="toolbarRef" export custom></vxe-toolbar>
+            <!-- Pagination -->
+            <vxe-pager
+              :current-page.sync="currentPage"
+              :page-size.sync="pageSize"
+              :page-sizes="[10, 20, 50, 100]"
+              :total="totalRecords"
+              :layouts="['Home', 'PrevPage', 'JumpNumber', 'NextPage', 'End', 'Sizes', 'Total']"
+              @page-change="handlePageChange"
+            ></vxe-pager>
+            <vxe-table
+              ref="tableRef"
+              :export-config="{}"
+              :column-config="{ resizable: true }"
+              :data="tableData"
+              stripe
+              round
+              :loading="loading"
+              :pager-config="{ currentPage, pageSize, total: totalRecords }"
+              @sort-change="handleSortChange"
+            >
+              <vxe-column field="datasetId" width="140" sortable>
+
+                <template #header>
+                  Dataset ID
+                </template>
+                
+                <template #default="{ row }">
+                  <a 
+                    v-if="row.datasetId" 
+                    :href="`/browse/dataset/${encodeURIComponent(row.datasetId)}`" 
+                    target="_blank"
+                    style="text-decoration: none;"
+                  >
+                    {{ row.datasetId }}
+                  </a>
+                  <span v-else>-</span>
+                </template>
+
+              </vxe-column>
               
-            </v-card-text>
-          </v-card>
+              <vxe-column field="pmid" title="PMID" min-width="153" align="center">
+                <template #default="{ row }">
+                  <div v-if="row">
+                    <a :href="`https://pubmed.ncbi.nlm.nih.gov/${row.pmid}`" target="_blank" style="text-decoration: none;">
+                      {{ row.pmid ? row.pmid : 'N/A' }}
+                    </a>
+                    <v-icon small color="primary">mdi-share</v-icon>
+                  </div>
+                </template>
+              </vxe-column>
+
+              <vxe-column field="mutagenesisStrategy" title="Mutagenesis strategy" min-width="200" align="center"></vxe-column>
+              
+              <vxe-column field="functionAssay" title="Function Assay" min-width="160" align="center"></vxe-column>
+
+              <vxe-column field="experimentModel" title="Experiment Model" min-width="150" align="center"></vxe-column>
+
+              <vxe-column field="phenotype" title="Phenotype" min-width="400" align="center"></vxe-column>
+
+              <vxe-column field="varNum" title="#Variants" min-width="120" align="center" sortable></vxe-column>
+
+              <vxe-column field="aaNum" title="#Amino Acids" min-width="150" align="center" sortable></vxe-column>
+
+              <vxe-column field="siteNum" title="#Sites" min-width="100" align="center" sortable></vxe-column>
+
+            </vxe-table>
+            <!-- Pagination -->
+            <vxe-pager
+              :current-page.sync="currentPage"
+              :page-size.sync="pageSize"
+              :total="totalRecords"
+              :layouts="['Home', 'PrevPage', 'JumpNumber', 'NextPage', 'End', 'Sizes', 'Total']"
+              @page-change="handlePageChange"
+            ></vxe-pager>
+          </v-sheet>
+
+          <v-row>
+            
+          </v-row>
         </v-col>
 
-        <v-col cols="12" sm="12" md="6" lg="6">
-          <v-card
-            flat
-            height="100%"
-          >
-            <v-card-title class="py-3">
-              <v-icon icon="mdi-account-group" class="mr-2" color="blue"></v-icon>
-              <span class="text-h6 font-weight-bold">Population frequency</span>
-            </v-card-title>
-            <v-card-text>
-
-              <vxe-table 
-                  border="inner"
-                  show-header
-                  auto-resize
-                  size="medium"
-                  class="no-border"
-                  :data="variantData.gadSummary"
-                >
-                  <vxe-column field="gadClassification" title="GAD classification" width="200">
-                    <template #default="{ row }">
-                      <span class="text-subtitle-1 font-weight-medium">
-                        {{ row.gadClassification === 'NA' || !row.gadClassification ? '——' : row.gadClassification }}
-                      </span>
-                    </template>
-                  </vxe-column>
-                  
-                  <vxe-column field="gadFrequency" title="GAD frequency" width="150">
-                    <template #default="{ row }">
-                      <span class="text-body-1">
-                        {{ row.gadFrequency === 'NA' || !row.gadFrequency ? '——' : row.gadFrequency }}
-                      </span>
-                    </template>
-                  </vxe-column>
-                  
-                  <vxe-column field="gadDescription" title="GAD description" min-width="200">
-                    <template #default="{ row }">
-                      <span class="text-body-1">
-                        {{ row.gadDescription === 'NA' || !row.gadDescription ? '——' : row.gadDescription }}
-                      </span>
-                    </template>
-                  </vxe-column>
-                </vxe-table>
-
-            </v-card-text>
-          </v-card>
-        </v-col>
       </v-row>
-      
     </v-container>
   </v-main>
 </template>
@@ -166,62 +238,51 @@
   import { useRoute } from 'vue-router';
   import axios from 'axios';
   import * as d3 from 'd3'
-  import DensityPlot from '@/components/Visualization/densityPlot.vue';
-  import EffectBar from '@/components/Visualization/EffectBar.vue';
+
+  import { debounce } from 'lodash'
+
+  import VxeUI from 'vxe-pc-ui';
+  import 'vxe-pc-ui/lib/style.css';
+  import 'vxe-table/lib/style.css';
 
   // Reactive state for variant details
   const variantData = ref({
-    dbsnpId: null,
-    identifier: null,
-    consequenceClass: null,
-    typeAndLength: null,
-    location: null,
-    ucscHg38: null,
-    datasetId: null,
-    score: null,
-    cadd: null,
-    caddClass: null,
-    revel: null,
-    revelClass: null,
-    metasvm: null,
-    metasvmClass: null,
-    alphamissense: null,
-    alphamissenseClass: null,
-    eve: null,
-    eveClass: null,
-    tcgaSummary: null,
-    clvUrl: null,
-    clvReviewstatus: null,
+    geneName: null,
+    fullName: null,
+    geneSummary: null,
+    clinvarId: null,
+    clinvarLink: null,
+    ensemblId: null,
+    ensemblLink: null,
+    hgncId: null,
+    hgncLink: null,
+    ncbiId: null,
+    ncbiLink: null,
+    cosmicLink: null,
+    dicipherLink: null,
+    g2pLink: null,
+    monarchLink: null,
+    omimLink: null,
+    uniprotkbId: null,
+    uniprotkbLink: null
   });
-
-  // Reactive state for variant density plot data
-  const VariantDensityData = ref({
-    score: null,
-    selectionStrategy: null,
-    description: null,
-    cutoff: null,
-    label: null,
-  });
-  
-  // Reactive state for selected strength (for EffectBar)
-  const selectedStrength = ref(null);
-
-  // Computed property to extract score data
-  const scoreData = computed(() => VariantDensityData.value.score ?? []);
   
   const breadcrumbs = ref([
       {
         title: 'Home',
+        icon: 'mdi-home',
         href: '/',
         disabled: false,
       },
       {
         title: 'Browse',
+        icon: 'mdi-cart',
         href: '/products',
         disabled: false,
       },
       {
-        title: 'Dataset',
+        title: 'Genes',
+        icon: 'mdi-information',
         href: '/products/details',
         disabled: true, 
       },
@@ -245,55 +306,21 @@
     return isNaN(num) ? '——' : num.toPrecision(3);
   };
 
-  // 创建计算属性来组织数据
-  const inSilicoData = computed(() => [
-    {
-      software: 'CADD',
-      score: variantData.value.cadd,
-      classification: variantData.value.caddClass
-    },
-    {
-      software: 'REVEL',
-      score: variantData.value.revel,
-      classification: variantData.value.revelClass
-    },
-    {
-      software: 'MetaSVM',
-      score: variantData.value.metasvm,
-      classification: variantData.value.metasvmClass
-    },
-    {
-      software: 'AlphaMissense',
-      score: variantData.value.alphamissense,
-      classification: variantData.value.alphamissenseClass
-    },
-    {
-      software: 'EVE',
-      score: variantData.value.eve,
-      classification: variantData.value.eveClass
-    }
-  ]);
   // Get the route to extract the identifier
   const route = useRoute();
   
   // Function to fetch variant data
   const fetchVariantData = async () => {
     try {
-      const datasetId = route.params.datasetId; // Get datasetId from route
-      const response = await axios.get(`/api/fugedb/summary/dataset?datasetId=${encodeURIComponent(datasetId)}`);
+      const geneName = route.params.geneName; // Get identifier from route
+      const response = await axios.get(`/api/fugedb/summary/gene?geneName=${encodeURIComponent(geneName)}`);
+      console.log(response.data)
       variantData.value = response.data; // Directly assign API response
       console.log('Variant Data:', variantData.value);
-      // Update selectedStrength based on consequenceClass
-      if (variantData.value.consequenceClass?.includes('neutral')) {
-        selectedStrength.value = 'No effects';
-      } else if (variantData.value.consequenceClass?.includes('pathogenic')) {
-        selectedStrength.value = 'Moderate';
-      } else {
-        selectedStrength.value = 'Weak';
-      }
+
 
       // Update the last breadcrumb item with the identifier
-      breadcrumbs.value[3].title = variantData.value.identifier;
+      breadcrumbs.value[3].title = variantData.value.geneName;
 
       // Update items for the second expansion panel
       items.value = [
@@ -317,6 +344,70 @@
     }
   };
 
+  // Table state
+  const toolbarRef = ref()
+  const tableRef = ref()
+  const tableData = ref([]) 
+  const currentPage = ref(1)
+  const pageSize = ref(10)
+  const totalRecords = ref(0)
+  const loading = ref(false)
+  const sortParams = ref({
+    field: '',
+    order: ''
+  })
+
+  // Load data function
+  const loadData = async () => {
+    loading.value = true;
+    
+    try {
+      let sort;
+
+      if (Array.isArray(sortParams.value)) {
+        // 多列排序
+        sort = sortParams.value
+          .filter(param => param.field && param.order)
+          .map(param => `${param.field},${param.order}`)
+          .join(',');
+      } else {
+        // 单列排序
+        sort = sortParams.value.field && sortParams.value.order
+          ? `${sortParams.value.field},${sortParams.value.order}`
+          : 'id,asc'; // 默认排序
+      }
+
+      // Construct request parameters
+      const params = {
+        page: currentPage.value - 1, // Adjust based on backend: use currentPage.value - 1 if zero-based
+        size: pageSize.value,
+        sort: sort || undefined,
+        geneName: route.params.geneName, // Use the gene name from the route
+      };
+
+      // Remove empty or undefined params
+      Object.keys(params).forEach(key => {
+        if (params[key] === undefined || params[key] === '') {
+          delete params[key];
+        }
+      });
+
+      // Replace with your actual API endpoint
+      const response = await axios.get('/api/fugedb/fetch/table/dataset', { params });
+      
+      // Verify response structure
+      tableData.value = response.data.data || [];
+      totalRecords.value = response.data.totalRows || 0;
+    } catch (error) {
+      console.error('[API Error]', error);
+      // Handle error gracefully
+      tableData.value = [];
+      totalRecords.value = 0;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   watch(
     () => variantData.value?.datasetId,
     (newVal) => {
@@ -329,5 +420,11 @@
   // Fetch data when component is mounted
   onMounted(() => {
     fetchVariantData();
-  });
+    loadData();
+    const $table = tableRef.value
+    const $toolbar = toolbarRef.value
+    if ($table && $toolbar) {
+      $table.connect($toolbar)
+    }
+  })
 </script>
