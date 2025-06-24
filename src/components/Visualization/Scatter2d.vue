@@ -72,7 +72,27 @@ const tooltip = ref({
 
 // 格式化 af 为科学计数法字符串
 function formatAf(af) {
-  return af.toExponential(3); // 保留 3 位有效数字，例如 3.977e-6
+  return af.toExponential(3)
+}
+
+// Superscript map for exponent formatting
+const superscript = {
+  '0': '\u2070',
+  '1': '\u00B9',
+  '2': '\u00B2',
+  '3': '\u00B3',
+  '4': '\u2074',
+  '5': '\u2075',
+  '6': '\u2076',
+  '7': '\u2077',
+  '8': '\u2078',
+  '9': '\u2079',
+  '-': '\u207B',
+}
+
+// Convert exponent to superscript (e.g. -9 → ⁻⁹)
+function toSuperscript(n) {
+  return String(n).split('').map(c => superscript[c] || c).join('')
 }
 
 function drawChart() {
@@ -87,17 +107,13 @@ function drawChart() {
     .append('g')
     .attr('transform', `translate(${margin.left},${margin.top})`)
 
-  // 过滤无效数据
-  console.log('Data length:', props.scatterData)
   const validData = props.scatterData.filter(d => d.af > 0 && !isNaN(d.af) && !isNaN(d.score))
 
-  // X 轴：对数比例尺
   const x = d3
     .scaleLog()
-    .domain([1e-9, 1]) // 从 10^-9 到 1
+    .domain([1e-9, 1])
     .range([0, width])
 
-  // Y 轴：支持负值
   const y = d3
     .scaleLinear()
     .domain([
@@ -106,11 +122,27 @@ function drawChart() {
     ])
     .range([height, 0])
 
-  // X 轴
-  chart
+  // 自定义 tick format 为数学格式
+  const xAxis = d3.axisBottom(x)
+    .ticks(10)
+    .tickFormat(d => {
+      const log = Math.log10(d)
+      if (Number.isInteger(log)) {
+        return d === 1 ? '1' : `10${toSuperscript(log)}`
+      }
+      return ''
+    })
+
+  const xAxisG = chart
     .append('g')
     .attr('transform', `translate(0,${height})`)
-    .call(d3.axisBottom(x).ticks(10, '.0e')) // 科学计数法刻度
+    .call(xAxis)
+
+  // 加长主刻度线（1eX）
+  xAxisG.selectAll('.tick line')
+    .attr('y2', d => Number.isInteger(Math.log10(d)) ? 10 : 5)
+
+  xAxisG
     .append('text')
     .attr('x', width / 2)
     .attr('y', 40)
@@ -120,7 +152,6 @@ function drawChart() {
     .style('font-size', '12px')
     .text('gnomAD genome Allele Frequency')
 
-  // Y 轴
   chart
     .append('g')
     .call(d3.axisLeft(y))
@@ -134,16 +165,15 @@ function drawChart() {
     .style('font-size', '12px')
     .text('SMuRF Score')
 
-  // 绘制点
   chart
     .selectAll('circle')
     .data(validData)
     .enter()
     .append('circle')
-    .attr('cx', (d) => x(d.af))
-    .attr('cy', (d) => y(d.score))
+    .attr('cx', d => x(d.af))
+    .attr('cy', d => y(d.score))
     .attr('r', 3)
-    .attr('fill', (d) => props.colorMap[d.class] || '#999')
+    .attr('fill', d => props.colorMap[d.class] || '#999')
     .on('mouseover', (event, d) => {
       tooltip.value = {
         visible: true,
@@ -151,6 +181,10 @@ function drawChart() {
         y: event.offsetY + 10,
         data: d,
       }
+    })
+    .on('mousemove', (event) => {
+      tooltip.value.x = event.offsetX + 10
+      tooltip.value.y = event.offsetY + 10
     })
     .on('mouseout', () => {
       tooltip.value.visible = false
