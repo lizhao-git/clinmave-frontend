@@ -78,12 +78,6 @@ const drawScientificBar = () => {
     return
   }
 
-  // 调试日志：检查输入值
-  console.log('Strength:', props.strength)
-  console.log('Labels:', props.labels)
-  console.log('Colors:', props.colors)
-  console.log('IsValidStrength:', isValidStrength.value)
-
   // Skip rendering if strength is invalid
   if (!isValidStrength.value) {
     console.warn(`Invalid strength value: ${props.strength}. Must be one of: ${props.labels.join(', ')}`)
@@ -128,9 +122,6 @@ const drawScientificBar = () => {
   gradient.append('stop').attr('offset', '0%').attr('stop-color', safeColors.start)
   gradient.append('stop').attr('offset', '50%').attr('stop-color', safeColors.mid)
   gradient.append('stop').attr('offset', '100%').attr('stop-color', safeColors.end)
-
-  // 调试渐变
-  console.log('Gradient colors:', safeColors)
 
   // 绘制渐变条
   svgEl.append('rect')
@@ -317,7 +308,6 @@ onMounted(() => {
 })
 
 watch([() => props.strength, () => props.barHeight, () => props.labels, () => props.colors], () => {
-  console.log('Watch triggered for strength:', props.strength)
   drawScientificBar()
 })
 
