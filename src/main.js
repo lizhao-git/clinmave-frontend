@@ -35,7 +35,6 @@ const vuetify = createVuetify({
 // Material Design Icons
 import '@mdi/font/css/materialdesignicons.css'
 
-
 const app = createApp(App)
 
 app.use(router)
