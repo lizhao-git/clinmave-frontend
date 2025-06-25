@@ -32,8 +32,8 @@ const categories = [
 const svg = ref(null)
 const chartWrapper = ref(null)
 const rowHeight = 60
-const margin = { top: 20, right: 30, bottom: 40, left: 120 }
-const height = ref(500)
+const margin = { top: 60, right: 30, bottom: 40, left: 120 }
+const height = ref(300)
 const tooltip = ref({
   visible: false,
   x: 0,

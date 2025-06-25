@@ -185,7 +185,7 @@
                         variant="outlined"
                         class="mr-2"
                       >
-                        <a :href="'/browse/gene/' + id" target="_blank" style="color: #1976d2;">{{ id }}</a>
+                        <a :href="'/clinmave/browse/gene/' + id" target="_blank" style="color: #1976d2;font-style: italic">{{ id }}</a>
                       </v-chip>
                     </span>
 
@@ -325,7 +325,7 @@ const debouncedFetchYear = debounce(fetchYearOptions, 300)
 async function fetchPmidOptions(query = '') {
   try {
     loadingPmid.value = true;
-    const response = await axios.get('/api/fugedb/select/studies', {
+    const response = await axios.get('/clinmave/api/select/studies', {
       params: { pmid: !query ? '' : query },
     });
     pmidOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
@@ -340,7 +340,7 @@ async function fetchPmidOptions(query = '') {
 async function fetchTitleOptions(query = '') {
   try {
     loadingTitle.value = true;
-    const response = await axios.get('/api/fugedb/select/studies', {
+    const response = await axios.get('/clinmave/api/select/studies', {
       params: { title: !query ? '' : query },
     });
     titleOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
@@ -355,7 +355,7 @@ async function fetchTitleOptions(query = '') {
 async function fetchJournalOptions(query = '') {
   try {
     loadingJournal.value = true;
-    const response = await axios.get('/api/fugedb/select/studies', {
+    const response = await axios.get('/clinmave/api/select/studies', {
       params: { journal: !query ? '' : query },
     });
     journalOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
@@ -370,7 +370,7 @@ async function fetchJournalOptions(query = '') {
 async function fetchYearOptions(query = '') {
   try {
     loadingYear.value = true;
-    const response = await axios.get('/api/fugedb/select/studies', {
+    const response = await axios.get('/clinmave/api/select/studies', {
       params: { year: !query ? '' : query },
     });
     yearOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
@@ -423,7 +423,7 @@ const loadData = async () => {
     });
 
     // Replace with your actual API endpoint
-    const response = await axios.get('/api/fugedb/fetch/table/studysummary', { params });
+    const response = await axios.get('/clinmave/api/fetch/table/studysummary', { params });
     console.log('[API Response]', response.data); // Debug API response
     // Verify response structure
     tableData.value = response.data.data || [];

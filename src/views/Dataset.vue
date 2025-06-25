@@ -38,57 +38,71 @@
                   <v-table density="comfortable" class="no-border">
                     <tbody>
                       <tr>
-                        <td class="text-subtitle-1 font-weight-bold">Gene: </td>
-                        <td class="text-body-1">{{ variantData.geneName }}</td>
+                        <td class="text-subtitle-1 font-weight-bold">Dataset ID: </td>
+                        <td class="text-body-1">{{ variantData.datasetId }}</td>
                       </tr>
                       <tr>
-                        <td class="text-subtitle-1 font-weight-bold">Ensembl ID: </td>
-                        <td class="text-body-1"><a :href="variantData.ensemblLink" target="_blank">{{ variantData.ensemblId }}<v-icon small color="primary">mdi-share</v-icon></a></td>
+                        <td class="text-subtitle-1 font-weight-bold">Pubmed ID: </td>
+                        <td class="text-body-1"><a :href="variantData.pmid" target="_blank">{{ variantData.pmid }}<v-icon small color="primary">mdi-share</v-icon></a></td>
                       </tr>
                       <tr>
-                        <td class="text-subtitle-1 font-weight-bold">NCBI ID: </td>
-                        <td class="text-body-1"><a :href="variantData.ncbiLink" target="_blank">{{ variantData.ncbiId }}<v-icon small color="primary">mdi-share</v-icon></a></td>
+                        <td class="text-subtitle-1 font-weight-bold">Title: </td>
+                        <td class="text-body-1 text-justify">{{ variantData.title }}</td>
                       </tr>
                       <tr>
-                        <td class="text-subtitle-1 font-weight-bold">HGNC ID: </td>
-                        <td class="text-body-1"><a :href="variantData.hgncLink" target="_blank">{{ variantData.hgncId }}<v-icon small color="primary">mdi-share</v-icon></a></td>
+                        <td class="text-subtitle-1 font-weight-bold">Phenotype: </td>
+                        <td class="text-body-1">{{ variantData.phenotype }}</td>
                       </tr>
                       <tr>
-                        <td class="text-subtitle-1 font-weight-bold">UniprotKB ID: </td>
-                        <td class="text-body-1"><a :href="variantData.uniprotkbLink" target="_blank">{{ variantData.uniprotkbId }}<v-icon small color="primary">mdi-share</v-icon></a></td>
+                        <td class="text-subtitle-1 font-weight-bold">Functional assay: </td>
+                        <td class="text-body-1">{{ variantData.functionalAssay }}</td>
                       </tr>
+                      <tr>
+                        <td class="text-subtitle-1 font-weight-bold">#Variants/#AAs/#Sites: </td>
+                        <td class="text-body-1">{{ variantData.varNum }}-{{ variantData.aaNum }}-{{ variantData.siteNum }}</td>
+                      </tr>
+                      <tr>
+                        <td class="text-subtitle-1 font-weight-bold">#ClinVar: </td>
+                        <td class="text-body-1">
+                         <div v-if="parsedData.length" class="chip-group" style="width: 200px; display: flex;">
+                          <v-tooltip
+                            v-for="(item, index) in parsedData"
+                            :key="index"
+                            location="top"
+                          >
+                            <template v-slot:activator="{ props }">
+                              <v-btn
+                                flat
+                                v-bind="props"
+                                :color="item.color"
+                                :style="{ width: `${item.percentage}%`, 'min-width': '0px', 'height': '20px' }"
+                              ></v-btn>
+                            </template>
+                            <span>{{ item.category }}: {{ item.value }} ({{ item.percentage.toFixed(2) }}%)</span>
+                          </v-tooltip>
+                        </div>
+                        <span v-else>——</span>
+                        </td>
+                      </tr> 
                     </tbody>
                   </v-table>
-                  <v-divider class="mb-4"></v-divider>
-                  <v-chip class="mr-2"><a :href="variantData.omimLink" target="_blank">OMIM</a></v-chip>
-                  <v-chip class="mr-2"><a :href="variantData.dicipherLink" target="_blank">DECIPHER</a></v-chip>
-                  <v-chip class="mr-2"><a :href="variantData.g2pLink" target="_blank">Gene2Phenotype</a></v-chip>
-
-                  <v-chip class="mr-2"><a :href="variantData.cosmicLink" target="_blank">COSMIC</a></v-chip>
-                  <v-chip class="mr-2"><a :href="variantData.clinvarLink" target="_blank">ClinVar</a></v-chip>
-                  <v-chip class="mr-2"><a :href="variantData.monarchLink" target="_blank">Monarch Initiative</a></v-chip>
-
                 </v-col>
 
                 <v-col cols="12" md="6" sm="12">
-                  <v-table density="comfortable" class="no-border">
-                    <tbody>
-                      <tr>
-                        <td class="text-subtitle-1 font-weight-bold">Full name: </td>
-                        <td class="text-body-1 text-justify">{{ variantData.fullName }}</td>
-                      </tr>
-                      <tr>
-                        <td class="text-subtitle-1 font-weight-bold">Gene summary: </td>
-                        <td class="text-body-1 text-justify">{{ variantData.geneSummary }}</td>
-                      </tr>
-                    </tbody>
-                  </v-table>
+                  <v-row>
+                    <v-col cols="12" sm="6">
+                      <!-- <DensityPlot :size="200" :data="scoreData"
+                        :selection-strategy="VariantDensityData.selectionStrategy"
+                        :cutoff="VariantDensityData.cutoff" 
+                        :score="variantData.score"
+                      /> -->
+                    </v-col>
+                  </v-row>
                 </v-col>
               </v-row>
             </v-card-text>
           </v-card>
         </v-col>
-
       </v-row>
 
       <v-row class="mt-2" align="stretch">
@@ -98,81 +112,125 @@
           <v-sheet class="pa-3">
 
             <!-- Table -->
-            <vxe-toolbar ref="toolbarRef" export custom></vxe-toolbar>
-            <!-- Pagination -->
-            <vxe-pager
-              :current-page.sync="currentPage"
-              :page-size.sync="pageSize"
-              :page-sizes="[10, 20, 50, 100]"
-              :total="totalRecords"
-              :layouts="['Home', 'PrevPage', 'JumpNumber', 'NextPage', 'End', 'Sizes', 'Total']"
-              @page-change="handlePageChange"
-            ></vxe-pager>
-            <vxe-table
-              ref="tableRef"
-              :export-config="{}"
-              :column-config="{ resizable: true }"
-              :data="tableData"
-              stripe
-              round
-              :loading="loading"
-              :pager-config="{ currentPage, pageSize, total: totalRecords }"
-              @sort-change="handleSortChange"
-            >
-              <vxe-column field="datasetId" width="140" sortable>
+              <vxe-toolbar ref="toolbarRef" export custom></vxe-toolbar>
+              <!-- Pagination -->
+              <vxe-pager
+                :current-page.sync="currentPage"
+                :page-size.sync="pageSize"
+                :page-sizes="[10, 20, 50, 100]"
+                :total="totalRecords"
+                :layouts="['Home', 'PrevPage', 'JumpNumber', 'NextPage', 'End', 'Sizes', 'Total']"
+                @page-change="handlePageChange"
+              ></vxe-pager>
+              <vxe-table
+                ref="tableRef"
+                :export-config="{}"
+                :column-config="{ resizable: true }"
+                :data="tableData"
+                stripe
+                round
+                :loading="loading"
+                :pager-config="{ currentPage, pageSize, total: totalRecords }"
+                @sort-change="handleSortChange"
+              >
+                <vxe-column field="identifier" width="450" sortable>
 
-                <template #header>
-                  Dataset ID
-                </template>
-                
-                <template #default="{ row }">
-                  <a 
-                    v-if="row.datasetId" 
-                    :href="`/browse/dataset/${encodeURIComponent(row.datasetId)}`" 
-                    target="_blank"
-                    style="text-decoration: none;"
-                  >
-                    {{ row.datasetId }}
-                  </a>
-                  <span v-else>-</span>
-                </template>
-
-              </vxe-column>
-              
-              <vxe-column field="pmid" title="PMID" min-width="153" align="center">
-                <template #default="{ row }">
-                  <div v-if="row">
-                    <a :href="`https://pubmed.ncbi.nlm.nih.gov/${row.pmid}`" target="_blank" style="text-decoration: none;">
-                      {{ row.pmid ? row.pmid : 'N/A' }}
+                  <template #header>
+                    Identifier
+                  </template>
+                  
+                  <template #default="{ row }">
+                    <a 
+                      v-if="row.identifier" 
+                      :href="`/clinmave/browse/variant/${encodeURIComponent(row.identifier)}`" 
+                      target="_blank"
+                      style="text-decoration: none;"
+                    >
+                      {{ row.identifier }}
                     </a>
-                    <v-icon small color="primary">mdi-share</v-icon>
-                  </div>
-                </template>
-              </vxe-column>
+                    <span v-else>-</span>
+                  </template>
 
-              <vxe-column field="mutagenesisStrategy" title="Mutagenesis strategy" min-width="200" align="center"></vxe-column>
-              
-              <vxe-column field="functionAssay" title="Function Assay" min-width="160" align="center"></vxe-column>
+                </vxe-column>
 
-              <vxe-column field="experimentModel" title="Experiment Model" min-width="150" align="center"></vxe-column>
+                <vxe-column field="position" title="Position" min-width="180">
+                  <template #default="{ row }">
+                    <a v-if="row" :href="row.ucscHg38" target="_blank" style="text-decoration: none;">
+                      {{ row.chr && row.pos ? `${row.chr}:${row.pos}` : 'N/A' }}
+                      <v-icon small color="blue">mdi-share</v-icon>
+                    </a>
+                  </template>
+                </vxe-column>
 
-              <vxe-column field="phenotype" title="Phenotype" min-width="400" align="center"></vxe-column>
+                <vxe-column field="refalt" title="Ref/Alt" min-width="100">
+                  <template #default="{ row }">
+                    {{ row.ref && row.alt ? `${row.ref}:${row.alt}` : 'N/A' }}
+                  </template>
+                </vxe-column>
 
-              <vxe-column field="varNum" title="#Variants" min-width="120" align="center" sortable></vxe-column>
+                <vxe-column field="dbsnpId" title="dbSNP ID" min-width="140" sortable>
+                   <template #default="{ row }">
+                    <div v-if="row">
+                      <span v-if="!row.dbsnpId || row.dbsnpId === 'NA'">-</span>
+                      <a v-else :href="row.dbsnpLink" target="_blank" style="text-decoration: none;">
+                        {{ row.dbsnpId }}
+                        <v-icon small color="blue">mdi-share</v-icon>
+                      </a>
+                    </div>
+                  </template>
+                </vxe-column>
 
-              <vxe-column field="aaNum" title="#Amino Acids" min-width="150" align="center" sortable></vxe-column>
+                <vxe-column field="geneName" title="Gene name" min-width="100" align="center">
+                  <template #default="{ row }">
+                      <a 
+                        v-if="row.geneName" 
+                        :href="`/clinmave/browse/gene/${encodeURIComponent(row.geneName)}`" 
+                        target="_blank"
+                        style="text-decoration: none;font-style: italic"
+                      >
+                        {{ row.geneName }}
+                      </a>
+                      <span v-else>-</span>
+                    </template>
+                </vxe-column>
 
-              <vxe-column field="siteNum" title="#Sites" min-width="100" align="center" sortable></vxe-column>
-
-            </vxe-table>
-            <!-- Pagination -->
-            <vxe-pager
-              :current-page.sync="currentPage"
-              :page-size.sync="pageSize"
-              :total="totalRecords"
-              :layouts="['Home', 'PrevPage', 'JumpNumber', 'NextPage', 'End', 'Sizes', 'Total']"
-              @page-change="handlePageChange"
-            ></vxe-pager>
+                <vxe-column field="molecularConsequence" title="Molecular consequence" min-width="220" align="center" sortable>
+                  <template #default="{ row }">
+                    <v-chip 
+                      v-if="row.molecularConsequence"
+                      small
+                      dark
+                      :color="getMolecularConsequenceColor(row.molecularConsequence)"
+                    >
+                      {{ row.molecularConsequence }}
+                    </v-chip>
+                    <span v-else>
+                      -
+                    </span>
+                  </template>
+                </vxe-column>
+                <vxe-column field="mutagenesisStrategy" title="Mutagenesis strategy" min-width="200" align="center"></vxe-column>
+                
+                <vxe-column field="pmid" title="Publication" min-width="153" align="center">
+                  <template #default="{ row }">
+                    <div v-if="row">
+                      <a :href="`https://pubmed.ncbi.nlm.nih.gov/${row.pmid}`" target="_blank" style="text-decoration: none;">
+                        {{ row.pmid ? row.pmid : 'N/A' }}
+                      </a>
+                      <v-icon small color="primary">mdi-share</v-icon>
+                    </div>
+                  </template>
+                </vxe-column>
+              </vxe-table>
+              <!-- Pagination -->
+              <vxe-pager
+                :current-page.sync="currentPage"
+                :page-size.sync="pageSize"
+                :total="totalRecords"
+                :layouts="['Home', 'PrevPage', 'JumpNumber', 'NextPage', 'End', 'Sizes', 'Total']"
+                @page-change="handlePageChange"
+              ></vxe-pager>
+          
           </v-sheet>
 
           <v-row>
@@ -247,26 +305,42 @@
 
   // Reactive state for variant details
   const variantData = ref({
+    datasetId: null,
+    pmid: null,
+    mutagenesisStrategy: null,
+    functionAssay: null,
+    experimentModel: null,
+    phenotype: null,
+    varNum: null,
+    aaNum: null,
+    siteNum: null,
     geneName: null,
-    fullName: null,
-    geneSummary: null,
-    clinvarId: null,
-    clinvarLink: null,
-    ensemblId: null,
-    ensemblLink: null,
-    hgncId: null,
-    hgncLink: null,
-    ncbiId: null,
-    ncbiLink: null,
-    cosmicLink: null,
-    dicipherLink: null,
-    g2pLink: null,
-    monarchLink: null,
-    omimLink: null,
-    uniprotkbId: null,
-    uniprotkbLink: null
+    clinvarNum: null,
   });
   
+  // Reactive state for filters
+  const filters = ref({
+    dbsnpId: null,
+    molecularConsequence: null,
+    geneName: null,
+    transcriptId: null,
+    datasetId: null,
+    mutagenesisStrategy: null,
+  })
+
+  // Table state
+  const toolbarRef = ref()
+  const tableRef = ref()
+  const tableData = ref([]) 
+  const currentPage = ref(1)
+  const pageSize = ref(10)
+  const totalRecords = ref(0)
+  const loading = ref(false)
+  const sortParams = ref({
+    field: '',
+    order: ''
+  })
+
   const breadcrumbs = ref([
       {
         title: 'Home',
@@ -276,14 +350,10 @@
       },
       {
         title: 'Browse',
-        icon: 'mdi-cart',
-        href: '/products',
         disabled: false,
       },
       {
-        title: 'Genes',
-        icon: 'mdi-information',
-        href: '/products/details',
+        title: 'Datasets',
         disabled: true, 
       },
       {
@@ -299,12 +369,6 @@
       { label: 'Gene', value: 'Example Gene' },
       { label: 'Type', value: 'Missense Mutation' },
     ]
-  
-  const formatScore = (score) => {
-    if (score === 'NA' || score == null) return '——';
-    const num = parseFloat(score);
-    return isNaN(num) ? '——' : num.toPrecision(3);
-  };
 
   // Get the route to extract the identifier
   const route = useRoute();
@@ -312,15 +376,14 @@
   // Function to fetch variant data
   const fetchVariantData = async () => {
     try {
-      const geneName = route.params.geneName; // Get identifier from route
-      const response = await axios.get(`/api/fugedb/summary/gene?geneName=${encodeURIComponent(geneName)}`);
-      console.log(response.data)
+      const datasetId = route.params.datasetId; // Get identifier from route
+      const response = await axios.get(`/clinmave/api/summary/dataset?datasetId=${encodeURIComponent(datasetId)}`);
+      
       variantData.value = response.data; // Directly assign API response
-      console.log('Variant Data:', variantData.value);
-
-
+      filters.value.datasetId = datasetId;
+      console.log('Filters Data:', filters.value);
       // Update the last breadcrumb item with the identifier
-      breadcrumbs.value[3].title = variantData.value.geneName;
+      breadcrumbs.value[3].title = variantData.value.datasetId;
 
       // Update items for the second expansion panel
       items.value = [
@@ -328,34 +391,43 @@
         { label: 'Gene', value: variantData.value.geneName || 'Example Gene' },
         { label: 'Type', value: variantData.value.consequenceClass || 'Missense Mutation' },
       ];
+      
+      loadData(); // Load table data after fetching variant data
     } catch (error) {
       console.error('Error fetching variant data:', error);
     }
   };
 
-  const fetchVariantDensityData = async () => {
-    try {
-      
-      const response = await axios.get(`/api/fugedb/visualize/density?datasetId=${variantData.value.datasetId}`);
-      VariantDensityData.value = response.data; // Directly assign API response
-
-    } catch (error) {
-      console.error('Error fetching variant density data:', error);
+  const parsedData = computed(() => {
+    // Guard clause to handle null or non-string clinvarNum
+    if (!variantData.value.clinvarNum || typeof variantData.value.clinvarNum !== 'string') {
+      return [];
     }
-  };
 
-  // Table state
-  const toolbarRef = ref()
-  const tableRef = ref()
-  const tableData = ref([]) 
-  const currentPage = ref(1)
-  const pageSize = ref(10)
-  const totalRecords = ref(0)
-  const loading = ref(false)
-  const sortParams = ref({
-    field: '',
-    order: ''
-  })
+    const items = variantData.value.clinvarNum
+      .split('|')
+      .filter(item => item.includes(':')) // Ensure each item has the expected format
+      .map(item => {
+        const [category, value] = item.split(':');
+        return {
+          category: category.trim(),
+          value: isNaN(parseInt(value, 10)) ? 0 : parseInt(value, 10),
+        };
+      });
+
+    const total = items.reduce((sum, item) => sum + item.value, 0);
+
+    return items.map((item, index) => ({
+      ...item,
+      percentage: total > 0 ? (item.value / total) * 100 : 0,
+      color: getColor(index),
+    }));
+  });
+
+  const getColor = (index) => {
+    const colors = ['pink', 'yellow', 'teal', 'green', 'brown'];
+    return colors[index % colors.length];
+  };
 
   // Load data function
   const loadData = async () => {
@@ -382,7 +454,7 @@
         page: currentPage.value - 1, // Adjust based on backend: use currentPage.value - 1 if zero-based
         size: pageSize.value,
         sort: sort || undefined,
-        geneName: route.params.geneName, // Use the gene name from the route
+        ...filters.value
       };
 
       // Remove empty or undefined params
@@ -393,7 +465,7 @@
       });
 
       // Replace with your actual API endpoint
-      const response = await axios.get('/api/fugedb/fetch/table/dataset', { params });
+      const response = await axios.get('/clinmave/api/fetch/table/variant', { params });
       
       // Verify response structure
       tableData.value = response.data.data || [];
@@ -408,23 +480,77 @@
     }
   };
 
-  watch(
-    () => variantData.value?.datasetId,
-    (newVal) => {
-      if (newVal) {
-        fetchVariantDensityData();
+  const handlePageChange = (event) => {
+    console.log('[Page Change]', event) // Debug event data
+    currentPage.value = event.currentPage
+    pageSize.value = event.pageSize
+    loadData()
+  }
+
+  const handleSortChange = ({ field, order, sortList }) => {
+    if (sortList && sortList.length > 0) {
+      // 过滤掉无效的排序字段
+      const validSorts = sortList
+        .filter(sort => sort.field && sort.order && sort.field !== 'null')
+        .map(sort => ({ field: sort.field, order: sort.order }));
+      
+      if (validSorts.length > 0) {
+        sortParams.value = validSorts; // 存储多列排序
+      } else {
+        sortParams.value = { field: 'id', order: 'asc' }; // 默认排序
+      }
+    } else {
+      // 单列排序
+      sortParams.value = {
+        field: field && field !== 'null' ? field : 'id',
+        order: order || 'asc'
+      };
+    }
+    
+    currentPage.value = 1; // 排序后回到第一页
+    loadData();
+  };
+
+  const getMolecularConsequenceColor = (molecularConsequence) => {
+    const colorMap = {
+      'Missense': '#E69F00', 
+      'Nonsense': '#D55E00', 
+      'Synonymous': '#009E73', 
+      'Splice site': '#CC79A7',
+      'Stop_lost': '#882255',
+      'Intron': '#999999',
+      'UTR': '#56B4E9',
+      'Frameshift': '#CC0000',
+      'ncRNA': '#F0E442',
+      'Upstream': '#0072B2',
+      'Intergenic': '#AAAAAA',
+    };
+    
+    const normalized = molecularConsequence.toLowerCase();
+
+    for (const [key, value] of Object.entries(colorMap)) {
+      if (normalized.includes(key.toLowerCase())) {
+        return value;
       }
     }
-  );
-
+    
+    return '#2196F3'; // Default blue
+  };
   // Fetch data when component is mounted
   onMounted(() => {
     fetchVariantData();
-    loadData();
     const $table = tableRef.value
     const $toolbar = toolbarRef.value
     if ($table && $toolbar) {
       $table.connect($toolbar)
     }
   })
+
+  // Watch pagination parameters
+  watch([currentPage, pageSize], () => {
+    console.log('[Watch] Page or size changed:', currentPage.value, pageSize.value)
+    loadData()
+  })
+
+
 </script>

@@ -8,11 +8,9 @@
             flat
           >
             <v-breadcrumbs :items="breadcrumbs">
-              <template v-slot:item="{ item }">
-                <v-breadcrumbs-item
-                >
-                  
-                  <span>
+              <template v-slot:item="{ item, index }">
+                <v-breadcrumbs-item>
+                  <span :style="{ 'font-style': index === breadcrumbs.length - 1 ? 'italic' : '' }">
                     {{ item.title }}
                   </span>
                 </v-breadcrumbs-item>
@@ -39,7 +37,7 @@
                     <tbody>
                       <tr>
                         <td class="text-subtitle-1 font-weight-bold">Gene: </td>
-                        <td class="text-body-1">{{ variantData.geneName }}</td>
+                        <td class="text-body-1" style="font-style: italic">{{ variantData.geneName }}</td>
                       </tr>
                       <tr>
                         <td class="text-subtitle-1 font-weight-bold">Ensembl ID: </td>
@@ -128,7 +126,7 @@
                 <template #default="{ row }">
                   <a 
                     v-if="row.datasetId" 
-                    :href="`/browse/dataset/${encodeURIComponent(row.datasetId)}`" 
+                    :href="`/clinmave/browse/dataset/${encodeURIComponent(row.datasetId)}`" 
                     target="_blank"
                     style="text-decoration: none;"
                   >
@@ -276,21 +274,16 @@
       },
       {
         title: 'Browse',
-        icon: 'mdi-cart',
-        href: '/products',
         disabled: false,
       },
       {
         title: 'Genes',
-        icon: 'mdi-information',
-        href: '/products/details',
         disabled: true, 
       },
       {
         title: null,
-        icon: 'mdi-information',
-        href: '/products/details',
         disabled: true,
+        style: { fontStyle: 'italic' },
       },
     ])
   
@@ -313,7 +306,7 @@
   const fetchVariantData = async () => {
     try {
       const geneName = route.params.geneName; // Get identifier from route
-      const response = await axios.get(`/api/fugedb/summary/gene?geneName=${encodeURIComponent(geneName)}`);
+      const response = await axios.get(`/clinmave/api/summary/gene?geneName=${encodeURIComponent(geneName)}`);
       console.log(response.data)
       variantData.value = response.data; // Directly assign API response
       console.log('Variant Data:', variantData.value);
@@ -336,7 +329,7 @@
   const fetchVariantDensityData = async () => {
     try {
       
-      const response = await axios.get(`/api/fugedb/visualize/density?datasetId=${variantData.value.datasetId}`);
+      const response = await axios.get(`/clinmave/api/visualize/density?datasetId=${variantData.value.datasetId}`);
       VariantDensityData.value = response.data; // Directly assign API response
 
     } catch (error) {
@@ -393,7 +386,7 @@
       });
 
       // Replace with your actual API endpoint
-      const response = await axios.get('/api/fugedb/fetch/table/dataset', { params });
+      const response = await axios.get('/clinmave/api/fetch/table/dataset', { params });
       
       // Verify response structure
       tableData.value = response.data.data || [];

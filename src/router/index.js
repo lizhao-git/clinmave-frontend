@@ -9,6 +9,8 @@ import studies from '@/views/Studies.vue'
 import gene from '@/views/Gene.vue'
 import VisualizeByGene from '@/views/VisualizeByGene.vue' 
 import VisualizeByDataset from '@/views/VisualizeByDataset.vue'
+import ENCODESearch from '@/views/ENCODESearch.vue'
+import Statistics from '@/views/Statistics.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -68,13 +70,15 @@ const router = createRouter({
       component: () => import('@/views/VisualizeByDataset.vue'),
     },
     {
-      path: '/downloads',
-      name: 'downloads',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/Downloads.vue'),
+      path: '/encode',
+      name: 'ENCODESearch',
+      component: ENCODESearch,
     },
+    {
+      path: '/statistics',
+      name: 'Statistics',
+      component: Statistics,
+    }
   ],
 })
 

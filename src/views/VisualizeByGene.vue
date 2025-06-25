@@ -120,7 +120,7 @@
                 <template #default="{ row }">
                   <a 
                     v-if="row.datasetId" 
-                    :href="`/browse/dataset/${encodeURIComponent(row.datasetId)}`" 
+                    :href="`/clinmave/browse/dataset/${encodeURIComponent(row.datasetId)}`" 
                     target="_blank"
                     style="text-decoration: none;"
                   >
@@ -281,7 +281,7 @@ const hasOncoprintData = computed(() => {
 async function fetchGeneNameOptions(query = '') {
   try {
     loadingGeneName.value = true;
-    const response = await axios.get('/api/fugedb/select/genes', {
+    const response = await axios.get('/clinmave/api/select/genes', {
       params: { geneName: !query ? '' : query },
     });
     geneNameOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
@@ -296,7 +296,7 @@ async function fetchGeneNameOptions(query = '') {
 async function fetchDatasetIdOptions(query = '') {
   try {
     loadingDatasetId.value = true;
-    const response = await axios.get('/api/fugedb/select/dataset', {
+    const response = await axios.get('/clinmave/api/select/dataset', {
       params: { datasetId: !query ? '' : query },
     });
     datasetIdOptions.value = response.data.map(item => ({
@@ -314,7 +314,7 @@ async function fetchDatasetIdOptions(query = '') {
 async function fetchConsequenceClassOptions(query = '') {
   try {
     loadingConsequenceClass.value = true;
-    const response = await axios.get('/api/fugedb/select/dataset', {
+    const response = await axios.get('/clinmave/api/select/dataset', {
       params: { consequenceClass: !query ? '' : query },
     });
     consequenceClassOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
@@ -330,7 +330,7 @@ async function fetchGeneStructure(query = '') {
   oncoprintLoading.value = true;
   try {
     loadingGeneName.value = true;
-    const response = await axios.get('/api/fugedb/visualize/bygene/oncoprint', {
+    const response = await axios.get('/clinmave/api/visualize/bygene/oncoprint', {
       params: { geneName: !query ? '' : query },
     });
     oncoprintMap.value = response.data || {};
@@ -373,7 +373,7 @@ const loadData = async () => {
       }
     });
 
-    const response = await axios.get('/api/fugedb/fetch/table/dataset', { params });
+    const response = await axios.get('/clinmave/api/fetch/table/dataset', { params });
     tableData.value = response.data.data || [];
     totalRecords.value = response.data.totalRows || 0;
   } catch (error) {

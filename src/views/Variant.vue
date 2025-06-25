@@ -446,7 +446,7 @@
   const fetchVariantData = async () => {
     try {
       const identifier = route.params.identifier; // Get identifier from route
-      const response = await axios.get(`/api/fugedb/summary/variant?identifier=${encodeURIComponent(identifier)}`);
+      const response = await axios.get(`/clinmave/api/summary/variant?identifier=${encodeURIComponent(identifier)}`);
       variantData.value = response.data; // Directly assign API response
       console.log('Variant Data:', variantData.value);
       // Update selectedStrength based on consequenceClass
@@ -475,7 +475,7 @@
   const fetchVariantDensityData = async () => {
     try {
       
-      const response = await axios.get(`/api/fugedb/visualize/density?datasetId=${variantData.value.datasetId}`);
+      const response = await axios.get(`/clinmave/api/visualize/density?datasetId=${variantData.value.datasetId}`);
       VariantDensityData.value = response.data; // Directly assign API response
       console.log("Output variant density data: ", VariantDensityData.value)
     } catch (error) {

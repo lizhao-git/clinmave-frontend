@@ -85,7 +85,7 @@
                 <template #default="{ row }">
                   <a 
                     v-if="row.datasetId" 
-                    :href="`/browse/dataset/${encodeURIComponent(row.datasetId)}`" 
+                    :href="`/clinmave/browse/dataset/${encodeURIComponent(row.datasetId)}`" 
                     target="_blank"
                     style="text-decoration: none;"
                   >
@@ -323,7 +323,7 @@ const hasConsequenceDensityData = computed(() => {
 async function fetchDatasetIdOptions(query = '') {
   try {
     loadingDatasetId.value = true;
-    const response = await axios.get('/api/fugedb/select/dataset', {
+    const response = await axios.get('/clinmave/api/select/dataset', {
       params: { datasetId: !query ? '' : query },
     });
     datasetIdOptions.value = response.data.map(item => ({
@@ -342,7 +342,7 @@ async function fetchScatterData(query = '') {
   scatterLoading.value = true;
   try {
     loadingDatasetId.value = true;
-    const response = await axios.get('/api/fugedb/visualize/bydataset/scatter', {
+    const response = await axios.get('/clinmave/api/visualize/bydataset/scatter', {
       params: { datasetId: !query ? '' : query },
     });
     scatterArray.value = response.data || [];
@@ -360,7 +360,7 @@ async function fetchClinVarBinData(query = '') {
   clinVarBinLoading.value = true;
   try {
     loadingDatasetId.value = true;
-    const response = await axios.get('/api/fugedb/visualize/bydataset/clinvarbin', {
+    const response = await axios.get('/clinmave/api/visualize/bydataset/clinvarbin', {
       params: { datasetId: !query ? '' : query },
     });
     ClinVarBinArray.value = response.data || [];
@@ -377,7 +377,7 @@ async function fetchConsequenceDensityData(query = '') {
   consequenceDensityLoading.value = true;
   try {
     loadingDatasetId.value = true;
-    const response = await axios.get('/api/fugedb/visualize/bydataset/consequencedensity', {
+    const response = await axios.get('/clinmave/api/visualize/bydataset/consequencedensity', {
       params: { datasetId: !query ? '' : query },
     });
     consequenceArray.value = response.data || [];
@@ -420,7 +420,7 @@ const loadData = async () => {
       }
     });
 
-    const response = await axios.get('/api/fugedb/fetch/table/dataset', { params });
+    const response = await axios.get('/clinmave/api/fetch/table/dataset', { params });
     tableData.value = response.data.data || [];
     totalRecords.value = response.data.totalRows || 0;
   } catch (error) {

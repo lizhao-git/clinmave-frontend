@@ -185,7 +185,7 @@
                   <template #default="{ row }">
                     <a 
                       v-if="row.datasetId" 
-                      :href="`/browse/dataset/${encodeURIComponent(row.datasetId)}`" 
+                      :href="`/clinmave/browse/dataset/${encodeURIComponent(row.datasetId)}`" 
                       target="_blank"
                       style="text-decoration: none;"
                     >
@@ -213,9 +213,9 @@
                     <template #default="{ row }">
                       <a 
                         v-if="row.geneName" 
-                        :href="`/browse/gene/${encodeURIComponent(row.geneName)}`" 
+                        :href="`/clinmave/browse/gene/${encodeURIComponent(row.geneName)}`" 
                         target="_blank"
-                        style="text-decoration: none;"
+                        style="text-decoration: none;font-style: italic"
                       >
                         {{ row.geneName }}
                         <v-icon small color="blue">mdi-share</v-icon>
@@ -344,7 +344,7 @@ const debouncedFetchMutagenesisStrategy = debounce(fetchMutagenesisStrategyOptio
 async function fetchDatasetIdOptions(query = '') {
   try {
     loadingDatasetId.value = true;
-    const response = await axios.get('/api/fugedb/select/dataset', {
+    const response = await axios.get('/clinmave/api/select/dataset', {
       params: { datasetId: !query ? '' : query },
     });
     datasetIdOptions.value = response.data.map(item => ({
@@ -362,7 +362,7 @@ async function fetchDatasetIdOptions(query = '') {
 async function fetchGeneNameOptions(query = '') {
   try {
     loadingGeneName.value = true;
-    const response = await axios.get('/api/fugedb/select/dataset', {
+    const response = await axios.get('/clinmave/api/select/dataset', {
       params: { geneName: !query ? '' : query },
     });
     geneNameOptions.value = response.data.map(item => ({
@@ -380,7 +380,7 @@ async function fetchGeneNameOptions(query = '') {
 async function fetchEnsemblIdOptions(query = '') {
   try {
     loadingEnsemblId.value = true;
-    const response = await axios.get('/api/fugedb/select/dataset', {
+    const response = await axios.get('/clinmave/api/select/dataset', {
       params: { ensemblId: !query ? '' : query },
     });
     ensemblIdOptions.value = response.data.map(item => ({
@@ -398,7 +398,7 @@ async function fetchEnsemblIdOptions(query = '') {
 async function fetchFunctionAssayOptions(query = '') {
   try {
     loadingFunctionAssay.value = true;
-    const response = await axios.get('/api/fugedb/select/dataset', {
+    const response = await axios.get('/clinmave/api/select/dataset', {
       params: { functionAssay: !query ? '' : query },
     });
     functionAssayOptions.value = response.data.map(item => ({
@@ -416,7 +416,7 @@ async function fetchFunctionAssayOptions(query = '') {
 async function fetchMutagenesisStrategyOptions(query = '') {
   try {
     loadingMutagenesisStrategy.value = true;
-    const response = await axios.get('/api/fugedb/select/dataset', {
+    const response = await axios.get('/clinmave/api/select/dataset', {
       params: { mutagenesisStrategy: !query ? '' : query },
     });
     mutagenesisStrategyOptions.value = response.data.map(item => ({
@@ -467,7 +467,7 @@ const loadData = async () => {
     });
 
     // Replace with your actual API endpoint
-    const response = await axios.get('/api/fugedb/fetch/table/dataset', { params });
+    const response = await axios.get('/clinmave/api/fetch/table/dataset', { params });
     
     // Verify response structure
     tableData.value = response.data.data || [];

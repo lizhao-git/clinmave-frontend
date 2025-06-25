@@ -46,7 +46,7 @@
           background-color="#174978"
           class="mx-auto"
         >
-          <v-tab to="/home">
+          <v-tab to="/">
             <v-icon icon="mdi-home" size="small"></v-icon>
             <span class="ml-1">Home</span>
           </v-tab>

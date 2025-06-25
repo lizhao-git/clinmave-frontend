@@ -275,7 +275,7 @@ const debouncedFetchDatasetId = debounce(fetchDatasetIdOptions, 300)
 async function fetchGeneNameOptions(query = '') {
   try {
     loadingGeneName.value = true;
-    const response = await axios.get('/api/fugedb/select/genes', {
+    const response = await axios.get('/clinmave/api/select/genes', {
       params: { geneName: !query ? '' : query },
     });
     geneNameOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
@@ -290,7 +290,7 @@ async function fetchGeneNameOptions(query = '') {
 async function fetchEnsemblIdOptions(query = '') {
   try {
     loadingEnsemblId.value = true;
-    const response = await axios.get('/api/fugedb/select/genes', {
+    const response = await axios.get('/clinmave/api/select/genes', {
       params: { ensemblId: !query ? '' : query },
     });
     ensemblIdOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
@@ -305,7 +305,7 @@ async function fetchEnsemblIdOptions(query = '') {
 async function fetchDatasetIdOptions(query = '') {
   try {
     loadingDatasetId.value = true;
-    const response = await axios.get('/api/fugedb/select/genes', {
+    const response = await axios.get('/clinmave/api/select/genes', {
       params: { datasetId: !query ? '' : query },
     });
     datasetIdOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
@@ -358,7 +358,7 @@ const loadData = async () => {
     });
 
     // Replace with your actual API endpoint
-    const response = await axios.get('/api/fugedb/fetch/table/genesummary', { params });
+    const response = await axios.get('/clinmave/api/fetch/table/genesummary', { params });
     
     // Verify response structure
     tableData.value = response.data.data || [];

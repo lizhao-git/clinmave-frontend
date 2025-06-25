@@ -10,6 +10,7 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
+  base: '/clinmave/',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
@@ -18,11 +19,10 @@ export default defineConfig({
   server: {
     proxy: {
       // 将所有以 /api 开头的请求代理到后端服务器
-      '/api': {
-        // target: 'http://192.168.164.87:8888', // 服务器端API接口
-        target: 'http://localhost:12000/', // 本地API接口
+      '/clinmave/api': {
+        target: 'http://192.168.164.87:7777/clinmave',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '') // 可选：去掉 /api 前缀
+        rewrite: (path) => path.replace(/^\/clinmave\/api/, ''), // 将 /clinmave/api 替换为空
       },
     }
   }
