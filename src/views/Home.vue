@@ -25,7 +25,7 @@
                 v-model:search="searchDatasetId"
                 :items="datasetIdOptions"
                 item-title="text"
-                item-value="text"
+                item-value="value"
                 class="mx-auto"
                 density="comfortable"
                 menu-icon=""
@@ -34,25 +34,39 @@
                 theme="light"
                 variant="solo"
                 item-props
-                rounded
                 return-object
+                :loading="loadingDatasetId"
                 @update:modelValue="onSelectItem"
               >
+                <!-- 下拉选项 -->
                 <template #item="{ item, props }">
-                  <v-list-item v-bind="props">
+                  <v-list-item v-bind="props" :title="null">
                     <v-chip
-                      :color="categoryColorMap[item.category] || 'grey'"
+                      :color="categoryColorMap[item.raw.category] || 'grey'"
                       text-color="white"
                       class="ma-1"
                       label
                       small
                     >
-                      {{ item.text }}
-                      <span class="ml-2">({{ item.category }})</span>
+                      {{ item.raw.text }} <span class="ml-2">({{ item.raw.category }})</span>
                     </v-chip>
                   </v-list-item>
                 </template>
+
+                <!-- 选中项显示 -->
+                <template #selection="{ item }">
+                  <v-chip
+                    :color="categoryColorMap[item.category] || 'grey'"
+                    text-color="white"
+                    class="ma-1"
+                    label
+                    small
+                  >
+                    {{ item.text }} <span class="ml-2">({{ item.category }})</span>
+                  </v-chip>
+                </template>
               </v-autocomplete>
+
 
               <span class="mx-4">
                 e.g. 
@@ -106,56 +120,48 @@
       <!-- Footer -->
       <v-row>
         <v-col cols="12" sm="4" md="4">
-          <v-card class="py-4" :rounded="defaultRounded" :variant="defaultCardVariant" height="200px">
+          <v-card class="py-4" :rounded="defaultRounded" :variant="defaultCardVariant" height="120px">
             <template #title>
               <v-icon start class="mr-2" color="primary">mdi-egg-easter</v-icon>
               How to cite
             </template>
             <v-card-text>
-              <span>ClinMAVE: A database for xxxxxx. Nucleic Acids Research 2025, <br>
-                [PMID=<a href="https://pubmed.ncbi.nlm.nih.gov/37027007" target="_blank">37027007</a>] <br>
+              <span>ClinMAVE: Nucleic Acids Research 2026, in preparation<br>
+                <!-- [PMID=<a href="https://pubmed.ncbi.nlm.nih.gov/37027007" target="_blank">37027007</a>] <br>
                 [OpenLBID=<a href="" target="_blank">OLB-PM-37027007</a>] <br>
-                [DOI=<a href="https://doi.org/10.1158/1541-7786.MCR-22-0909" target="_blank">10.1158/1541-7786.MCR-22-0909</a>]
+                [DOI=<a href="https://doi.org/10.1158/1541-7786.MCR-22-0909" target="_blank">10.1158/1541-7786.MCR-22-0909</a>] -->
               </span>
             </v-card-text>
           </v-card>
         </v-col>
         <v-divider class="my-8" vertical />
         <v-col cols="12" sm="4" md="4">
-          <v-card class="py-4 d-flex flex-column" :rounded="defaultRounded" :variant="defaultCardVariant" height="200px">
+          <v-card class="py-4 d-flex flex-column" :rounded="defaultRounded" :variant="defaultCardVariant" height="120px">
             <template #title>
               <v-icon start class="mr-2" color="primary">mdi-google-downasaur</v-icon>
               News
             </template>
             <v-card-text class="flex-grow-1 overflow-y-auto">
-              <v-timeline>
-                <v-timeline-item
-                  v-for="nnew in nnews"
-                  :key="nnew.time"
-                  :dot-color="nnew.color"
-                  size="x-small"
-                  side="end"
-                >
-                  <div class="mb-4">
-                    <div class="font-weight-normal">
-                      <strong>{{ nnew.from }}</strong> @{{nnew.time}}
-                    </div>
-                    <div>{{ nnew.message }}</div>
-                  </div>
-                </v-timeline-item>
-              </v-timeline>
+              <div class="mb-4" v-for="nnew in nnews">
+                <div class="font-weight-normal">
+                  <strong>{{ nnew.from }}</strong> @{{nnew.time}}
+                </div>
+                <div>{{ nnew.message }}</div>
+              </div>
             </v-card-text>
           </v-card>
         </v-col>
         <v-divider class="my-8" vertical />
         <v-col cols="12" sm="4" md="4">
-          <v-card class="py-4" :rounded="defaultRounded" :variant="defaultCardVariant" height="200px">
+          <v-card class="py-4" :rounded="defaultRounded" :variant="defaultCardVariant" height="120px">
             <template #title>
               <v-icon start class="mr-2" color="primary">mdi-halloween</v-icon>
               Related resources
             </template>
             <v-card-text>
-              <!-- Empty for now -->
+              <v-chip class="mr-4" color="primary"><a href="https://gnomad.broadinstitute.org/" target="_blank">gnomAD</a></v-chip>
+              <v-chip class="mr-4" color="primary"><a href="https://www.ncbi.nlm.nih.gov/clinvar/" target="_blank">ClinVar</a></v-chip>
+              <v-chip class="mr-4" color="primary"><a href="https://www.mavedb.org/" target="_blank">MAVEDB</a></v-chip>
             </v-card-text>
           </v-card>
         </v-col>
@@ -175,7 +181,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { debounce } from 'lodash'
 import axios from 'axios'
@@ -193,13 +199,14 @@ const filters = ref({
 // Search input and autocomplete options
 const searchDatasetId = ref(null)
 const datasetIdOptions = ref([])
-
+const loadingDatasetId = ref(false)
 // Chip color by category
 const categoryColorMap = {
   'Gene Name': 'green',
   'Dataset ID': 'blue',
-  'Variant': 'purple',
+  'Identifier': 'purple',
   'Study': 'orange',
+  'Ensembl ID': 'indigo', 
 }
 
 // On item select, navigate to appropriate route
@@ -207,9 +214,15 @@ function onSelectItem(item) {
   if (!item || !item.category || !item.text) return
   const encoded = encodeURIComponent(item.text)
   if (item.category === 'Gene Name') {
-    router.push(`/clinmave/browse/gene/${encoded}`)
+    router.push(`/browse/gene/${encoded}`)
   } else if (item.category === 'Dataset ID') {
-    router.push(`/clinmave/browse/dataset/${encoded}`)
+    router.push(`/browse/dataset/${encoded}`)
+  } else if (item.category === 'Identifier') {
+    router.push(`/browse/variant/${encoded}`)
+  } else if (item.category === 'Study') {
+    router.push(`/browse/study/${encoded}`)
+  } else if (item.category === 'Ensembl ID') {
+    router.push(`/browse/ensembl/${encoded}`)
   }
 }
 
@@ -217,6 +230,7 @@ function onSelectItem(item) {
 const debouncedFetchDatasetId = debounce(fetchDatasetIdOptions, 300)
 async function fetchDatasetIdOptions(query = '') {
   try {
+    loadingDatasetId.value = true;
     const response = await axios.get('/clinmave/api/select/all', {
       params: { entry: query },
     })
@@ -227,6 +241,8 @@ async function fetchDatasetIdOptions(query = '') {
     }))
   } catch (error) {
     datasetIdOptions.value = []
+  } finally {
+    loadingDatasetId.value = false;
   }
 }
 
@@ -235,19 +251,22 @@ onMounted(() => {
   debouncedFetchDatasetId()
 })
 
+watch(searchDatasetId, (newVal) => {
+  console.log('Search:', newVal)
+  debouncedFetchDatasetId(newVal)
+})
+
 // Stats section
 const stats = [
   { label: 'Variants', count: 1958105, icon: 'mdi-chemical-weapon', color: 'teal', link: '/clinmave/browse/variants' },
   { label: 'Datasets', count: 1998, icon: 'mdi-ballot-outline', color: 'purple', link: '/clinmave/browse/datasets' },
-  { label: 'Mutagenesis strategies', count: 5, icon: 'mdi-flask-empty-outline', color: 'orange', link: '/clinmave/browse/mutagenesis_strategies' },
+  { label: 'MAVE techniques', count: 2, icon: 'mdi-flask-empty-outline', color: 'orange', link: '/clinmave/browse/mutagenesis_strategies' },
   { label: 'Genes', count: 799, icon: 'mdi-butterfly-outline', color: 'red', link: '/clinmave/browse/genes' },
   { label: 'Studies', count: 32, icon: 'mdi-book-open-page-variant', color: 'blue', link: '/clinmave/browse/studies' },
 ]
 
 // News timeline
 const nnews = [
-  { time: '2023-10-01', from: 'ClinMAVE', message: 'ClinMAVE is now available for public use.', color: 'green' },
-  { time: '2023-09-15', from: 'ClinMAVE', message: 'ClinMAVE is now available for public use.', color: 'blue' },
-  { time: '2023-08-30', from: 'ClinMAVE', message: 'ClinMAVE is now available for public use.', color: 'red' },
+  { time: '2025-06-28', from: 'ClinMAVE', message: 'ClinMAVE is now available for public use.', color: 'green' },
 ]
 </script>
