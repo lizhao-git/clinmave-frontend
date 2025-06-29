@@ -2,7 +2,6 @@
   <div class="chart-container">
     <!-- 下载按钮组 -->
     <div class="download-menu">
-
       <v-menu offset-y>
         <template #activator="{ props }">
           <v-btn v-bind="props" icon variant="text">
@@ -21,7 +20,7 @@
     </div>
 
     <!-- 图表 -->
-    <svg ref="svgRef" :viewBox="`0 0 ${totalWidth} ${size}`" preserveAspectRatio="xMinYMin meet" />
+    <svg ref="svgRef" :viewBox="`0 0 ${totalWidth} ${totalHeight}`" preserveAspectRatio="xMinYMin meet" />
   </div>
 </template>
 
@@ -41,6 +40,8 @@ const props = defineProps({
 })
 
 const totalWidth = computed(() => props.size + props.legendWidth)
+const totalHeight = computed(() => props.size + 50) // 增加高度以容纳底部图例
+
 const svgRef = ref(null)
 
 // 渲染主图
@@ -48,7 +49,7 @@ const renderChart = () => {
   const svg = d3.select(svgRef.value)
   svg.selectAll('*').remove()
 
-  const margin = { top: 10, right: 10, bottom: 60, left: 60 }
+  const margin = { top: 10, right: 10, bottom: 80, left: 60 } // 增加 bottom margin 以容纳图例
   const width = props.size - margin.left - margin.right
   const height = props.size - margin.top - margin.bottom
   const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`)
@@ -86,28 +87,27 @@ const renderChart = () => {
 
   if (props.score !== null && !isNaN(props.score)) {
     const scoreX = xScale(props.score)
+    // 查找密度曲线上的对应 y 值
+    const scoreDensity = density.find(d => Math.abs(d[0] - props.score) < 0.01)?.[1] || 0
 
-    g.append('line')
-      .attr('x1', scoreX)
-      .attr('x2', scoreX)
-      .attr('y1', 0)
-      .attr('y2', height)
-      .attr('stroke', '#000')
-      .attr('stroke-width', 1)
-      .attr('stroke-dasharray', '4,4')
+    g.append('circle')
+      .attr('cx', scoreX)
+      .attr('cy', yScale(Math.min(scoreDensity, 1)))
+      .attr('r', 4)
+      .attr('fill', '#ff5722')
 
     g.append('text')
       .attr('x', scoreX)
-      .attr('y', 0)
+      .attr('y', yScale(Math.min(scoreDensity, 1)) - 10)
       .attr('text-anchor', 'middle')
       .attr('fill', '#000')
-      .style('font-size', '12px')
+      .style('font-size', '10px')
       .text(`score: ${props.score}`)
   }
 
   g.append('text')
     .attr('x', width / 2)
-    .attr('y', height + margin.bottom - 15)
+    .attr('y', height + margin.bottom - 45)
     .style('text-anchor', 'middle')
     .style('font-size', '12px')
     .text('Functional score')
@@ -136,13 +136,13 @@ const renderChart = () => {
     const minCutoff = Math.min(...cutoffValues)
     const maxCutoff = Math.max(...cutoffValues)
     legendItems = [
-      { label: "LOF", color: "#e41a1c", fill: d3.range(xMin, minCutoff + 0.01, 0.01) },
-      { label: "GOF", color: "#1976d2", fill: d3.range(maxCutoff, xMax + 0.01, 0.01) }
+      { label: "Loss-of-function", color: "#0072B2", fill: d3.range(xMin - 2, minCutoff + 0.01, 0.01) },
+      { label: "Gain-of-function", color: "#D55E00", fill: d3.range(maxCutoff, xMax + 0.01, 0.01) }
     ]
   } else if (props.selectionStrategy === 'positive') {
-    legendItems = [{ label: "GOF", color: "#1976d2", fill: d3.range(+props.cutoff, xMax + 0.01, 0.01) }]
+    legendItems = [{ label: "Gain-of-function", color: "#D55E00", fill: d3.range(+props.cutoff, xMax + 0.01, 0.01) }]
   } else if (props.selectionStrategy === 'negative') {
-    legendItems = [{ label: "LOF", color: "#e41a1c", fill: d3.range(xMin, +props.cutoff + 0.01, 0.01) }]
+    legendItems = [{ label: "Loss-of-function", color: "#0072B2", fill: d3.range(xMin, +props.cutoff + 0.01, 0.01) }]
   }
 
   legendItems.forEach(({ color, fill }) => {
@@ -173,14 +173,15 @@ const renderChart = () => {
     .attr('fill', 'gray')
     .attr('opacity', 0.6)
 
+  // 图例放置在底部
   const legend = g.append('g')
-    .attr('transform', `translate(${width + 10}, 20)`)
+    .attr('transform', `translate(${width / 2 - (legendItems.length * 100) / 2}, ${height + 50})`) // 水平居中
 
   legend.selectAll('.legend-item')
     .data(legendItems)
     .enter()
     .append('g')
-    .attr('transform', (d, i) => `translate(0, ${i * 25})`)
+    .attr('transform', (d, i) => `translate(${i * 100}, 0)`) // 水平排列
     .each(function (d) {
       const item = d3.select(this)
       item.append('rect').attr('width', 18).attr('height', 9)
@@ -253,7 +254,6 @@ svg {
 }
 .download-menu {
   position: absolute;
-  top: 10px;
   right: 10px;
   display: flex;
   gap: 4px;

@@ -57,9 +57,9 @@ const props = defineProps({
   colorMap: {
     type: Object,
     default: () => ({
-      Missense: '#42A5F5',
-      Nonsense: '#EF5350',
-      Synonymous: '#66BB6A',
+      'Gain-of-function': '#EF5350',
+      'Loss-of-function': '#66BB6A',
+      'Functional neutral': '#bcbcbc99',
     }),
   },
 })
@@ -111,9 +111,15 @@ function drawChart() {
 
   const validData = props.scatterData.filter(d => d.af > 0 && !isNaN(d.af) && !isNaN(d.score))
 
+  // Optimize x-axis domain based on data
+  const afValues = validData.map(d => d.af)
+  const minAf = d3.min(afValues) / 1.5 // Add padding to minimum
+  const maxAf = d3.max(afValues) * 1.5 // Add padding to maximum
+  const xDomain = [Math.max(1e-10, minAf), Math.min(1, maxAf)] // Ensure domain is within reasonable bounds
+
   const x = d3
     .scaleLog()
-    .domain([1e-9, 1])
+    .domain(xDomain)
     .range([0, width])
 
   const y = d3

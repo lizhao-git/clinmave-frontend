@@ -6,8 +6,12 @@
     class="px-4 py-2"
   >
     <v-row class="mt-4 d-flex align-center">
+      
       <span style="color: white;font-size: 36px;font-family: 'Arial';padding-right: 15px;margin-left: 30px !important;margin-right: 30px !important;">ClinMAVE</span>
-      <span style="color: white;font-size: 20px;font-family: 'Arial'">MAVE for clinics Database</span>
+      <span style="color: white;font-size: 20px;font-family: 'Arial'">
+        Clinically curated database of Multiplexed Assays of Variant Effect 
+      </span>
+
     </v-row>
 
     <v-row align-center>
@@ -19,13 +23,12 @@
         xl="1"
       >
         <v-sheet
-          color="#174978"
-          style="border-color: #174978;"
+          color="transparent"
         >
           <v-img
-            src="https://ngdc.cncb.ac.cn/macdb/static/img/macdb_logo_1.b67cf0a.png"
+            src="/clinmave/images/brand.png"
             contain
-            height="40"
+            height="60"
           />
         </v-sheet>
       </v-col>
@@ -90,7 +93,7 @@
             </v-list>
           </v-menu>
 
-          <v-tab to="/analyze">
+          <v-tab to="/analysis/dataset">
             <v-icon icon="mdi-toolbox-outline" size="small"></v-icon>
             <span class="ml-1">Analyze</span>
           </v-tab>

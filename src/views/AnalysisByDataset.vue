@@ -171,9 +171,9 @@
               <vxe-column field="datasetId" title="#Visualize" min-width="80" align="center">
                 <template #default="{ row }">
                   <v-btn
-                    primary
+                    color="primary"
                     variant="compact"
-                    icon="mdi-bullseye"
+                    icon="mdi-eye"
                     @click="VisualizeClicker(row.datasetId)"
                   ></v-btn>
                 </template>
@@ -193,8 +193,8 @@
 
           <v-sheet style="min-height: 300px; position: relative;" v-if="showVisualize">
             <v-row>
-              <v-col cols="12" md="4" sm="12">
-                <template v-if="clinVarBinLoading">
+              <v-col cols="12" md="3" sm="12">
+                <template v-if="RocCurveLoading">
                   <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
                     <v-progress-circular
                       indeterminate
@@ -205,20 +205,21 @@
                   </div>
                 </template>
 
-                <template v-else-if="hasClinVarBinData">
-                  <ClinVarBin
-                    :inputData="ClinVarBinArray"
+                <template v-else-if="hasRocCurveData">
+                  <RocCurve
+                    :scores="[2.5, -1.0, 3.2, 1.8, 0.3, -0.5, 2.0, 0.1, 2.8, -1.5]"
+                    :tags="[1, 0, 1, 1, 0, 0, 1, 0, 1, 0]"
                   />
                 </template>
 
                 <template v-else>
                   <div class="text-center" style="margin-top: 100px; color: #999;">
-                    No ClinVar data available.
+                    No RocCurve data available.
                   </div>
                 </template>
               </v-col>
 
-              <v-col cols="12" md="4" sm="12">
+              <v-col cols="12" md="9" sm="12">
                 <template v-if="scatterLoading">
                   <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
                     <v-progress-circular
@@ -230,10 +231,9 @@
                   </div>
                 </template>
 
-                <template v-else-if="hasScatterData">
-                  <Scatter2d
-                    :scatterData="scatterArray"
-                    :size="300"
+                <template v-else-if="hasCompareConsequenceBpxData">
+                  <CompareConsequenceBox
+                    :data="consequencecomparingboxArray"
                   />
                 </template>
 
@@ -244,30 +244,6 @@
                 </template>
               </v-col>
 
-              <v-col cols="12" md="4" sm="12">
-                <template v-if="clinVarBinLoading">
-                  <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
-                    <v-progress-circular
-                      indeterminate
-                      color="primary"
-                      size="48"
-                    ></v-progress-circular>
-                    <div style="margin-top: 8px; color: #666;">Loading Oncoprint data...</div>
-                  </div>
-                </template>
-
-                <template v-else-if="hasConsequenceDensityData">
-                  <ConsequenceDensity
-                    :data="consequenceArray" 
-                  />
-                </template>
-
-                <template v-else>
-                  <div class="text-center" style="margin-top: 100px; color: #999;">
-                    No ClinVar data available.
-                  </div>
-                </template>
-              </v-col>
             </v-row>
             
           </v-sheet>
@@ -290,8 +266,8 @@ import {VXETable} from 'vxe-table'
 import 'vxe-table/lib/style.css'
 
 import Scatter2d from '@/components/Visualization/Scatter2d.vue'
-import ClinVarBin from '@/components/Visualization/ClinVarBin.vue'
-import ConsequenceDensity from '@/components/Visualization/ConsequenceDensity.vue'
+import RocCurve from '@/components/analyze/RocCurve.vue'
+import CompareConsequenceBox from '@/components/analyze/CompareConsequenceBox.vue'
 
 const breadcrumbs = [
   {
@@ -345,9 +321,12 @@ const scatterLoading = ref(false)
 const clinVarBinLoading = ref(false)
 const ClinVarBinArray = ref([])
 
-const consequenceDensityLoading = ref(false)
-const consequenceDensityArray = ref([])
 const consequenceArray = ref([])
+const consequencecomparingboxArray = ref({})
+
+
+const RocCurveMap = ref({})
+const RocCurveLoading = ref(false)
 
 const toolbarRef = ref()
 const tableRef = ref()
@@ -365,31 +344,37 @@ const debouncedFetchGeneName = debounce(fetchGeneNameOptions, 300)
 const debouncedFetchMutagenesisStrategy = debounce(fetchMutagenesisStrategyOptions, 300)
 const debouncedFetchExperimentModel = debounce(fetchExperimentModelOptions, 300)
 const debouncedFetchPhenotype = debounce(fetchPhenotypeOptions, 300)
-const debouncedFetchClinVarBinData = debounce(fetchClinVarBinData, 300)
-const debouncedFetchScatterData = debounce(fetchScatterData, 300)
-const debouncedFetchConsequenceDensityData = debounce(fetchConsequenceDensityData, 300)
+const debouncedFetchCompareConsequenceBox = debounce(fetchCompareConsequenceBox, 300)
+const debouncedFetchRocCurve = debounce(fetchRocCurveData, 300)
 
-const hasClinVarBinData = computed(() => {
-  return Array.isArray(ClinVarBinArray.value) &&
-          ClinVarBinArray.value.length > 0 &&
-          ClinVarBinArray.value[0].clvGroupCounts &&
-          typeof ClinVarBinArray.value[0].clvGroupCounts === 'object' &&
-          Object.keys(ClinVarBinArray.value[0].clvGroupCounts).length > 0;
+const hasRocCurveData = computed(() => {
+  if (!RocCurveMap.value || typeof RocCurveMap.value !== 'object') return false;
+
+  const score = RocCurveMap.value.score;
+  const clvGroup = RocCurveMap.value.clvGroup;
+
+  if (!Array.isArray(score) || !Array.isArray(clvGroup)) return false;
+  if (score.length === 0 || clvGroup.length === 0) return false;
+  if (score.length !== clvGroup.length) return false;
+
+  const allScoresAreNumbers = score.every(item => typeof item === 'number');
+  const allGroupsAreValid = clvGroup.every(item => item === 0 || item === 1);
+
+  return allScoresAreNumbers && allGroupsAreValid;
 });
 
-const hasScatterData = computed(() => {
-  return scatterArray.value &&
-         Array.isArray(scatterArray.value) &&
-         scatterArray.value.length > 0 &&
-         scatterArray.value[0].af !== undefined &&
-         scatterArray.value[0].score !== undefined;
-})
+const hasCompareConsequenceBpxData = computed(() => {
+  if (!consequencecomparingboxArray.value) return false;
+  const d = consequencecomparingboxArray.value; // 你的数据对象，比如响应式对象
+  if (!d || typeof d !== 'object') return false;
 
-const hasConsequenceDensityData = computed(() => {
-  return consequenceArray.value &&
-         Array.isArray(consequenceArray.value) &&
-         consequenceArray.value.length > 0;
-})
+  // 判断cadd下LOF和GOF数组是否存在且非空
+  const lof = d.cadd?.LOF;
+  const gof = d.cadd?.GOF;
+
+  return Array.isArray(lof) && lof.length > 0 &&
+         Array.isArray(gof) && gof.length > 0;
+});
 
 async function fetchGeneNameOptions(query = '') {
   try {
@@ -463,50 +448,35 @@ async function fetchPhenotypeOptions(query = '') {
   }
 }
 
-async function fetchScatterData(query = '') {
+async function fetchRocCurveData(query = '') {
+  RocCurveLoading.value = true;
+  try {
+    const response = await axios.get('/clinmave/api/analyze/clinvarauc', {
+      params: { datasetId: query || '' },
+    });
+    RocCurveMap.value = response.data || {};
+    console.log('[CompareConsequence Array]', RocCurveMap.value);
+  } catch (error) {
+    VxeUI.message.error('Failed to load oncoprint data');
+    RocCurveMap.value = {}
+  } finally {
+    RocCurveLoading.value = false;
+  }
+}
+
+async function fetchCompareConsequenceBox(query = '') {
   scatterLoading.value = true;
   try {
-    const response = await axios.get('/clinmave/api/visualize/bydataset/scatter', {
-      params: { datasetId: !query ? '' : query },
+    const response = await axios.get('/clinmave/api/analyze/consequencecomparingbox', {
+      params: { datasetId: query || '' },
     });
-    scatterArray.value = response.data || [];
-    console.log('[Scatter Array]', scatterArray);
+    consequencecomparingboxArray.value = response.data || {};
+    console.log('[CompareConsequence Array]', consequencecomparingboxArray.value);
   } catch (error) {
     VxeUI.message.error('Failed to load oncoprint data');
-    scatterArray.value = []
+    consequencecomparingboxArray.value = {}
   } finally {
     scatterLoading.value = false;
-  }
-}
-
-async function fetchClinVarBinData(query = '') {
-  clinVarBinLoading.value = true;
-  try {
-    const response = await axios.get('/clinmave/api/visualize/bydataset/clinvarbin', {
-      params: { datasetId: !query ? '' : query },
-    });
-    ClinVarBinArray.value = response.data || [];
-  } catch (error) {
-    VxeUI.message.error('Failed to load oncoprint data');
-    ClinVarBinArray.value = []
-  } finally {
-    clinVarBinLoading.value = false;
-  }
-}
-
-async function fetchConsequenceDensityData(query = '') {
-  consequenceDensityLoading.value = true;
-  try {
-    const response = await axios.get('/clinmave/api/visualize/bydataset/consequencedensity', {
-      params: { datasetId: !query ? '' : query },
-    });
-    consequenceArray.value = response.data || [];
-    console.log('[Scatter Array]', consequenceArray);
-  } catch (error) {
-    VxeUI.message.error('Failed to load oncoprint data');
-    consequenceArray.value = []
-  } finally {
-    consequenceDensityLoading.value = false;
   }
 }
 
@@ -560,29 +530,23 @@ const applyFilters = () => {
 
 const VisualizeClicker = (datasetId) => {
   showVisualize.value = true;
-  debouncedFetchClinVarBinData(datasetId);
-  debouncedFetchScatterData(datasetId);
-  debouncedFetchConsequenceDensityData(datasetId);
+
+  debouncedFetchCompareConsequenceBox(datasetId);
+  debouncedFetchRocCurve(datasetId);
 }
 
 const resetFilters = () => {
   showVisualize.value = false;
-  showResults.value = false; // 隐藏右侧表格和oncoprint
   searchDatasetId.value = null;
-  searchGeneName.value = null;
-  searchMutagenesisStrategy.value = null;
-  searchExperimentModel.value = null;
-  searchPhenotype.value = null;
-  
-  const filters = ref({
-    geneName: null,
-    mutagenesisStrategy: null,
-    experimentModel: null,
-    phenotype: null,
-  })
+
+  filters.value = { 
+    datasetId: null, 
+  };
   
   currentPage.value = 1;
 
+  loadData();
+  showResults.value = false; // 隐藏右侧表格和oncoprint
 }
 
 const handlePageChange = (event) => {

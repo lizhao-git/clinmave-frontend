@@ -97,16 +97,16 @@
 
                   <v-col cols="12">
                     <v-autocomplete
-                      v-model="filters.mutagenesisStrategy"
-                      v-model:search="searchMutagenesisStrategy"
-                      :items="mutagenesisStrategyOptions"
+                      v-model="filters.maveTechnique"
+                      v-model:search="searchMaveTechnique"
+                      :items="maveTechniqueOptions"
                       item-title="text"
                       item-value="value"
-                      label="Mutagenesis strategy"
+                      label="Mave technique"
                       variant="outlined"
                       density="compact"
                       clearable
-                      :loading="loadingMutagenesisStrategy"
+                      :loading="loadingMaveTechnique"
                     >
                     </v-autocomplete>
                   </v-col>
@@ -190,7 +190,6 @@
                       style="text-decoration: none;"
                     >
                       {{ row.datasetId }}
-                      <v-icon small color="blue">mdi-share</v-icon>
                     </a>
                     <span v-else>-</span>
                   </template>
@@ -218,7 +217,6 @@
                         style="text-decoration: none;font-style: italic"
                       >
                         {{ row.geneName }}
-                        <v-icon small color="blue">mdi-share</v-icon>
                       </a>
                       <span v-else>-</span>
                     </template>
@@ -229,6 +227,8 @@
 
                 <vxe-column field="mutagenesisStrategy" title="Mutagenesis strategy" min-width="200" align="center"></vxe-column>
                 
+                <vxe-column field="maveTechnique" title="Mave technique" min-width="250" align="center"></vxe-column>
+
                 <vxe-column field="functionAssay" title="Function assay" min-width="160" align="center"></vxe-column>
 
                 <vxe-column field="experimentModel" title="Experiment model" min-width="150" align="center"></vxe-column>
@@ -301,21 +301,21 @@ const filters = ref({
 const datasetIdOptions = ref([])
 const geneNameOptions = ref([])
 const ensemblIdOptions = ref([])
-const mutagenesisStrategyOptions = ref([])
+const maveTechniqueOptions = ref([])
 const functionAssayOptions = ref([])
 
 // Reactive state for search inputs
 const searchDatasetId = ref(null)
 const searchGeneName = ref(null)
 const searchEnsemblId = ref(null)
-const searchMutagenesisStrategy = ref(null)
+const searchMaveTechnique = ref(null)
 const searchFunctionAssay = ref(null)
 
 // Loading states for autocomplete fields
 const loadingDatasetId = ref(false)
 const loadingGeneName = ref(false)
 const loadingEnsemblId = ref(false)
-const loadingMutagenesisStrategy = ref(false)
+const loadingMaveTechnique = ref(false)
 const loadingFunctionAssay = ref(false)
 
 // Reactive state for filter panel visibility
@@ -335,11 +335,11 @@ const sortParams = ref({
 })
 
 // Computed properties for table columns
-const debouncedDatasetId = debounce(fetchDatasetIdOptions, 300)
+const debouncedFetchDatasetId = debounce(fetchDatasetIdOptions, 300)
 const debouncedFetchGeneName = debounce(fetchGeneNameOptions, 300)
 const debouncedFetchEnsemblId = debounce(fetchEnsemblIdOptions, 300)
 const debouncedFetchFunctionAssay = debounce(fetchFunctionAssayOptions, 300)
-const debouncedFetchMutagenesisStrategy = debounce(fetchMutagenesisStrategyOptions, 300)
+const debouncedFetchMaveTechnique = debounce(fetchMaveTechniqueOptions, 300)
 
 async function fetchDatasetIdOptions(query = '') {
   try {
@@ -413,21 +413,21 @@ async function fetchFunctionAssayOptions(query = '') {
   }
 }
 
-async function fetchMutagenesisStrategyOptions(query = '') {
+async function fetchMaveTechniqueOptions(query = '') {
   try {
-    loadingMutagenesisStrategy.value = true;
+    loadingMaveTechnique.value = true;
     const response = await axios.get('/clinmave/api/select/dataset', {
-      params: { mutagenesisStrategy: !query ? '' : query },
+      params: { maveTechnique: !query ? '' : query },
     });
-    mutagenesisStrategyOptions.value = response.data.map(item => ({
-      text: `${item.mutagenesisStrategy} (#Datasets: ${item.count})`,
-      value: item.mutagenesisStrategy
+    maveTechniqueOptions.value = response.data.map(item => ({
+      text: `${item.maveTechnique} (#Datasets: ${item.count})`,
+      value: item.maveTechnique
     }));
   } catch (error) {
     VxeUI.message.error('Failed to load dbSNP IDs');
-    mutagenesisStrategyOptions.value = [];
+    maveTechniqueOptions.value = [];
   } finally {
-    loadingMutagenesisStrategy.value = false;
+    loadingMaveTechnique.value = false;
   }
 }
 
@@ -496,14 +496,14 @@ const resetFilters = () => {
   searchDatasetId.value = null;
   searchGeneName.value = null;
   searchEnsemblId.value = null;
-  searchMutagenesisStrategy.value = null;
+  searchMaveTechnique.value = null;
   searchFunctionAssay.value = null;
 
   filters.value = { 
     datasetId: null,
     geneName: null, 
     ensemblId: null,
-    mutagenesisStrategy: null,
+    maveTechnique: null,
     functionAssay: null
   };
   
@@ -571,11 +571,11 @@ watch([currentPage, pageSize], () => {
 
 // Initialize
 onMounted(() => {
-  debouncedDatasetId();
+  debouncedFetchDatasetId();
   debouncedFetchGeneName();
   debouncedFetchEnsemblId();
   debouncedFetchFunctionAssay();
-  debouncedFetchMutagenesisStrategy();
+  debouncedFetchMaveTechnique();
   loadData();
   const $table = tableRef.value
   const $toolbar = toolbarRef.value
