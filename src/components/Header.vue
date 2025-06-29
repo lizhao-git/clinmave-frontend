@@ -22,9 +22,9 @@
           color="transparent"
         >
           <v-img
-            src="../src/assets/brand.png"
+            src="/clinmave/images/brand.png"
             contain
-            height="80"
+            height="60"
           />
         </v-sheet>
       </v-col>
@@ -89,7 +89,7 @@
             </v-list>
           </v-menu>
 
-          <v-tab to="/analyze">
+          <v-tab to="/analysis/dataset">
             <v-icon icon="mdi-toolbox-outline" size="small"></v-icon>
             <span class="ml-1">Analyze</span>
           </v-tab>
