@@ -15,7 +15,7 @@
               <h2 class="text-h5 font-weight-bold text-center">Welcome to ClinMAVE</h2>
             </template>
             <v-card-text class="text-center">
-              ClinMAVE is a comprehensive knowledgebase based totally on manual curation of cancer metabolic literature, providing high quality metabolite associations, online visualizing networks, and other effective tools for cancer or metabonomics researches.
+              a curated database of Multiplexed Assays of Variant Effect (MAVE) studies, providing variant-level functional annotations to support genetic variant interpretation, diagnostic decision-making, and exploration of genotype-phenotype relationships in diseases.
             </v-card-text>
             <v-divider class="mx-4 mb-1" />
             <v-card-text>
