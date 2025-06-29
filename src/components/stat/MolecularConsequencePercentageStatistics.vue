@@ -24,8 +24,8 @@
   ];
   
   const molecularConsequenceData = {
-    title: '分子后果类型分布',
-    seriesName: '变异数量',
+    title: '',
+    seriesName: '#Variants',
     seriesData: [
       { value: 1378955, name: 'Missense' },
       { value: 268383, name: 'Synonymous' },

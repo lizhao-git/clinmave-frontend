@@ -31,42 +31,50 @@
 
             <v-card-text>
               <v-row>
-                <v-col cols="12" md="4" sm="12">
-                  <MutagenesisProportion />
-                </v-col>
-                <v-col cols="12" md="4" sm="12">
+                
+                <v-col cols="12" md="6" sm="12">
                   <AcmgGeneDatasets />
                 </v-col>
-                <v-col cols="12" md="4" sm="12">
+                <v-col cols="12" md="6" sm="12">
                   <AcmgRecommendedGeneVariants />
                 </v-col>
+
               </v-row>
               <v-row>
-                <v-col col="12" md="4" sm="12">
+                <v-col col="12" md="6" sm="12">
                   <NoneAcmgAndVusMorethen1000Datasets />
                 </v-col>
-                <v-col col="12" md="4" sm="12">
+
+                <v-col col="12" md="6" sm="12">
                   <NoneAcmgAndVusMorethen1000Variants />
                 </v-col>
+                
+              </v-row>
+
+              <v-row class="mt-8">
+
                 <v-col col="12" md="4" sm="12">
                   <MolecularConsequencePercentageStatistics />
                 </v-col>
-              </v-row>
-              <v-row>
+                
                 <v-col col="12" md="4" sm="12">
                   <MaveTechniquePS />
                 </v-col>
                 <v-col col="12" md="4" sm="12">
                   <MutagenesisStrategyPS />
                 </v-col>
-                <v-col col="12" md="4" sm="12">
-                  <FunctionalAssayPS />
-                </v-col>
+                
               </v-row>
-              <v-row>
+              
+              <v-row class="mt-8">
                 <v-col col="12" md="4" sm="12">
                   <ExperimentModelDS />
                 </v-col>
+
+                <v-col col="12" md="4" sm="12">
+                  <FunctionalAssayPS />
+                </v-col>
+
               </v-row>
             </v-card-text>
           </v-card>

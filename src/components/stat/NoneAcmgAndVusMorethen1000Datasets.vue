@@ -20,8 +20,8 @@
       1, 1
     ],
     xAxisName: 'Non-ACMG genes with OMIM relevance and VUS >1000 gene',
-    yAxisName: 'Dataset numbers',
-    seriesName: '数据集数量',
+    yAxisName: '#Datasets',
+    seriesName: '#Datasets',
     barColor: '#368EE0',
     colors: [
         '#D6893D', // BRCA1

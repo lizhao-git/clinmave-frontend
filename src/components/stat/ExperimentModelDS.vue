@@ -20,8 +20,8 @@
       4, 4, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1
     ],
     xAxisName: 'experiment model type',
-    yAxisName: 'dataset number',
-    seriesName: '数据集数量',
+    yAxisName: '#Datasets',
+    seriesName: '#Datasets',
     barColor: '#368EE0',
     colors: [
         '#D6893D', // BRCA1

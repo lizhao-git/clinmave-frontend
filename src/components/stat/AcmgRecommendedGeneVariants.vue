@@ -20,8 +20,8 @@
       1432, 1260, 258
     ],
     xAxisName: 'ACMG guideline-recommended genes',
-    yAxisName: 'Variants numbers',
-    seriesName: '数据集数量',
+    yAxisName: '#Variants',
+    seriesName: '#Variants',
     barColor: '#368EE0',
     colors: [
         '#D6893D', // BRCA1
