@@ -9,7 +9,7 @@ import studies from '@/views/Studies.vue'
 import gene from '@/views/Gene.vue'
 import VisualizeByGene from '@/views/VisualizeByGene.vue' 
 import VisualizeByDataset from '@/views/VisualizeByDataset.vue'
-import ENCODESearch from '@/views/ENCODESearch.vue'
+// import ENCODESearch from '@/views/ENCODESearch.vue'
 import Statistics from '@/views/Statistics.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -69,11 +69,11 @@ const router = createRouter({
       name: 'VisualizeByDataset',
       component: () => import('@/views/VisualizeByDataset.vue'),
     },
-    {
-      path: '/encode',
-      name: 'ENCODESearch',
-      component: ENCODESearch,
-    },
+    // {
+    //   path: '/encode',
+    //   name: 'ENCODESearch',
+    //   component: ENCODESearch,
+    // },
     {
       path: '/statistics',
       name: 'Statistics',

@@ -15,10 +15,12 @@
             :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }"
           >
             <table style="font-family: Arial; font-size: 12px; border-collapse: collapse;">
-              <tr><td><strong>ID:</strong></td><td>{{ tooltip.data.identifier }}</td></tr>
-              <tr><td><strong>Class:</strong></td><td>{{ tooltip.data.class }}</td></tr>
-              <tr><td><strong>Score:</strong></td><td>{{ tooltip.data.score }}</td></tr>
-              <tr><td><strong>gnomAD AF:</strong></td><td>{{ formatAf(tooltip.data.af) }}</td></tr>
+              <tbody>
+                <tr><td><strong>ID:</strong></td><td>{{ tooltip.data.identifier }}</td></tr>
+                <tr><td><strong>Class:</strong></td><td>{{ tooltip.data.class }}</td></tr>
+                <tr><td><strong>Score:</strong></td><td>{{ tooltip.data.score }}</td></tr>
+                <tr><td><strong>gnomAD AF:</strong></td><td>{{ formatAf(tooltip.data.af) }}</td></tr>
+              </tbody>
             </table>
           </v-card>
         </div>
