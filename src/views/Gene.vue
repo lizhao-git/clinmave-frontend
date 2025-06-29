@@ -410,6 +410,19 @@
     }
   );
 
+  const handlePageChange = (event) => {
+    console.log('[Page Change]', event) // Debug event data
+    currentPage.value = event.currentPage
+    pageSize.value = event.pageSize
+    loadData()
+  }
+
+  // Watch pagination parameters
+  watch([currentPage, pageSize], () => {
+    console.log('[Watch] Page or size changed:', currentPage.value, pageSize.value)
+    loadData()
+  })
+
   // Fetch data when component is mounted
   onMounted(() => {
     fetchVariantData();

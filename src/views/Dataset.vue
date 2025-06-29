@@ -111,18 +111,6 @@
                   </template>
                 </vxe-column>
 
-                <vxe-column field="dbsnpId" title="dbSNP ID" min-width="140" sortable>
-                   <template #default="{ row }">
-                    <div v-if="row">
-                      <span v-if="!row.dbsnpId || row.dbsnpId === 'NA'">-</span>
-                      <a v-else :href="row.dbsnpLink" target="_blank" style="text-decoration: none;">
-                        {{ row.dbsnpId }}
-                        <v-icon small color="blue">mdi-share</v-icon>
-                      </a>
-                    </div>
-                  </template>
-                </vxe-column>
-
                 <vxe-column field="geneName" title="Gene name" min-width="100" align="center">
                   <template #default="{ row }">
                       <a 

@@ -15,7 +15,7 @@
               <h2 class="text-h5 font-weight-bold text-center">Welcome to ClinMAVE</h2>
             </template>
             <v-card-text class="text-center">
-              a curated database of Multiplexed Assays of Variant Effect (MAVE) studies, providing variant-level functional annotations to support genetic variant interpretation, diagnostic decision-making, and exploration of genotype-phenotype relationships in diseases.
+              A curated database of Multiplexed Assays of Variant Effect (MAVE) studies, providing variant-level functional annotations to support genetic variant interpretation, diagnostic decision-making, and exploration of genotype-phenotype relationships in diseases.
             </v-card-text>
             <v-divider class="mx-4 mb-1" />
             <v-card-text>
@@ -29,7 +29,7 @@
                 class="mx-auto"
                 density="comfortable"
                 menu-icon=""
-                placeholder="Search by Gene or Dataset"
+                placeholder="Search by Variant, Gene or Dataset"
                 prepend-inner-icon="mdi-magnify"
                 theme="light"
                 variant="solo"
@@ -70,7 +70,7 @@
 
               <span class="mx-4">
                 e.g. 
-                <a href="/clinmave/browse/variant/NM_005157.6(ABL1):c.2753C>T (p.Pro918Leu)" class="text-decoration-none">NM_005157.6(ABL1):c.2753C>T (p.Pro918Leu)</a>,
+                <a href="/clinmave/browse/variant/NM_007294.4(BRCA1):c.5408G>A (p.Gly1803Asp)" class="text-decoration-none">NM_007294.4(BRCA1):c.5408G>A (p.Gly1803Asp)</a>,
                 <a href="/clinmave/browse/dataset/dataset0153" class="text-decoration-none">dataset0153</a>,
                 <a href="/clinmave/browse/gene/BRCA1" class="text-decoration-none">BRCA1</a>,
               </span>
@@ -181,7 +181,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { debounce } from 'lodash'
 import axios from 'axios'
@@ -200,6 +200,7 @@ const filters = ref({
 const searchDatasetId = ref(null)
 const datasetIdOptions = ref([])
 const loadingDatasetId = ref(false)
+
 // Chip color by category
 const categoryColorMap = {
   'Gene Name': 'green',
@@ -208,6 +209,8 @@ const categoryColorMap = {
   'Study': 'orange',
   'Ensembl ID': 'indigo', 
 }
+
+const HomeStatMap = ref({})
 
 // On item select, navigate to appropriate route
 function onSelectItem(item) {
@@ -228,6 +231,8 @@ function onSelectItem(item) {
 
 // Fetch suggestions
 const debouncedFetchDatasetId = debounce(fetchDatasetIdOptions, 300)
+const debouncedFetchHomeStat = debounce(fetchHomeStat, 300)
+
 async function fetchDatasetIdOptions(query = '') {
   try {
     loadingDatasetId.value = true;
@@ -246,9 +251,19 @@ async function fetchDatasetIdOptions(query = '') {
   }
 }
 
+async function fetchHomeStat(query = '') {
+  try {
+    const response = await axios.get('/clinmave/api/stat/homestat');
+    HomeStatMap.value = response.data || {};
+    console.log(HomeStatMap.value.geneCount)
+  } catch (error) {
+    HomeStatMap.value = {}
+  }
+}
 // On mount
 onMounted(() => {
   debouncedFetchDatasetId()
+  debouncedFetchHomeStat()
 })
 
 watch(searchDatasetId, (newVal) => {
@@ -257,13 +272,13 @@ watch(searchDatasetId, (newVal) => {
 })
 
 // Stats section
-const stats = [
-  { label: 'Variants', count: 1958105, icon: 'mdi-chemical-weapon', color: 'teal', link: '/clinmave/browse/variants' },
-  { label: 'Datasets', count: 1998, icon: 'mdi-ballot-outline', color: 'purple', link: '/clinmave/browse/datasets' },
-  { label: 'Genes', count: 799, icon: 'mdi-butterfly-outline', color: 'red', link: '/clinmave/browse/genes' },
-  { label: 'Studies', count: 32, icon: 'mdi-book-open-page-variant', color: 'blue', link: '/clinmave/browse/studies' },
+const stats = computed(()=> [
+  { label: 'Variants', count: HomeStatMap.value.variantCount || 0, icon: 'mdi-chemical-weapon', color: 'teal', link: '/clinmave/browse/variants' },
+  { label: 'Datasets', count: HomeStatMap.value.datasetCount || 0, icon: 'mdi-ballot-outline', color: 'purple', link: '/clinmave/browse/datasets' },
+  { label: 'Genes', count: HomeStatMap.value.geneCount || 0, icon: 'mdi-butterfly-outline', color: 'red', link: '/clinmave/browse/genes' },
+  { label: 'Studies', count: HomeStatMap.value.studyCount || 0, icon: 'mdi-book-open-page-variant', color: 'blue', link: '/clinmave/browse/studies' },
   { label: 'MAVE techniques', count: 2, icon: 'mdi-flask-empty-outline', color: 'orange', link: '/clinmave/browse/mutagenesis_strategies' },
-]
+])
 
 // News timeline
 const nnews = [
