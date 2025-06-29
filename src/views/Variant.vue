@@ -15,8 +15,10 @@
       </v-col>
     </v-row>
 
-    <v-row class="mt-2" align="stretch">
-      <v-col cols="12" md="6" v-if="!isVariantDetailEmpty">
+    <v-row class="mt-2">
+      <v-col cols="12" md="6">
+        <v-row>
+          <v-col cols="12" v-if="!isVariantDetailEmpty">
         <v-card flat height="100%">
           <v-card-title class="py-3">
             <v-icon icon="mdi-alert-circle-outline" class="mr-2" color="teal"></v-icon>
@@ -65,13 +67,170 @@
             </v-table>
           </v-card-text>
         </v-card>
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col cols="12" v-if="!isInSilicoEmpty">
+        <v-card flat height="100%">
+          <v-card-title>
+            <v-icon icon="mdi-dna" class="mr-2" color="primary"></v-icon>
+            <span class="text-h6 font-weight-bold">In-silico prediction</span>
+          </v-card-title>
+          <v-card-text>
+           <vxe-table 
+                border="inner"
+                show-header
+                auto-resize
+                size="medium"
+                class="no-border"
+                :data="inSilicoData"
+              >
+                <vxe-column field="software" title="Software" width="200">
+                  <template #default="{ row }">
+                    <span class="text-subtitle-1 font-weight-medium">{{ row.software }}</span>
+                  </template>
+                </vxe-column>
+                
+                <vxe-column field="score" title="Predicted score" width="150">
+                  <template #default="{ row }">
+                    <span class="text-body-1">
+                      {{ formatScore(row.score) }}
+                    </span>
+                  </template>
+                </vxe-column>
+                
+                <vxe-column field="classification" title="Calibrated classification" min-width="200">
+                  <template #default="{ row }">
+                    <span class="text-body-1">
+                      {{ row.classification === 'NA' || !row.classification ? '——' : row.classification }}
+                    </span>
+                  </template>
+                </vxe-column>
+              </vxe-table>
+          </v-card-text>
+        </v-card>
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col cols="12" v-if="!isTcgaSummaryEmpty">
+        <v-card flat height="100%">
+          <v-card-title class="py-3">
+            <v-icon icon="mdi-atom-variant" class="mr-2" color="primary"></v-icon>
+            <span class="text-h6 font-weight-bold">Oncogenic association</span>
+          </v-card-title>
+          <v-card-text>
+            <vxe-table border="inner" show-header auto-resize size="medium" class="no-border"
+              :data="variantData.tcgaSummary">
+              <vxe-column field="cancerType" title="Cancer type" width="200" />
+              <vxe-column field="freq" title="Frequency" width="150" />
+              <vxe-column field="af" title="AF" min-width="200" />
+            </vxe-table>
+          </v-card-text>
+        </v-card>
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col cols="12" v-if="!isClinvarEmpty">
+        <v-card flat height="100%">
+          <v-card-title class="py-3">
+            <v-icon icon="mdi-cactus" class="mr-2" color="teal"></v-icon>
+            <span class="text-h6 font-weight-bold">Germline pathogenicity</span>
+          </v-card-title>
+          <v-card-text>
+            <v-table density="comfortable" class="no-border">
+              <tbody>
+                <tr>
+                  <td class="text-subtitle-1 font-weight-bold">
+                    <a :href="variantData.clvId" target="_blank">ClinVar:</a>
+                  </td>
+                  <td class="text-body-1">
+                    <v-rating v-if="variantData.clvStar && variantData.clvStar !== 'null'" readonly :length="4"
+                      :size="32" :model-value="getStarValue(variantData.clvStar)" active-color="primary" />
+                    <span v-else class="text-grey">——</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-subtitle-1 font-weight-bold">Clinical significance:</td>
+                  <td class="text-body-1">
+                    <v-chip v-if="variantData.clvClinicalsignificance"
+                      :text="variantData.clvClinicalsignificance || '--'">
+                      {{ variantData.clvClinicalsignificance }}
+                    </v-chip>
+                    <span v-else class="text-grey">——</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-subtitle-1 font-weight-bold">Review status:</td>
+                  <td class="text-body-1">
+                    <v-chip v-if="variantData.clvReviewstatus"
+                      :text="variantData.clvReviewstatus || '--'">
+                      {{ variantData.clvReviewstatus }}
+                    </v-chip>
+                    <span v-else class="text-grey">——</span>
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
+          </v-card-text>
+        </v-card>
+          </v-col>
+        </v-row>
+
+        <v-row>
+           <v-col cols="12" v-if="!isGadSummaryEmpty">
+        <v-card flat height="100%">
+          <v-card-title class="py-3">
+            <v-icon icon="mdi-account-group" class="mr-2" color="blue"></v-icon>
+            <span class="text-h6 font-weight-bold">Population frequency</span>
+          </v-card-title>
+          <v-card-text>
+            <vxe-table 
+                  border="inner"
+                  show-header
+                  auto-resize
+                  size="medium"
+                  class="no-border"
+                  :data="variantData.gadSummary"
+                >
+                  <!-- <vxe-column field="gadClassification" title="gnomAD classification" width="200">
+                    <template #default="{ row }">
+                      <span class="text-subtitle-1 font-weight-medium">
+                        {{ row.gadClassification === 'NA' || !row.gadClassification ? '——' : row.gadClassification }}
+                      </span>
+                    </template>
+                  </vxe-column> -->
+                  
+                  <vxe-column field="gadFrequency" title="gnomAD frequency" width="200">
+                    <template #default="{ row }">
+                      <span class="text-body-1">
+                        {{ row.gadFrequency === 'NA' || !row.gadFrequency ? '——' : row.gadFrequency }}
+                      </span>
+                    </template>
+                  </vxe-column>
+                  
+                  <vxe-column field="gadDescription" title="gnomAD description" min-width="200">
+                    <template #default="{ row }">
+                      <span class="text-body-1">
+                        {{ row.gadDescription === 'NA' || !row.gadDescription ? '——' : row.gadDescription }}
+                      </span>
+                    </template>
+                  </vxe-column>
+              </vxe-table>
+          </v-card-text>
+        </v-card>
+            </v-col>
+        </v-row>
       </v-col>
+
       
       <v-col cols="12" md="6" v-if="!isFunctionCurationEmpty">
         <v-card flat height="100%">
           <v-card-title>
             <v-icon icon="mdi-dna" class="mr-2" color="teal"></v-icon>
-            <span class="text-h6 font-weight-bold">MAVE score</span>
+            <span class="text-h6 font-weight-bold">MAVE characterization</span>
           </v-card-title>
           <v-card-text>
             <v-row>
@@ -150,172 +309,35 @@
                 </vxe-table>
               </v-col>
             </v-row>
+
             <v-row>
               <v-col cols="12" sm="6">
                 <DensityPlot :size="200" :data="scoreData"
                   :selection-strategy="VariantDensityData.selectionStrategy"
                   :cutoff="VariantDensityData.cutoff" 
-                  :score="variantData.score"
+                  :score="VariantDensityData.pointScore"
                 />
               </v-col>
+
+              <v-col cols="12" sm="6">
+                <v-alert border="start" border-color="deep-purple accent-4" variant="outlined" class="mt-4 mb-3"><span>Score: {{ VariantDensityData.pointScore }}</span></v-alert>
+                <v-alert border="start" border-color="deep-purple accent-4" variant="outlined"class="mb-3"><span>Consequence: {{ VariantDensityData.consequenceClass }}</span></v-alert>
+                <v-alert border="start" border-color="deep-purple accent-4" variant="outlined"><span>Description: {{ VariantDensityData.functionalDescription }}</span></v-alert>
+              </v-col>
+            </v-row>
+            <v-divider />
+            <v-row>
               <v-col cols="12" sm="6">
                 <EffectBar :strength="selectedStrength" :bar-height="12"
-                  :labels="['No effects', 'Weak', 'Moderate', 'Strong']"
-                  :colors="{ blue: '#1E88E5', purple: '#7B1FA2', text: '#212121', cardBorder: '#B0BEC5', cardBg: '#F5F5F5', strongText: '#D32F2F' }" />
-                <span>Score: {{ variantData.score }}</span><br>
-                <span>Consequence: {{ variantData.consequenceClass }}</span><br>
-                <span>Description: {{ variantData.functionalDescription }}</span>
+                    :labels="['No effects', 'Weak', 'Moderate', 'Strong']"
+                    :colors="{ blue: '#1E88E5', purple: '#7B1FA2', text: '#212121', cardBorder: '#B0BEC5', cardBg: '#F5F5F5', strongText: '#D32F2F' }" />
               </v-col>
+              
             </v-row>
           </v-card-text>
         </v-card>
       </v-col>
 
-      <v-col cols="12" md="6" v-if="!isInSilicoEmpty">
-        <v-card flat height="100%">
-          <v-card-title>
-            <v-icon icon="mdi-dna" class="mr-2" color="primary"></v-icon>
-            <span class="text-h6 font-weight-bold">In-silico prediction</span>
-          </v-card-title>
-          <v-card-text>
-           <vxe-table 
-                border="inner"
-                show-header
-                auto-resize
-                size="medium"
-                class="no-border"
-                :data="inSilicoData"
-              >
-                <vxe-column field="software" title="Software" width="200">
-                  <template #default="{ row }">
-                    <span class="text-subtitle-1 font-weight-medium">{{ row.software }}</span>
-                  </template>
-                </vxe-column>
-                
-                <vxe-column field="score" title="Predicted score" width="150">
-                  <template #default="{ row }">
-                    <span class="text-body-1">
-                      {{ formatScore(row.score) }}
-                    </span>
-                  </template>
-                </vxe-column>
-                
-                <vxe-column field="classification" title="Calibrated classification" min-width="200">
-                  <template #default="{ row }">
-                    <span class="text-body-1">
-                      {{ row.classification === 'NA' || !row.classification ? '——' : row.classification }}
-                    </span>
-                  </template>
-                </vxe-column>
-              </vxe-table>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
-      <v-col cols="12" md="6" v-if="!isTcgaSummaryEmpty">
-        <v-card flat height="100%">
-          <v-card-title class="py-3">
-            <v-icon icon="mdi-atom-variant" class="mr-2" color="primary"></v-icon>
-            <span class="text-h6 font-weight-bold">Oncogenic association</span>
-          </v-card-title>
-          <v-card-text>
-            <vxe-table border="inner" show-header auto-resize size="medium" class="no-border"
-              :data="variantData.tcgaSummary">
-              <vxe-column field="cancerType" title="Cancer type" width="200" />
-              <vxe-column field="freq" title="Frequency" width="150" />
-              <vxe-column field="af" title="AF" min-width="200" />
-            </vxe-table>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
-      <v-col cols="12" md="6" v-if="!isClinvarEmpty">
-        <v-card flat height="100%">
-          <v-card-title class="py-3">
-            <v-icon icon="mdi-cactus" class="mr-2" color="teal"></v-icon>
-            <span class="text-h6 font-weight-bold">Germline pathogenicity</span>
-          </v-card-title>
-          <v-card-text>
-            <v-table density="comfortable" class="no-border">
-              <tbody>
-                <tr>
-                  <td class="text-subtitle-1 font-weight-bold">
-                    <a :href="variantData.clvId" target="_blank">ClinVar:</a>
-                  </td>
-                  <td class="text-body-1">
-                    <v-rating v-if="variantData.clvStar && variantData.clvStar !== 'null'" readonly :length="4"
-                      :size="32" :model-value="getStarValue(variantData.clvStar)" active-color="primary" />
-                    <span v-else class="text-grey">——</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="text-subtitle-1 font-weight-bold">Clinical significance:</td>
-                  <td class="text-body-1">
-                    <v-chip v-if="variantData.clvClinicalsignificance"
-                      :text="variantData.clvClinicalsignificance || '--'">
-                      {{ variantData.clvClinicalsignificance }}
-                    </v-chip>
-                    <span v-else class="text-grey">——</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="text-subtitle-1 font-weight-bold">Review status:</td>
-                  <td class="text-body-1">
-                    <v-chip v-if="variantData.clvReviewstatus"
-                      :text="variantData.clvReviewstatus || '--'">
-                      {{ variantData.clvReviewstatus }}
-                    </v-chip>
-                    <span v-else class="text-grey">——</span>
-                  </td>
-                </tr>
-              </tbody>
-            </v-table>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
-      <v-col cols="12" md="6" v-if="!isGadSummaryEmpty">
-        <v-card flat height="100%">
-          <v-card-title class="py-3">
-            <v-icon icon="mdi-account-group" class="mr-2" color="blue"></v-icon>
-            <span class="text-h6 font-weight-bold">Population frequency</span>
-          </v-card-title>
-          <v-card-text>
-            <vxe-table 
-                  border="inner"
-                  show-header
-                  auto-resize
-                  size="medium"
-                  class="no-border"
-                  :data="variantData.gadSummary"
-                >
-                  <vxe-column field="gadClassification" title="gnomAD classification" width="200">
-                    <template #default="{ row }">
-                      <span class="text-subtitle-1 font-weight-medium">
-                        {{ row.gadClassification === 'NA' || !row.gadClassification ? '——' : row.gadClassification }}
-                      </span>
-                    </template>
-                  </vxe-column>
-                  
-                  <vxe-column field="gadFrequency" title="gnomAD frequency" width="200">
-                    <template #default="{ row }">
-                      <span class="text-body-1">
-                        {{ row.gadFrequency === 'NA' || !row.gadFrequency ? '——' : row.gadFrequency }}
-                      </span>
-                    </template>
-                  </vxe-column>
-                  
-                  <vxe-column field="gadDescription" title="gnomAD description" min-width="200">
-                    <template #default="{ row }">
-                      <span class="text-body-1">
-                        {{ row.gadDescription === 'NA' || !row.gadDescription ? '——' : row.gadDescription }}
-                      </span>
-                    </template>
-                  </vxe-column>
-              </vxe-table>
-          </v-card-text>
-        </v-card>
-      </v-col>
     </v-row>
   </v-container>
 </v-main>
@@ -598,15 +620,7 @@
       const response = await axios.get(`/clinmave/api/summary/variant?identifier=${encodeURIComponent(identifier)}`);
       variantData.value = response.data; // Directly assign API response
       console.log('Variant Data:', variantData.value);
-      // Update selectedStrength based on consequenceClass
-      if (variantData.value.consequenceClass?.includes('neutral')) {
-        selectedStrength.value = 'No effects';
-      } else if (variantData.value.consequenceClass?.includes('pathogenic')) {
-        selectedStrength.value = 'Moderate';
-      } else {
-        selectedStrength.value = 'Weak';
-      }
-
+      
       // Update the last breadcrumb item with the identifier
       breadcrumbs.value[3].title = variantData.value.identifier;
 
@@ -626,6 +640,16 @@
       
       const response = await axios.get(`/clinmave/api/visualize/density?datasetId=${datasetId}`);
       VariantDensityData.value = response.data; // Directly assign API response
+
+      // Update selectedStrength based on consequenceClass
+      if (VariantDensityData.value.consequenceClass?.includes('neutral')) {
+        selectedStrength.value = 'No effects';
+      } else if (VariantDensityData.value.consequenceClass?.includes('pathogenic')) {
+        selectedStrength.value = 'Moderate';
+      } else {
+        selectedStrength.value = 'Weak';
+      }
+
     } catch (error) {
       console.error('Error fetching variant density data:', error);
     }

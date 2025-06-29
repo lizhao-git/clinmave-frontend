@@ -40,7 +40,7 @@ const props = defineProps({
 })
 
 const totalWidth = computed(() => props.size + props.legendWidth)
-const totalHeight = computed(() => props.size + 50) // 增加高度以容纳底部图例
+const totalHeight = computed(() => props.size) // 增加高度以容纳底部图例
 
 const svgRef = ref(null)
 

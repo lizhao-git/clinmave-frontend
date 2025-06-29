@@ -46,20 +46,7 @@
 
               <v-sheet>
                 <v-row dense>
-                  <v-col cols="12">
-                    <v-autocomplete
-                      v-model="filters.dbsnpId"
-                      v-model:search="searchDbsnpId"
-                      :items="dbsnpIdOptions"
-                      label="dbSNP ID"
-                      variant="outlined"
-                      density="compact"
-                      clearable
-                      :loading="loadingDbsnpId"
-                    >
-                    </v-autocomplete>
-                  </v-col>
-                  
+
                   <v-col cols="12">
                     <v-autocomplete
                       v-model="filters.geneName"
@@ -213,18 +200,6 @@
                 <vxe-column field="refalt" title="Ref/Alt" min-width="100">
                   <template #default="{ row }">
                     {{ row.ref && row.alt ? `${row.ref}:${row.alt}` : 'N/A' }}
-                  </template>
-                </vxe-column>
-
-                <vxe-column field="dbsnpId" title="dbSNP ID" min-width="140" sortable>
-                   <template #default="{ row }">
-                    <div v-if="row">
-                      <span v-if="!row.dbsnpId || row.dbsnpId === 'NA'">-</span>
-                      <a v-else :href="row.dbsnpLink" target="_blank" style="text-decoration: none;">
-                        {{ row.dbsnpId }}
-                        <v-icon small color="blue">mdi-share</v-icon>
-                      </a>
-                    </div>
                   </template>
                 </vxe-column>
 

@@ -148,17 +148,6 @@
                   <span v-else>-</span>
                 </template>
               </vxe-column>
-              
-              <vxe-column field="pmid" title="PMID" min-width="153" align="center">
-                <template #default="{ row }">
-                  <div v-if="row">
-                    <a :href="`https://pubmed.ncbi.nlm.nih.gov/${row.pmid}`" target="_blank" style="text-decoration: none;">
-                      {{ row.pmid ? row.pmid : 'N/A' }}
-                    </a>
-                    <v-icon small color="primary">mdi-share</v-icon>
-                  </div>
-                </template>
-              </vxe-column>
 
               <vxe-column field="mutagenesisStrategy" title="Mutagenesis strategy" min-width="200" align="center"></vxe-column>
               

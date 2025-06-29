@@ -70,8 +70,8 @@
 
               <span class="mx-4">
                 e.g. 
-                <a href="/clinmave/browse/variant/NM_000219(KCNE1):c.384C>T (p.Ser128Ser)" class="text-decoration-none">NM_000219(KCNE1):c.384C>T (p.Ser128Ser)</a>,
-                <a href="/clinmave/browse/dataset/dataset4517" class="text-decoration-none">dataset4517</a>,
+                <a href="/clinmave/browse/variant/NM_005157.6(ABL1):c.2753C>T (p.Pro918Leu)" class="text-decoration-none">NM_005157.6(ABL1):c.2753C>T (p.Pro918Leu)</a>,
+                <a href="/clinmave/browse/dataset/dataset0153" class="text-decoration-none">dataset0153</a>,
                 <a href="/clinmave/browse/gene/BRCA1" class="text-decoration-none">BRCA1</a>,
               </span>
             </v-card-text>
@@ -260,9 +260,9 @@ watch(searchDatasetId, (newVal) => {
 const stats = [
   { label: 'Variants', count: 1958105, icon: 'mdi-chemical-weapon', color: 'teal', link: '/clinmave/browse/variants' },
   { label: 'Datasets', count: 1998, icon: 'mdi-ballot-outline', color: 'purple', link: '/clinmave/browse/datasets' },
-  { label: 'MAVE techniques', count: 2, icon: 'mdi-flask-empty-outline', color: 'orange', link: '/clinmave/browse/mutagenesis_strategies' },
   { label: 'Genes', count: 799, icon: 'mdi-butterfly-outline', color: 'red', link: '/clinmave/browse/genes' },
   { label: 'Studies', count: 32, icon: 'mdi-book-open-page-variant', color: 'blue', link: '/clinmave/browse/studies' },
+  { label: 'MAVE techniques', count: 2, icon: 'mdi-flask-empty-outline', color: 'orange', link: '/clinmave/browse/mutagenesis_strategies' },
 ]
 
 // News timeline
