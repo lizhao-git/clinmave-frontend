@@ -19,13 +19,12 @@
         xl="1"
       >
         <v-sheet
-          color="#174978"
-          style="border-color: #174978;"
+          color="transparent"
         >
           <v-img
-            src="https://ngdc.cncb.ac.cn/macdb/static/img/macdb_logo_1.b67cf0a.png"
+            src="../src/assets/brand.png"
             contain
-            height="40"
+            height="80"
           />
         </v-sheet>
       </v-col>

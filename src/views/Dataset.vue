@@ -34,72 +34,15 @@
             </v-card-title>
             <v-card-text>
               <v-row>
-                <v-col cols="12" md="6" sm="12">
-                  <v-table density="comfortable" class="no-border">
-                    <tbody>
-                      <tr>
-                        <td class="text-subtitle-1 font-weight-bold">Dataset ID: </td>
-                        <td class="text-body-1">{{ variantData.datasetId }}</td>
-                      </tr>
-                      <tr>
-                        <td class="text-subtitle-1 font-weight-bold">Pubmed ID: </td>
-                        <td class="text-body-1"><a :href="variantData.pmid" target="_blank">{{ variantData.pmid }}<v-icon small color="primary">mdi-share</v-icon></a></td>
-                      </tr>
-                      <tr>
-                        <td class="text-subtitle-1 font-weight-bold">Title: </td>
-                        <td class="text-body-1 text-justify">{{ variantData.title }}</td>
-                      </tr>
-                      <tr>
-                        <td class="text-subtitle-1 font-weight-bold">Phenotype: </td>
-                        <td class="text-body-1">{{ variantData.phenotype }}</td>
-                      </tr>
-                      <tr>
-                        <td class="text-subtitle-1 font-weight-bold">Functional assay: </td>
-                        <td class="text-body-1">{{ variantData.functionalAssay }}</td>
-                      </tr>
-                      <tr>
-                        <td class="text-subtitle-1 font-weight-bold">#Variants/#AAs/#Sites: </td>
-                        <td class="text-body-1">{{ variantData.varNum }}-{{ variantData.aaNum }}-{{ variantData.siteNum }}</td>
-                      </tr>
-                      <tr>
-                        <td class="text-subtitle-1 font-weight-bold">#ClinVar: </td>
-                        <td class="text-body-1">
-                         <div v-if="parsedData.length" class="chip-group" style="width: 200px; display: flex;">
-                          <v-tooltip
-                            v-for="(item, index) in parsedData"
-                            :key="index"
-                            location="top"
-                          >
-                            <template v-slot:activator="{ props }">
-                              <v-btn
-                                flat
-                                v-bind="props"
-                                :color="item.color"
-                                :style="{ width: `${item.percentage}%`, 'min-width': '0px', 'height': '20px' }"
-                              ></v-btn>
-                            </template>
-                            <span>{{ item.category }}: {{ item.value }} ({{ item.percentage.toFixed(2) }}%)</span>
-                          </v-tooltip>
-                        </div>
-                        <span v-else>——</span>
-                        </td>
-                      </tr> 
-                    </tbody>
-                  </v-table>
-                </v-col>
-
-                <v-col cols="12" md="6" sm="12">
-                  <v-row>
-                    <v-col cols="12" sm="6">
-                      <!-- <DensityPlot :size="200" :data="scoreData"
-                        :selection-strategy="VariantDensityData.selectionStrategy"
-                        :cutoff="VariantDensityData.cutoff" 
-                        :score="variantData.score"
-                      /> -->
-                    </v-col>
-                  </v-row>
-                </v-col>
-              </v-row>
+              <v-col cols="12" sm="6">
+                <DensityPlot :size="200" :data="scoreData"
+                  :selection-strategy="VariantDensityData.selectionStrategy"
+                  :cutoff="VariantDensityData.cutoff" 
+                  :score="variantData.score"
+                />
+              </v-col>
+              
+            </v-row>
             </v-card-text>
           </v-card>
         </v-col>
@@ -209,6 +152,9 @@
                     </span>
                   </template>
                 </vxe-column>
+
+                <vxe-column field="maveTechnique" title="Mave technique" min-width="250" align="center"></vxe-column>
+
                 <vxe-column field="mutagenesisStrategy" title="Mutagenesis strategy" min-width="200" align="center"></vxe-column>
                 
                 <vxe-column field="pmid" title="Publication" min-width="153" align="center">
@@ -302,6 +248,7 @@
   import VxeUI from 'vxe-pc-ui';
   import 'vxe-pc-ui/lib/style.css';
   import 'vxe-table/lib/style.css';
+  import DensityPlot from '@/components/Visualization/DensityPlot.vue';
 
   // Reactive state for variant details
   const variantData = ref({
@@ -369,6 +316,15 @@
       { label: 'Gene', value: 'Example Gene' },
       { label: 'Type', value: 'Missense Mutation' },
     ]
+
+  // Reactive state for variant density plot data
+  const VariantDensityData = ref({
+    score: null,
+    selectionStrategy: null,
+    description: null,
+    cutoff: null,
+    label: null,
+  });
 
   // Get the route to extract the identifier
   const route = useRoute();
@@ -454,7 +410,7 @@
         page: currentPage.value - 1, // Adjust based on backend: use currentPage.value - 1 if zero-based
         size: pageSize.value,
         sort: sort || undefined,
-        ...filters.value
+        datasetId: encodeURIComponent(route.params.datasetId),
       };
 
       // Remove empty or undefined params
@@ -536,9 +492,26 @@
     
     return '#2196F3'; // Default blue
   };
+
+  const fetchVariantDensityData = async () => {
+    try {
+      
+      const response = await axios.get(`/clinmave/api/visualize/density?datasetId=${route.params.datasetId}`);
+      VariantDensityData.value = response.data; // Directly assign API response
+      console.log("Output variant density data: ", VariantDensityData.value)
+    } catch (error) {
+      console.error('Error fetching variant density data:', error);
+    }
+  };
+
+  // Computed property to extract score data
+  const scoreData = computed(() => VariantDensityData.value.score ?? []);
+
   // Fetch data when component is mounted
   onMounted(() => {
     fetchVariantData();
+    fetchVariantDensityData();
+    loadData();
     const $table = tableRef.value
     const $toolbar = toolbarRef.value
     if ($table && $toolbar) {

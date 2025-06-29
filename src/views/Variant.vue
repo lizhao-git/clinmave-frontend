@@ -66,14 +66,90 @@
           </v-card-text>
         </v-card>
       </v-col>
-
+      
       <v-col cols="12" md="6" v-if="!isFunctionCurationEmpty">
         <v-card flat height="100%">
           <v-card-title>
             <v-icon icon="mdi-dna" class="mr-2" color="teal"></v-icon>
-            <span class="text-h6 font-weight-bold">Function curation</span>
+            <span class="text-h6 font-weight-bold">MAVE score</span>
           </v-card-title>
           <v-card-text>
+            <v-row>
+              <v-col cols="12">
+                <vxe-table
+                  ref="tableRef"
+                  :export-config="{}"
+                  :column-config="{ resizable: true }"
+                  :data="tableData"
+                  stripe
+                  round
+                  :loading="loading"
+                  :pager-config="{ currentPage, pageSize, total: totalRecords }"
+                  @sort-change="handleSortChange"
+                >
+
+                  <vxe-column field="dataset" title="Dataset ID" min-width="100" align="center">
+                    <template #default="{ row }">
+                        <a 
+                          v-if="row.geneName" 
+                          :href="`/clinmave/browse/dataset/${encodeURIComponent(row.datasetId)}`" 
+                          target="_blank"
+                          style="text-decoration: none"
+                        >
+                          {{ row.datasetId }}
+                        </a>
+                        <span v-else>-</span>
+                    </template>
+                  </vxe-column>
+
+                  <vxe-column field="geneName" title="Gene name" min-width="100" align="center">
+                    <template #default="{ row }">
+                        <a 
+                          v-if="row.geneName" 
+                          :href="`/clinmave/browse/gene/${encodeURIComponent(row.geneName)}`" 
+                          target="_blank"
+                          style="text-decoration: none;font-style: italic"
+                        >
+                          {{ row.geneName }}
+                        </a>
+                        <span v-else>-</span>
+                    </template>
+                  </vxe-column>
+
+                  <vxe-column field="consequenceClass" title="Consequence" min-width="160" align="center">
+                    <template #default="{ row }">
+                      <v-chip 
+                        v-if="row.consequenceClass"
+                        small
+                        dark
+                        :color="getConsequenceClassColor(row.consequenceClass)"
+                      >
+                        {{ row.consequenceClass }}
+                      </v-chip>
+                      <span v-else>
+                        -
+                      </span>
+                    </template>
+                  </vxe-column>
+
+                  <vxe-column field="maveTechnique" title="Mave technique" min-width="250" align="center"></vxe-column>
+                  
+                  <vxe-column field="functionalAssay" title="Functional assay" min-width="140" align="center"></vxe-column>
+
+                  <vxe-column field="datasetId" title="" min-width="80" align="center">
+                    <template #default="{ row }">
+                      <v-btn
+                        color="primary"
+                        variant="compact"
+                        icon="mdi-eye"
+                        @click="VisualizeClicker(row.datasetId)"
+                      ></v-btn>
+                    </template>
+                  </vxe-column>
+
+                </vxe-table>
+              </v-col>
+            </v-row>
             <v-row>
               <v-col cols="12" sm="6">
                 <DensityPlot :size="200" :data="scoreData"
@@ -167,7 +243,7 @@
                     <a :href="variantData.clvId" target="_blank">ClinVar:</a>
                   </td>
                   <td class="text-body-1">
-                    <v-rating v-if="variantData.clvStar && variantData.clvStar !== 'null'" readonly :length="5"
+                    <v-rating v-if="variantData.clvStar && variantData.clvStar !== 'null'" readonly :length="4"
                       :size="32" :model-value="getStarValue(variantData.clvStar)" active-color="primary" />
                     <span v-else class="text-grey">——</span>
                   </td>
@@ -331,6 +407,19 @@
     clvStar: null,
   });
 
+  // Table state
+  const toolbarRef = ref()
+  const tableRef = ref()
+  const tableData = ref([]) 
+  const currentPage = ref(1)
+  const pageSize = ref(10)
+  const totalRecords = ref(0)
+  const loading = ref(false)
+  const sortParams = ref({
+    field: '',
+    order: ''
+  })
+
   // Reactive state for variant density plot data
   const VariantDensityData = ref({
     score: null,
@@ -375,6 +464,57 @@
       { label: 'Type', value: 'Missense Mutation' },
     ]
   
+  // Load data function
+  const loadData = async () => {
+    loading.value = true;
+    
+    try {
+      let sort;
+
+      if (Array.isArray(sortParams.value)) {
+        // 多列排序
+        sort = sortParams.value
+          .filter(param => param.field && param.order)
+          .map(param => `${param.field},${param.order}`)
+          .join(',');
+      } else {
+        // 单列排序
+        sort = sortParams.value.field && sortParams.value.order
+          ? `${sortParams.value.field},${sortParams.value.order}`
+          : 'id,asc'; // 默认排序
+      }
+
+      // Construct request parameters
+      const params = {
+        page: currentPage.value - 1, // Adjust based on backend: use currentPage.value - 1 if zero-based
+        size: pageSize.value,
+        sort: sort || undefined,
+        identifier: route.params.identifier || undefined,
+      };
+
+      // Remove empty or undefined params
+      Object.keys(params).forEach(key => {
+        if (params[key] === undefined || params[key] === '') {
+          delete params[key];
+        }
+      });
+      
+      // Replace with your actual API endpoint
+      const response = await axios.get('/clinmave/api/fetch/table/variant', { params });
+      console.log('API Response:', response.data);
+      // Verify response structure
+      tableData.value = response.data.data || [];
+      totalRecords.value = response.data.totalRows || 0;
+    } catch (error) {
+      console.error('[API Error]', error);
+      // Handle error gracefully
+      tableData.value = [];
+      totalRecords.value = 0;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   const formatScore = (score) => {
     if (score === 'NA' || score == null) return '——';
     const num = parseFloat(score);
@@ -396,6 +536,15 @@
       'Intergenic': '#AAAAAA',
     };
     return colorMap[molecularConsequence] || '#CCCCCC';
+  };
+
+  const getConsequenceClassColor = (consequenceClass) => {
+    const colorMap = {
+      'Gain-of-function': '#D55E00', 
+      'Loss-of-function': '#0072B2',
+      'Functional neutral': '#AAAAAA',
+    };
+    return colorMap[consequenceClass] || '#CCCCCC';
   };
 
   const getStarValue = (star) => {
@@ -472,12 +621,11 @@
     }
   };
 
-  const fetchVariantDensityData = async () => {
+  const fetchVariantDensityData = async (datasetId) => {
     try {
       
-      const response = await axios.get(`/clinmave/api/visualize/density?datasetId=${variantData.value.datasetId}`);
+      const response = await axios.get(`/clinmave/api/visualize/density?datasetId=${datasetId}`);
       VariantDensityData.value = response.data; // Directly assign API response
-      console.log("Output variant density data: ", VariantDensityData.value)
     } catch (error) {
       console.error('Error fetching variant density data:', error);
     }
@@ -504,11 +652,15 @@
     return !variantData.value.gadSummary || variantData.value.gadSummary.length === 0;
   });
 
+  const VisualizeClicker = (datasetId) => {
+    fetchVariantDensityData(datasetId);
+  }
+
   watch(
     () => variantData.value?.datasetId,
     (newVal) => {
       if (newVal) {
-        fetchVariantDensityData();
+        fetchVariantDensityData(variantData.value.datasetId);
       }
     }
   );
@@ -516,5 +668,11 @@
   // Fetch data when component is mounted
   onMounted(() => {
     fetchVariantData();
+    loadData();
+    const $table = tableRef.value
+    const $toolbar = toolbarRef.value
+    if ($table && $toolbar) {
+      $table.connect($toolbar)
+    }
   });
 </script>
