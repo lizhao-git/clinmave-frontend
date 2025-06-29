@@ -34,7 +34,39 @@
                 <v-col cols="12" md="4" sm="12">
                   <MutagenesisProportion />
                 </v-col>
-                
+                <v-col cols="12" md="4" sm="12">
+                  <AcmgGeneDatasets />
+                </v-col>
+                <v-col cols="12" md="4" sm="12">
+                  <AcmgRecommendedGeneVariants />
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col col="12" md="4" sm="12">
+                  <NoneAcmgAndVusMorethen1000Datasets />
+                </v-col>
+                <v-col col="12" md="4" sm="12">
+                  <NoneAcmgAndVusMorethen1000Variants />
+                </v-col>
+                <v-col col="12" md="4" sm="12">
+                  <MolecularConsequencePercentageStatistics />
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col col="12" md="4" sm="12">
+                  <MaveTechniquePS />
+                </v-col>
+                <v-col col="12" md="4" sm="12">
+                  <MutagenesisStrategyPS />
+                </v-col>
+                <v-col col="12" md="4" sm="12">
+                  <FunctionalAssayPS />
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col col="12" md="4" sm="12">
+                  <ExperimentModelDS />
+                </v-col>
               </v-row>
             </v-card-text>
           </v-card>
@@ -105,6 +137,15 @@
   import 'vxe-pc-ui/lib/style.css';
   import 'vxe-table/lib/style.css';
   import MutagenesisProportion from '@/components/stat/MutagenesisProportion.vue';
+  import AcmgGeneDatasets from '@/components/stat/AcmgGeneDatasets.vue';
+  import AcmgRecommendedGeneVariants from '@/components/stat/AcmgRecommendedGeneVariants.vue'
+  import NoneAcmgAndVusMorethen1000Datasets from '@/components/stat/NoneAcmgAndVusMorethen1000Datasets.vue'
+  import NoneAcmgAndVusMorethen1000Variants from '@/components/stat/NoneAcmgAndVusMorethen1000Variants.vue'
+  import MolecularConsequencePercentageStatistics from '@/components/stat/MolecularConsequencePercentageStatistics.vue'
+  import MaveTechniquePS from '@/components/stat/MaveTechniquePS.vue'
+  import MutagenesisStrategyPS from '@/components/stat/MutagenesisStrategyPS.vue'
+  import FunctionalAssayPS from '@/components/stat/FunctionalAssayPS.vue'
+  import ExperimentModelDS from '@/components/stat/ExperimentModelDS.vue'
   // Reactive state for variant details
   const variantData = ref({
     datasetId: null,
