@@ -167,7 +167,7 @@
                 :gene-info="oncoprintMap.geneInfo"
                 :domains="oncoprintMap.domains"
                 :oncoprint-data="oncoprintMap.oncoprintData"
-                height="300"
+                height="400"
               />
             </template>
 

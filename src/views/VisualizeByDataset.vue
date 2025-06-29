@@ -567,16 +567,22 @@ const VisualizeClicker = (datasetId) => {
 
 const resetFilters = () => {
   showVisualize.value = false;
+  showResults.value = false; // 隐藏右侧表格和oncoprint
   searchDatasetId.value = null;
-
-  filters.value = { 
-    datasetId: null, 
-  };
+  searchGeneName.value = null;
+  searchMutagenesisStrategy.value = null;
+  searchExperimentModel.value = null;
+  searchPhenotype.value = null;
+  
+  const filters = ref({
+    geneName: null,
+    mutagenesisStrategy: null,
+    experimentModel: null,
+    phenotype: null,
+  })
   
   currentPage.value = 1;
 
-  loadData();
-  showResults.value = false; // 隐藏右侧表格和oncoprint
 }
 
 const handlePageChange = (event) => {
