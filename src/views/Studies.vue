@@ -59,20 +59,6 @@
                     >
                     </v-autocomplete>
                   </v-col>
-                  
-                  <v-col cols="12">
-                    <v-autocomplete
-                      v-model="filters.title"
-                      v-model:search="searchTitle"
-                      :items="titleOptions"
-                      label="Title"
-                      variant="outlined"
-                      density="compact"
-                      clearable
-                      :loading="loadingTitle"
-                    >
-                    </v-autocomplete>
-                  </v-col>
 
                   <v-col cols="12">
                     <v-autocomplete
@@ -185,7 +171,7 @@
                         variant="outlined"
                         class="mr-2"
                       >
-                        <a :href="'/clinmave/browse/gene/' + id" target="_blank" style="color: #1976d2;font-style: italic">{{ id }}</a>
+                        <a :href="'/clinmave/browse/gene/' + id" target="_blank" style="color: #1976d2;font-style: italic;text-decoration: none">{{ id }}</a>
                       </v-chip>
                     </span>
 
@@ -222,7 +208,7 @@
                         variant="outlined" 
                         class="mr-2"
                       >
-                        <a :href="'/browse/dataset/' + id" target="_blank" style="color: #1976d2;">{{ id }}</a>
+                        <a :href="'/clinmave/browse/dataset/' + id" target="_blank" style="color: #1976d2;text-decoration: none">{{ id }}</a>
                       </v-chip>
                     </span>
                   </template>

@@ -45,23 +45,7 @@
                     :loading="loadingGeneName"
                   >
                   </v-autocomplete>
-                </v-col>
-
-                <!-- <v-col cols="12">
-                  <v-autocomplete
-                    v-model="filters.datasetId"
-                    v-model:search="searchDatasetId"
-                    :items="datasetIdOptions"
-                    item-title="text"
-                    item-value="value"
-                    label="Dataset ID"
-                    variant="outlined"
-                    density="compact"
-                    clearable
-                    :loading="loadingDatasetId"
-                  >
-                  </v-autocomplete>
-                </v-col>
+                </v-col>   
 
                 <v-col cols="12">
                   <v-autocomplete
@@ -75,7 +59,7 @@
                     :loading="loadingConsequenceClass"
                   >
                   </v-autocomplete>
-                </v-col> -->
+                </v-col>
 
               </v-row>
               <v-row dense>
@@ -183,7 +167,6 @@
                 :gene-info="oncoprintMap.geneInfo"
                 :domains="oncoprintMap.domains"
                 :oncoprint-data="oncoprintMap.oncoprintData"
-                width="1000"
                 height="300"
               />
             </template>
@@ -231,17 +214,12 @@ const breadcrumbs = [
 // Filters 保持不变
 const filters = ref({
   geneName: null,
-  datasetId: null,
   consequenceClass: null,
 })
 
 const geneNameOptions = ref([])
 const searchGeneName = ref(null)
 const loadingGeneName = ref(false)
-
-const datasetIdOptions = ref([])
-const searchDatasetId = ref(null)
-const loadingDatasetId = ref(false)
 
 const consequenceClassOptions = ref([]);
 const searchConsequenceClass = ref(null)
@@ -266,7 +244,6 @@ const sortParams = ref({
 })
 
 const debouncedFetchGeneName = debounce(fetchGeneNameOptions, 300)
-const debouncedFetchDatasetId = debounce(fetchDatasetIdOptions, 300)
 const debouncedFetchConsequenceClass = debounce(fetchConsequenceClassOptions, 300)
 const debouncedFetchGeneStructure = debounce(fetchGeneStructure, 300)
 
@@ -293,28 +270,10 @@ async function fetchGeneNameOptions(query = '') {
   }
 }
 
-async function fetchDatasetIdOptions(query = '') {
-  try {
-    loadingDatasetId.value = true;
-    const response = await axios.get('/clinmave/api/select/dataset', {
-      params: { datasetId: !query ? '' : query },
-    });
-    datasetIdOptions.value = response.data.map(item => ({
-      text: `${item.datasetId}`,
-      value: item.datasetId
-    }));
-  } catch (error) {
-    VxeUI.message.error('Failed to load gene name options');
-    datasetIdOptions.value = [];
-  } finally {
-    loadingDatasetId.value = false;
-  }
-}
-
 async function fetchConsequenceClassOptions(query = '') {
   try {
     loadingConsequenceClass.value = true;
-    const response = await axios.get('/clinmave/api/select/dataset', {
+    const response = await axios.get('/clinmave/api/select/aminosite', {
       params: { consequenceClass: !query ? '' : query },
     });
     consequenceClassOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
@@ -331,7 +290,10 @@ async function fetchGeneStructure(query = '') {
   try {
     loadingGeneName.value = true;
     const response = await axios.get('/clinmave/api/visualize/bygene/oncoprint', {
-      params: { geneName: !query ? '' : query },
+      params: {
+        geneName: filters.value.geneName,
+        consequenceClass: filters.value.consequenceClass || ''
+      },
     });
     oncoprintMap.value = response.data || {};
     console.log('[Oncoprint Map]', oncoprintMap.value);
@@ -389,18 +351,16 @@ const applyFilters = () => {
   currentPage.value = 1;
   loadData();
   debouncedFetchGeneStructure(filters.value.geneName);
-  debouncedFetchDatasetId(filters.value.datasetId);
+  debouncedFetchGeneName();
+  debouncedFetchConsequenceClass();
   showResults.value = true; // 显示右侧表格和oncoprint
 }
 
 const resetFilters = () => {
   searchGeneName.value = null;
-
+  searchConsequenceClass.value = null;
   filters.value = { 
-    dbsnpId: null, 
     geneName: null, 
-    transcriptId: null,
-    mutagenesisStrategy: null,
     consequenceClass: null
   };
   
@@ -464,7 +424,7 @@ watch([currentPage, pageSize], () => {
 
 onMounted(() => {
   debouncedFetchGeneName();
-  debouncedFetchDatasetId();
+  debouncedFetchConsequenceClass();
   // 这里不自动加载表格，表格和oncoprint初始隐藏
   const $table = tableRef.value
   const $toolbar = toolbarRef.value

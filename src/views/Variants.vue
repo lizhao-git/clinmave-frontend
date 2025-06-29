@@ -90,14 +90,14 @@
 
                   <v-col cols="12">
                     <v-autocomplete
-                      v-model="filters.mutagenesisStrategy"
-                      v-model:search="searchMutagenesisStrategy"
-                      :items="mutagenesisStrategyOptions"
-                      label="Mutagenesis strategy"
+                      v-model="filters.maveTechnique"
+                      v-model:search="searchMaveTechnique"
+                      :items="maveTechniqueOptions"
+                      label="MAVE technique"
                       variant="outlined"
                       density="compact"
                       clearable
-                      :loading="loadingMutagenesisStrategy"
+                      :loading="loadingMaveTechnique"
                     >
                     </v-autocomplete>
                   </v-col>
@@ -115,6 +115,22 @@
                     >
                     </v-autocomplete>
                   </v-col>
+
+                  <v-col cols="12">
+                    <v-autocomplete
+                      v-model="filters.consequenceClass"
+                      v-model:search="searchConsequenceClass"
+                      :items="consequenceClassOptions"
+                      label="Consequence class"
+                      variant="outlined"
+                      density="compact"
+                      clearable
+                      :loading="loadingConsequenceClass"
+                    >
+                    </v-autocomplete>
+                  </v-col>
+
+
                 </v-row>
                 <v-row dense>
                   <v-spacer></v-spacer>
@@ -184,7 +200,7 @@
                   </template>
 
                 </vxe-column>
-
+<!-- 
                 <vxe-column field="position" title="Position" min-width="180">
                   <template #default="{ row }">
                     <a v-if="row" :href="row.ucscHg38" target="_blank" style="text-decoration: none;">
@@ -192,7 +208,7 @@
                       <v-icon small color="blue">mdi-share</v-icon>
                     </a>
                   </template>
-                </vxe-column>
+                </vxe-column> -->
 
                 <vxe-column field="refalt" title="Ref/Alt" min-width="100">
                   <template #default="{ row }">
@@ -212,7 +228,7 @@
                   </template>
                 </vxe-column>
 
-                <vxe-column field="geneName" title="Gene name" min-width="100" align="center">
+                <vxe-column field="geneName" title="Gene name" min-width="120" align="center" sortable>
                   <template #default="{ row }">
                       <a 
                         v-if="row.geneName" 
@@ -225,7 +241,7 @@
                       <span v-else>-</span>
                     </template>
                 </vxe-column>
-
+                
                 <vxe-column field="molecularConsequence" title="Molecular consequence" min-width="220" align="center" sortable>
                   <template #default="{ row }">
                     <v-chip 
@@ -241,8 +257,27 @@
                     </span>
                   </template>
                 </vxe-column>
+
+                <vxe-column field="consequenceClass" title="Consequence Class" min-width="200" align="center" sortable>
+                  <template #default="{ row }">
+                    <v-chip 
+                      v-if="row.consequenceClass"
+                      small
+                      dark
+                      :color="getConsequenceClassColor(row.consequenceClass)"
+                    >
+                      {{ row.consequenceClass }}
+                    </v-chip>
+                    <span v-else>
+                      -
+                    </span>
+                  </template>
+                </vxe-column>
+
                 <vxe-column field="mutagenesisStrategy" title="Mutagenesis strategy" min-width="200" align="center"></vxe-column>
                 
+                <vxe-column field="maveTechnique" title="MAVE technique" min-width="250" align="center"></vxe-column>
+
                 <vxe-column field="pmid" title="Publication" min-width="153" align="center">
                   <template #default="{ row }">
                     <div v-if="row">
@@ -303,9 +338,10 @@ const breadcrumbs = [
 const filters = ref({
   dbsnpId: null,
   molecularConsequence: null,
+  consequenceClass: null,
   geneName: null,
   transcriptId: null,
-  mutagenesisStrategy: null,
+  maveTechnique: null,
 })
 
 
@@ -313,22 +349,25 @@ const filters = ref({
 const dbsnpIdOptions = ref([])
 const geneNameOptions = ref([])
 const transcriptIdOptions = ref([])
-const mutagenesisStrategyOptions = ref([])
+const maveTechniqueOptions = ref([])
 const molecularConsequenceOptions = ref([])
+const consequenceClassOptions = ref([])
 
 // Reactive state for search inputs
 const searchDbsnpId = ref(null)
 const searchGeneName = ref(null)
 const searchTranscriptId = ref(null)
-const searchMutagenesisStrategy = ref(null)
+const searchMaveTechnique = ref(null)
 const searchMolecularConsequence = ref(null)
+const searchConsequenceClass = ref(null)
 
 // Loading states for autocomplete fields
 const loadingDbsnpId = ref(false)
 const loadingGeneName = ref(false)
 const loadingTranscriptId = ref(false)
-const loadingMutagenesisStrategy = ref(false)
+const loadingMaveTechnique = ref(false)
 const loadingMolecularConsequence = ref(false)
+const loadingConsequenceClass = ref(false)
 
 // Reactive state for filter panel visibility
 const showFilters = ref(true)
@@ -350,7 +389,8 @@ const debouncedFetchDbsnpId = debounce(fetchDbsnpIdOptions, 300)
 const debouncedFetchGeneName = debounce(fetchGeneNameOptions, 300)
 const debouncedFetchTranscriptId = debounce(fetchTranscriptIdOptions, 300)
 const debouncedFetchMolecularConsequence = debounce(fetchMolecularConsequenceOptions, 300)
-const debouncedFetchMutagenesisStrategy = debounce(fetchMutagenesisStrategyOptions, 300)
+const debouncedFetchMaveTechnique = debounce(fetchMaveTechniqueOptions, 300)
+const debouncedFetchConsequenceClass = debounce(fetchConsequenceClassOptions, 300)
 
 // Debounced fetch functions for autocomplete options
 async function fetchDbsnpIdOptions(query = '') {
@@ -413,18 +453,33 @@ async function fetchMolecularConsequenceOptions(query = '') {
   }
 }
 
-async function fetchMutagenesisStrategyOptions(query = '') {
+async function fetchMaveTechniqueOptions(query = '') {
   try {
-    loadingMutagenesisStrategy.value = true;
+    loadingMaveTechnique.value = true;
     const response = await axios.get('/clinmave/api/select/variant', {
-      params: { mutagenesisStrategy: !query ? '' : query },
+      params: { maveTechnique: !query ? '' : query },
     });
-    mutagenesisStrategyOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
+    maveTechniqueOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
   } catch (error) {
     VxeUI.message.error('Failed to load dbSNP IDs');
-    mutagenesisStrategyOptions.value = [];
+    maveTechniqueOptions.value = [];
   } finally {
-    loadingMutagenesisStrategy.value = false;
+    loadingMaveTechnique.value = false;
+  }
+}
+
+async function fetchConsequenceClassOptions(query = '') {
+  try {
+    loadingConsequenceClass.value = true;
+    const response = await axios.get('/clinmave/api/select/variant', {
+      params: { consequenceClass: !query ? '' : query },
+    });
+    consequenceClassOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
+  } catch (error) {
+    VxeUI.message.error('Failed to load dbSNP IDs');
+    consequenceClassOptions.value = [];
+  } finally {
+    loadingConsequenceClass.value = false;
   }
 }
 
@@ -493,15 +548,17 @@ const resetFilters = () => {
   searchDbsnpId.value = null;
   searchGeneName.value = null;
   searchTranscriptId.value = null;
-  searchMutagenesisStrategy.value = null;
+  searchMaveTechnique.value = null;
   searchMolecularConsequence.value = null;
+  searchConsequenceClass.value = null;
 
   filters.value = { 
     dbsnpId: null, 
     geneName: null, 
     transcriptId: null,
-    mutagenesisStrategy: null,
-    molecularConsequence: null
+    maveTechnique: null,
+    molecularConsequence: null,
+    consequenceClass: null
   };
   
   currentPage.value = 1;
@@ -566,16 +623,19 @@ const getMolecularConsequenceColor = (molecularConsequence) => {
   return '#2196F3'; // Default blue
 };
 
+const getConsequenceClassColor = (consequenceClass) => {
+  const colorMap = {
+    'Gain-of-function': '#D55E00', 
+    'Loss-of-function': '#0072B2',
+    'Functional neutral': '#AAAAAA',
+  };
+  return colorMap[consequenceClass] || '#CCCCCC';
+};
+
 // Watch pagination parameters
 watch([currentPage, pageSize], () => {
   console.log('[Watch] Page or size changed:', currentPage.value, pageSize.value)
   loadData()
-})
-
-// Watch search inputs for autocomplete
-watch(searchDbsnpId, (newVal) => {
-  console.log('[Watch] searchDbsnpId:', newVal);
-  debouncedFetchDbsnpId(newVal)
 })
 
 // Initialize
@@ -584,7 +644,8 @@ onMounted(() => {
   debouncedFetchGeneName();
   debouncedFetchTranscriptId();
   debouncedFetchMolecularConsequence();
-  debouncedFetchMutagenesisStrategy();
+  debouncedFetchMaveTechnique();
+  debouncedFetchConsequenceClass();
   loadData();
   const $table = tableRef.value
   const $toolbar = toolbarRef.value

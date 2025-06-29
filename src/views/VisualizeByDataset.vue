@@ -35,21 +35,75 @@
               <v-row dense>
                 <v-col cols="12">
                   <v-autocomplete
-                    v-model="filters.datasetId"
-                    v-model:search="searchDatasetId"
-                    :items="datasetIdOptions"
+                    v-model="filters.geneName"
+                    v-model:search="searchGeneName"
+                    :items="geneNameOptions"
                     item-title="text"
                     item-value="value"
-                    label="Dataset ID"
+                    label="Gene Name"
                     variant="outlined"
                     density="compact"
                     clearable
-                    :loading="loadingDatasetId"
+                    :loading="loadingGeneName"
                   >
                   </v-autocomplete>
                 </v-col>
-
               </v-row>
+              
+              <v-row dense>
+                <v-col cols="12">
+                  <v-autocomplete
+                    v-model="filters.mutagenesisStrategy"
+                    v-model:search="searchMutagenesisStrategy"
+                    :items="mutagenesisStrategyOptions"
+                    item-title="text"
+                    item-value="value"
+                    label="Mutagenesis Strategy"
+                    variant="outlined"
+                    density="compact"
+                    clearable
+                    :loading="loadingMutagenesisStrategy"
+                  >
+                  </v-autocomplete>
+                </v-col>
+              </v-row>
+
+              <v-row dense>
+                <v-col cols="12">
+                  <v-autocomplete
+                    v-model="filters.experimentModel"
+                    v-model:search="searchExperimentModel"
+                    :items="experimentModelOptions"
+                    item-title="text"
+                    item-value="value"
+                    label="Experiment Model"
+                    variant="outlined"
+                    density="compact"
+                    clearable
+                    :loading="loadingExperimentModel"
+                  >
+                  </v-autocomplete>
+                </v-col>
+              </v-row>
+
+              <v-row dense>
+                <v-col cols="12">
+                  <v-autocomplete
+                    v-model="filters.phenotype"
+                    v-model:search="searchPhenotype"
+                    :items="phenotypeOptions"
+                    item-title="text"
+                    item-value="value"
+                    label="Phenotype"
+                    variant="outlined"
+                    density="compact"
+                    clearable
+                    :loading="loadingPhenotype"
+                  >
+                  </v-autocomplete>
+                </v-col>
+              </v-row>
+
               <v-row dense>
                 <v-spacer></v-spacer>
                 <v-col cols="10" class="text-right">
@@ -60,7 +114,7 @@
             </v-sheet>
           </v-sheet>
         </v-col>
-
+        
         <!-- Table Content 右侧内容：根据showResults显示/隐藏 -->
         <v-col :cols="showResults ? 12 : 0" :md="showResults ? 10 : 0" v-if="showResults">
           <v-sheet class="pa-3">
@@ -110,15 +164,20 @@
               
               <vxe-column field="functionAssay" title="Function Assay" min-width="160" align="center"></vxe-column>
 
-              <vxe-column field="experimentModel" title="Experiment Model" min-width="150" align="center"></vxe-column>
-
               <vxe-column field="phenotype" title="Phenotype" min-width="400" align="center"></vxe-column>
 
               <vxe-column field="varNum" title="#Variants" min-width="120" align="center" sortable></vxe-column>
 
-              <vxe-column field="aaNum" title="#Amino Acids" min-width="150" align="center" sortable></vxe-column>
-
-              <vxe-column field="siteNum" title="#Sites" min-width="100" align="center" sortable></vxe-column>
+              <vxe-column field="datasetId" title="#Visualize" min-width="80" align="center">
+                <template #default="{ row }">
+                  <v-btn
+                    primary
+                    variant="compact"
+                    icon="mdi-bullseye"
+                    @click="VisualizeClicker(row.datasetId)"
+                  ></v-btn>
+                </template>
+              </vxe-column>
 
             </vxe-table>
             <!-- Pagination -->
@@ -132,7 +191,7 @@
           </v-sheet>
           <v-divider></v-divider>
 
-          <v-sheet style="min-height: 300px; position: relative;">
+          <v-sheet style="min-height: 300px; position: relative;" v-if="showVisualize">
             <v-row>
               <v-col cols="12" md="4" sm="12">
                 <template v-if="clinVarBinLoading">
@@ -212,6 +271,7 @@
             </v-row>
             
           </v-sheet>
+
         </v-col>
       </v-row>
     </v-container>
@@ -250,15 +310,31 @@ const breadcrumbs = [
 
 // Filters 保持不变
 const filters = ref({
-  datasetId: null,
+  geneName: null,
+  mutagenesisStrategy: null,
+  experimentModel: null,
+  phenotype: null,
 })
 
-const datasetIdOptions = ref([])
-const searchDatasetId = ref(null)
-const loadingDatasetId = ref(false)
+const geneNameOptions = ref([])
+const searchGeneName = ref(null)
+const loadingGeneName = ref(false)
+
+const mutagenesisStrategyOptions = ref([])
+const searchMutagenesisStrategy = ref(null)
+const loadingMutagenesisStrategy= ref(false)
+
+const experimentModelOptions = ref([])
+const searchExperimentModel = ref(null)
+const loadingExperimentModel = ref(false)
+
+const phenotypeOptions = ref([])
+const searchPhenotype = ref(null)
+const loadingPhenotype = ref(false)
 
 // 新增控制右侧结果显示的变量
 const showResults = ref(false);
+const showVisualize = ref(false);
 
 const oncoprintMap = ref({})
 const oncoprintLoading = ref(false)
@@ -285,18 +361,13 @@ const sortParams = ref({
   order: ''
 })
 
-const debouncedFetchDatasetId = debounce(fetchDatasetIdOptions, 300)
+const debouncedFetchGeneName = debounce(fetchGeneNameOptions, 300)
+const debouncedFetchMutagenesisStrategy = debounce(fetchMutagenesisStrategyOptions, 300)
+const debouncedFetchExperimentModel = debounce(fetchExperimentModelOptions, 300)
+const debouncedFetchPhenotype = debounce(fetchPhenotypeOptions, 300)
 const debouncedFetchClinVarBinData = debounce(fetchClinVarBinData, 300)
 const debouncedFetchScatterData = debounce(fetchScatterData, 300)
 const debouncedFetchConsequenceDensityData = debounce(fetchConsequenceDensityData, 300)
-
-const hasOncoprintData = computed(() => {
-  return oncoprintMap.value &&
-         typeof oncoprintMap.value === 'object' &&
-         oncoprintMap.value.geneInfo &&
-         Array.isArray(oncoprintMap.value.domains) &&
-         Array.isArray(oncoprintMap.value.oncoprintData)
-});
 
 const hasClinVarBinData = computed(() => {
   return Array.isArray(ClinVarBinArray.value) &&
@@ -320,28 +391,81 @@ const hasConsequenceDensityData = computed(() => {
          consequenceArray.value.length > 0;
 })
 
-async function fetchDatasetIdOptions(query = '') {
+async function fetchGeneNameOptions(query = '') {
   try {
-    loadingDatasetId.value = true;
+    loadingGeneName.value = true;
     const response = await axios.get('/clinmave/api/select/dataset', {
-      params: { datasetId: !query ? '' : query },
+      params: { geneName: !query ? '' : query },
     });
-    datasetIdOptions.value = response.data.map(item => ({
-      text: `${item.datasetId}`,
-      value: item.datasetId
+    geneNameOptions.value = response.data.map(item => ({
+      text: `${item.geneName} (#Datasets: ${item.count})`,
+      value: item.geneName
     }));
   } catch (error) {
-    VxeUI.message.error('Failed to load gene name options');
-    datasetIdOptions.value = [];
+    VxeUI.message.error('Failed to load dbSNP IDs');
+    geneNameOptions.value = [];
   } finally {
-    loadingDatasetId.value = false;
+    loadingGeneName.value = false;
+  }
+}
+
+async function fetchMutagenesisStrategyOptions(query = '') {
+  try {
+    loadingMutagenesisStrategy.value = true;
+    const response = await axios.get('/clinmave/api/select/dataset', {
+      params: { mutagenesisStrategy: !query ? '' : query },
+    });
+    mutagenesisStrategyOptions.value = response.data.map(item => ({
+      text: `${item.mutagenesisStrategy} (#Datasets: ${item.count})`,
+      value: item.mutagenesisStrategy
+    }));
+  } catch (error) {
+    VxeUI.message.error('Failed to load dbSNP IDs');
+    mutagenesisStrategyOptions.value = [];
+  } finally {
+    loadingMutagenesisStrategy.value = false;
+  }
+}
+
+async function fetchExperimentModelOptions(query = '') {
+  try {
+    loadingExperimentModel.value = true;
+    const response = await axios.get('/clinmave/api/select/dataset', {
+      params: { experimentModel: !query ? '' : query },
+    });
+    experimentModelOptions.value = response.data.map(item => ({
+      text: `${item.experimentModel} (#Datasets: ${item.count})`,
+      value: item.experimentModel
+    }));
+  } catch (error) {
+    VxeUI.message.error('Failed to load dbSNP IDs');
+    experimentModelOptions.value = [];
+  } finally {
+    loadingExperimentModel.value = false;
+  }
+}
+
+async function fetchPhenotypeOptions(query = '') {
+  try {
+    loadingPhenotype.value = true;
+    const response = await axios.get('/clinmave/api/select/dataset', {
+      params: { phenotype: !query ? '' : query },
+    });
+    phenotypeOptions.value = response.data.map(item => ({
+      text: `${item.phenotype} (#Datasets: ${item.count})`,
+      value: item.phenotype
+    }));
+  } catch (error) {
+    VxeUI.message.error('Failed to load dbSNP IDs');
+    phenotypeOptions.value = [];
+  } finally {
+    loadingPhenotype.value = false;
   }
 }
 
 async function fetchScatterData(query = '') {
   scatterLoading.value = true;
   try {
-    loadingDatasetId.value = true;
     const response = await axios.get('/clinmave/api/visualize/bydataset/scatter', {
       params: { datasetId: !query ? '' : query },
     });
@@ -351,7 +475,6 @@ async function fetchScatterData(query = '') {
     VxeUI.message.error('Failed to load oncoprint data');
     scatterArray.value = []
   } finally {
-    loadingDatasetId.value = false;
     scatterLoading.value = false;
   }
 }
@@ -359,7 +482,6 @@ async function fetchScatterData(query = '') {
 async function fetchClinVarBinData(query = '') {
   clinVarBinLoading.value = true;
   try {
-    loadingDatasetId.value = true;
     const response = await axios.get('/clinmave/api/visualize/bydataset/clinvarbin', {
       params: { datasetId: !query ? '' : query },
     });
@@ -368,7 +490,6 @@ async function fetchClinVarBinData(query = '') {
     VxeUI.message.error('Failed to load oncoprint data');
     ClinVarBinArray.value = []
   } finally {
-    loadingDatasetId.value = false;
     clinVarBinLoading.value = false;
   }
 }
@@ -376,7 +497,6 @@ async function fetchClinVarBinData(query = '') {
 async function fetchConsequenceDensityData(query = '') {
   consequenceDensityLoading.value = true;
   try {
-    loadingDatasetId.value = true;
     const response = await axios.get('/clinmave/api/visualize/bydataset/consequencedensity', {
       params: { datasetId: !query ? '' : query },
     });
@@ -386,7 +506,6 @@ async function fetchConsequenceDensityData(query = '') {
     VxeUI.message.error('Failed to load oncoprint data');
     consequenceArray.value = []
   } finally {
-    loadingDatasetId.value = false;
     consequenceDensityLoading.value = false;
   }
 }
@@ -434,14 +553,20 @@ const loadData = async () => {
 
 const applyFilters = () => {
   currentPage.value = 1;
-  debouncedFetchClinVarBinData(filters.value.datasetId);
-  debouncedFetchScatterData(filters.value.datasetId);
-  debouncedFetchConsequenceDensityData(filters.value.datasetId);
   loadData();
   showResults.value = true;
+  showVisualize.value = false;
+}
+
+const VisualizeClicker = (datasetId) => {
+  showVisualize.value = true;
+  debouncedFetchClinVarBinData(datasetId);
+  debouncedFetchScatterData(datasetId);
+  debouncedFetchConsequenceDensityData(datasetId);
 }
 
 const resetFilters = () => {
+  showVisualize.value = false;
   searchDatasetId.value = null;
 
   filters.value = { 
@@ -507,7 +632,10 @@ watch([currentPage, pageSize], () => {
 })
 
 onMounted(() => {
-  debouncedFetchDatasetId();
+  debouncedFetchGeneName();
+  debouncedFetchMutagenesisStrategy();
+  debouncedFetchExperimentModel();
+  debouncedFetchPhenotype();
   // 这里不自动加载表格，表格和oncoprint初始隐藏
   const $table = tableRef.value
   const $toolbar = toolbarRef.value

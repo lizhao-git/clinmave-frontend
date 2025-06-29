@@ -172,7 +172,7 @@
                         variant="outlined" 
                         class="mr-2"
                       >
-                        <a :href="'/clinmave/browse/dataset/' + id" target="_blank" style="color: #1976d2;">{{ id }}</a>
+                        <a :href="'/clinmave/browse/dataset/' + id" target="_blank" style="color: #1976d2;text-decoration: none">{{ id }}</a>
                       </v-chip>
                     </span>
                   </template>
