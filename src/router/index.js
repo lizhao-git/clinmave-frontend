@@ -69,11 +69,11 @@ const router = createRouter({
       name: 'VisualizeByDataset',
       component: () => import('@/views/VisualizeByDataset.vue'),
     },
-    // {
-    //   path: '/encode',
-    //   name: 'ENCODESearch',
-    //   component: ENCODESearch,
-    // },
+    {
+      path: '/analysis/dataset',
+      name: 'AnalysisByDataset',
+      component: () => import('@/views/AnalysisByDataset.vue'),
+    },
     {
       path: '/statistics',
       name: 'Statistics',
