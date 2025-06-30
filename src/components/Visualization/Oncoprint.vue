@@ -6,7 +6,7 @@
     <svg ref="svg" :width="computedWidth" :height="height"></svg>
     <div
       id="oncoprintTooltip"
-      style="position: absolute; pointer-events: none; background: #222; color: #eee; padding: 5px 8px; border-radius: 4px; font-size: 12px; display: none; z-index: 10;"
+      style="position: absolute; pointer-events: none; background: #222; color: #eee; padding: 5px 8px; border-radius: 4px; font-size: 14px; display: none; z-index: 10;"
     ></div>
 
     <!-- 控制按钮 -->
@@ -179,17 +179,17 @@ function drawTrack() {
       return yGene + (level % 2 === 0 ? -6 - 12 * level : geneRectHeight + 12 * level)
     })
     .attr('text-anchor', 'middle')
-    .attr('font-size', 10)
+    .attr('font-size', 14)
     .attr('fill', 'black')
 
   g.append('text')
-    .attr('x', -60).attr('y', yGene + geneRectHeight / 2 - 8)
-    .attr('text-anchor', 'start').attr('font-size', 12)
+    .attr('x', -60).attr('y', yGene + geneRectHeight / 2)
+    .attr('text-anchor', 'start').attr('font-size', 14)
     .text(props.geneInfo.geneName)
 
   g.append('text')
-    .attr('x', -60).attr('y', yGene + geneRectHeight / 2 + 10)
-    .attr('text-anchor', 'start').attr('font-size', 10)
+    .attr('x', -60).attr('y', yGene + geneRectHeight / 2 + 16)
+    .attr('text-anchor', 'start').attr('font-size', 14)
     .text(props.geneInfo.uniprotId)
 
   const rectHeight = 15
@@ -199,8 +199,8 @@ function drawTrack() {
   props.oncoprintData.forEach((sample, i) => {
     const y = yStart + i * (rectHeight + gap)
     g.append('text')
-      .attr('x', -10).attr('y', y + rectHeight / 2).attr('dy', '0.35em')
-      .attr('text-anchor', 'end').attr('font-size', 11)
+      .attr('x', -10).attr('y', y + rectHeight / 2 - 1).attr('dy', '0.35em')
+      .attr('text-anchor', 'end').attr('font-size', 12)
       .text(sample.sample)
     g.selectAll(`.mut-${i}`)
       .data(sample.mutations)
@@ -321,7 +321,7 @@ watch(() => props.domains, (newDomains) => {
   color: #eee;
   padding: 5px 8px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 14px;
   display: none;
   z-index: 10;
 }
