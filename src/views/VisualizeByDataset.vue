@@ -115,8 +115,34 @@
         
         <!-- Table Content 右侧内容：根据showResults显示/隐藏 -->
         <v-col :cols="showResults ? 12 : 0" :md="showResults ? 10 : 0" v-if="showResults">
-          <v-sheet class="pa-3">
+          <!-- <v-banner single-line :sticky="false">
+            <div style="font-weight: bold;height: 100%;">Tips:&nbsp;</div>
+            (1) Use filters to narrow the datasets table by gene, Mutagenesis strategy, experimental model and phenotype;<br>
+            (2) Click the ‘Visualize’ button to:<br>
+            <v-icon color="black" size="12" class="dot-icon">mdi-circle</v-icon>View the distribution of MAVE functional scores grouped by molecular consequence/Clinvar classification<br>
+            <v-icon color="black" size="12" class="dot-icon">mdi-circle</v-icon>Explore the relationship between population allele frequency (gnomAD) and MAVE functional score.
+          </v-banner> -->
+          <v-banner single-line :sticky="false" class="banner-tips">
+            <div class="d-flex flex-wrap">
+              <span class="font-weight-bold mr-2">Tips:</span>
+              <div class="flex-grow-1">
+                <div class="mb-1">(1) Use filters to narrow the datasets table by gene, Mutagenesis strategy, experimental model and phenotype;</div>
+                <div>(2) Click the ‘Visualize’ button to:</div>
+                <ul class="list-disc pl-5 mt-1 mb-0">
+                  <li class="d-flex items-center">
+                    <v-icon color="black" size="12" class="mr-2" style="margin-top:5px">mdi-circle</v-icon>
+                    View the distribution of MAVE functional scores grouped by molecular consequence/Clinvar classification
+                  </li>
+                  <li class="d-flex items-center">
+                    <v-icon color="black" size="12" class="mr-2" style="margin-top:5px">mdi-circle</v-icon>
+                    Explore the relationship between population allele frequency (gnomAD) and MAVE functional score.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </v-banner>
 
+          <v-sheet class="pa-3">   
             <!-- Table -->
             <vxe-toolbar ref="toolbarRef" export custom></vxe-toolbar>
             <!-- Pagination -->
@@ -206,6 +232,7 @@
                 <template v-else-if="hasClinVarBinData">
                   <ClinVarBin
                     :inputData="ClinVarBinArray"
+                    :titleFlag="true"
                   />
                 </template>
 
@@ -232,6 +259,7 @@
                   <Scatter2d
                     :scatterData="scatterArray"
                     :size="300"
+                    :titleFlag="true"
                   />
                 </template>
 
@@ -257,6 +285,7 @@
                 <template v-else-if="hasConsequenceDensityData">
                   <ConsequenceDensity
                     :data="consequenceArray" 
+                    :titleFlag="true"
                   />
                 </template>
 
@@ -648,5 +677,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
-
+.banner-tips {
+  align-items: flex-start; /* 保持内容顶部对齐 */
+}
+.dot-icon {
+  vertical-align: middle; /* 图标垂直居中 */
+}
 </style>

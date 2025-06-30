@@ -1,8 +1,19 @@
 <template>
   <v-container>
     <v-card flat>
-      <v-card-text>
+      <!-- <v-card-text>
         <svg ref="chart" :width="width" :height="height"></svg>
+      </v-card-text> -->
+      <v-card-text class="d-flex flex-column">
+        <!-- 图表标题 -->
+        <h3 v-if="titleFlag" class="font-weight-bold text-center">
+          Functional score distribution across molecular consequence categories
+        </h3>
+        
+        <!-- SVG图表 -->
+        <div class="chart-container">
+          <svg ref="chart" :width="width" :height="height"></svg>
+        </div>
       </v-card-text>
     </v-card>
   </v-container>
@@ -17,6 +28,10 @@ export default {
     inputData: {
       type: Array,
       required: true
+    },
+    titleFlag: {
+      type: Boolean,
+      default: false
     }
   },
   data() {

@@ -1,6 +1,12 @@
 <template>
   <v-container>
+    <v-card-text class="d-flex flex-column">
+      <!-- 图表标题 -->
+      <h3 v-if="titleFlag" class="font-weight-bold text-center">
+        Receiver Operating Characteristic (ROC) curves analysis between B/LB and P/PL
+      </h3>
       <svg ref="rocSvg" width="400" height="400"></svg>
+    </v-card-text>
   </v-container>
 </template>
 
@@ -21,6 +27,10 @@ const props = defineProps({
   tags: {
     type: Array,
     default: () => [1, 0, 1, 1, 0, 0, 1, 0, 1, 0]
+  },
+  titleFlag: {
+    type: Boolean,
+    default: false
   }
 });
 

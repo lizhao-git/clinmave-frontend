@@ -73,6 +73,16 @@
 
         <!-- Table Content 右侧内容：根据showResults显示/隐藏 -->
         <v-col :cols="showResults ? 12 : 0" :md="showResults ? 10 : 0" v-if="showResults">
+          <v-banner single-line :sticky="false" class="banner-tips">
+            <div class="d-flex flex-wrap">
+              <span class="font-weight-bold mr-2">Tips:</span>
+              <div class="flex-grow-1">
+                <div class="mb-1">(1) Select a gene (or functional classification) to visualize the (specific-) functional classification of variants across its protein domains;</div>
+                <div>(2) All relevant MAVE datasets are aligned by row, allowing direct comparison of functional scores across different assays and studies.</div>
+              </div>
+            </div>
+          </v-banner>
+
           <v-sheet class="pa-3">
 
             <!-- Table -->

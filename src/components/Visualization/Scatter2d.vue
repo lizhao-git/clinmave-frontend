@@ -1,7 +1,11 @@
 <template>
   <v-container>
     <v-card flat>
-      <v-card-text>
+      <v-card-text class="d-flex flex-column">
+        <!-- 图表标题 -->
+        <h3 v-if="titleFlag" class="font-weight-bold text-center">
+          Functional score distribution across Clinvar classification categories
+        </h3>
         <!-- 散点图容器 -->
         <div ref="chartContainer" style="position: relative; width: fit-content;">
           <svg ref="svg" :width="size" :height="size"></svg>
@@ -62,6 +66,10 @@ const props = defineProps({
       'Functional neutral': '#bcbcbc99',
     }),
   },
+  titleFlag: {
+    type: Boolean,
+    default: false,
+  }
 })
 
 const svg = ref(null)

@@ -115,6 +115,25 @@
         
         <!-- Table Content 右侧内容：根据showResults显示/隐藏 -->
         <v-col :cols="showResults ? 12 : 0" :md="showResults ? 10 : 0" v-if="showResults">
+          <v-banner single-line :sticky="false" class="banner-tips">
+            <div class="d-flex flex-wrap">
+              <span class="font-weight-bold mr-2">Tips:</span>
+              <div class="flex-grow-1">
+                <div class="mb-1">(1) Use filters to narrow the datasets table by gene, Mutagenesis strategy, experimental model and phenotype;</div>
+                <div>(2) Click the ‘Visualize’ button to:</div>
+                <ul class="list-disc pl-5 mt-1 mb-0">
+                  <li class="d-flex items-center">
+                    <v-icon color="black" size="12" class="mr-2" style="margin-top:5px">mdi-circle</v-icon>
+                    Measure the ability of functional score to distinguish clinically classified pathogenic (P/LP) and benign (B/LB) variants ;
+                  </li>
+                  <li class="d-flex items-center">
+                    <v-icon color="black" size="12" class="mr-2" style="margin-top:5px">mdi-circle</v-icon>
+                    Compare functional scores in MAVE with widely used in-silico prediction tools.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </v-banner>
           <v-sheet class="pa-3">
 
             <!-- Table -->
@@ -196,6 +215,7 @@
                   <RocCurve
                     :scores="RocCurveMap.score"
                     :tags="RocCurveMap.clvGroup"
+                    :titleFlag="true"
                   />
                 </template>
 
@@ -221,6 +241,7 @@
                 <template v-else-if="hasCompareConsequenceBpxData">
                   <CompareConsequenceBox
                     :data="consequencecomparingboxArray"
+                    :titleFlag="true"
                   />
                 </template>
 

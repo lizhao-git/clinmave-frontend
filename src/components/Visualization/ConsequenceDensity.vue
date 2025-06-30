@@ -1,8 +1,14 @@
 <template>
   <v-container>
-    <div ref="chartWrapper" style="position: relative; width: 100%;">
-      <svg ref="svg" :height="height"></svg>
-    </div>
+    <!-- 图表标题 -->
+    <v-card-text class="d-flex flex-column">
+      <h3 v-if="titleFlag" class="font-weight-bold text-center">
+        Scatter plot between gnomAD frequency and functional score
+      </h3>
+      <div ref="chartWrapper" style="position: relative; width: 100%;">
+        <svg ref="svg" :height="height"></svg>
+      </div>
+    </v-card-text>
   </v-container>
 </template>
 
@@ -13,7 +19,8 @@ import * as d3 from 'd3'
 // Props
 const props = defineProps({
   data: { type: Array, required: true },
-  smoothing: { type: Number, default: 0.02 }
+  smoothing: { type: Number, default: 0.02 },
+  titleFlag: { type: Boolean, default: false }
 })
 
 // Fixed mutation categories

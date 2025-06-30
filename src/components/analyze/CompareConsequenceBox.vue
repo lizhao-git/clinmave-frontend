@@ -1,14 +1,20 @@
 <template>
   <v-container style="position: relative;">
-    <v-btn
-      icon="$download"
-      size="x-small"
-      color="primary"
-      variant="text"
-      style="position: absolute; top: 10px; right: 10px;"
-      @click="downloadPDF"
-    ></v-btn>
-    <svg ref="svg" :width="width" :height="height"></svg>
+    <v-card-text class="d-flex flex-column">
+      <!-- 图表标题 -->
+      <h3 v-if="titleFlag" class="font-weight-bold text-center">
+        Distribution of variant predictive scores among MAVE-defined functional groups
+      </h3>
+      <v-btn
+        icon="$download"
+        size="x-small"
+        color="primary"
+        variant="text"
+        style="position: absolute; top: 10px; right: 10px;"
+        @click="downloadPDF"
+      ></v-btn>
+      <svg ref="svg" :width="width" :height="height"></svg>
+    </v-card-text>
   </v-container>
 </template>
 
@@ -31,6 +37,10 @@ const props = defineProps({
   height: {
     type: Number,
     default: 400,
+  },
+  titleFlag: {
+    type: Boolean,
+    default: false,
   },
 });
 
