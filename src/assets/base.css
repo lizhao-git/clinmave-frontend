@@ -58,6 +58,10 @@
   font-weight: normal;
 }
 
+html, body, * {
+  font-family: Arial, sans-serif !important;
+}
+
 body {
   min-height: 100vh;
   color: var(--color-text);
