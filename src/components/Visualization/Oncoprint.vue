@@ -222,7 +222,7 @@ function drawTrack() {
     .attr('transform', `translate(0, ${yGene + geneRectHeight + 2})`)
     .call(xAxis)
     .selectAll('text')
-    .style('font-size', '10px')
+    .style('font-size', '14px')
 
   const legendY = yStart + props.oncoprintData.length * (rectHeight + gap) + 60
   const legend = g.append('g')
@@ -230,9 +230,9 @@ function drawTrack() {
     .attr('transform', `translate(0, ${legendY})`)
 
   Object.entries(mutationColorMap).forEach(([type, color], i) => {
-    const xOffset = i * 120
+    const xOffset = i * 150
     legend.append('rect').attr('x', xOffset).attr('y', 0).attr('width', 15).attr('height', 15).attr('fill', color).attr('stroke', 'black').attr('stroke-width', 0.5)
-    legend.append('text').attr('x', xOffset + 20).attr('y', 12).attr('font-size', 11).text(type)
+    legend.append('text').attr('x', xOffset + 20).attr('y', 12).attr('font-size', 14).text(type)
   })
 }
 
