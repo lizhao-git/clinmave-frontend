@@ -110,16 +110,16 @@
 
                   <v-col cols="12">
                     <v-autocomplete
-                      v-model="filters.functionAssay"
-                      v-model:search="searchFunctionAssay"
-                      :items="functionAssayOptions"
+                      v-model="filters.functionalAssay"
+                      v-model:search="searchFunctionalAssay"
+                      :items="functionalAssayOptions"
                       item-title="text"
                       item-value="value"
                       label="Function assay"
                       variant="outlined"
                       density="compact"
                       clearable
-                      :loading="loadingFunctionAssay"
+                      :loading="loadingFunctionalAssay"
                     >
                     </v-autocomplete>
                   </v-col>
@@ -226,7 +226,7 @@
                 
                 <vxe-column field="maveTechnique" title="Mave technique" min-width="250" align="center"></vxe-column>
 
-                <vxe-column field="functionAssay" title="Function assay" min-width="160" align="center"></vxe-column>
+                <vxe-column field="functionalAssay" title="Functional assay" min-width="160" align="center"></vxe-column>
 
                 <vxe-column field="experimentModel" title="Experiment model" min-width="150" align="center"></vxe-column>
 
@@ -285,7 +285,7 @@ const breadcrumbs = [
 // Reactive state for filters
 const filters = ref({
   datasetId: null,
-  functionAssay: null,
+  functionalAssay: null,
   geneName: null,
   ensemblId: null,
   mutagenesisStrategy: null,
@@ -297,21 +297,21 @@ const datasetIdOptions = ref([])
 const geneNameOptions = ref([])
 const ensemblIdOptions = ref([])
 const maveTechniqueOptions = ref([])
-const functionAssayOptions = ref([])
+const functionalAssayOptions = ref([])
 
 // Reactive state for search inputs
 const searchDatasetId = ref(null)
 const searchGeneName = ref(null)
 const searchEnsemblId = ref(null)
 const searchMaveTechnique = ref(null)
-const searchFunctionAssay = ref(null)
+const searchFunctionalAssay = ref(null)
 
 // Loading states for autocomplete fields
 const loadingDatasetId = ref(false)
 const loadingGeneName = ref(false)
 const loadingEnsemblId = ref(false)
 const loadingMaveTechnique = ref(false)
-const loadingFunctionAssay = ref(false)
+const loadingFunctionalAssay = ref(false)
 
 // Reactive state for filter panel visibility
 const showFilters = ref(true)
@@ -333,7 +333,7 @@ const sortParams = ref({
 const debouncedFetchDatasetId = debounce(fetchDatasetIdOptions, 300)
 const debouncedFetchGeneName = debounce(fetchGeneNameOptions, 300)
 const debouncedFetchEnsemblId = debounce(fetchEnsemblIdOptions, 300)
-const debouncedFetchFunctionAssay = debounce(fetchFunctionAssayOptions, 300)
+const debouncedFetchFunctionalAssay = debounce(fetchFunctionalAssayOptions, 300)
 const debouncedFetchMaveTechnique = debounce(fetchMaveTechniqueOptions, 300)
 
 async function fetchDatasetIdOptions(query = '') {
@@ -390,21 +390,21 @@ async function fetchEnsemblIdOptions(query = '') {
   }
 }
 
-async function fetchFunctionAssayOptions(query = '') {
+async function fetchFunctionalAssayOptions(query = '') {
   try {
-    loadingFunctionAssay.value = true;
+    loadingFunctionalAssay.value = true;
     const response = await axios.get('/clinmave/api/select/dataset', {
-      params: { functionAssay: !query ? '' : query },
+      params: { functionalAssay: !query ? '' : query },
     });
-    functionAssayOptions.value = response.data.map(item => ({
+    functionalAssayOptions.value = response.data.map(item => ({
       text: `${item.functionalAssay} (#Datasets: ${item.count})`,
       value: item.functionalAssay
     }));
   } catch (error) {
     VxeUI.message.error('Failed to load function assay IDs');
-    functionAssayOptions.value = [];
+    functionalAssayOptions.value = [];
   } finally {
-    loadingFunctionAssay.value = false;
+    loadingFunctionalAssay.value = false;
   }
 }
 
@@ -492,14 +492,14 @@ const resetFilters = () => {
   searchGeneName.value = null;
   searchEnsemblId.value = null;
   searchMaveTechnique.value = null;
-  searchFunctionAssay.value = null;
+  searchFunctionalAssay.value = null;
 
   filters.value = { 
     datasetId: null,
     geneName: null, 
     ensemblId: null,
     maveTechnique: null,
-    functionAssay: null
+    functionalAssay: null
   };
   
   currentPage.value = 1;
@@ -569,7 +569,7 @@ onMounted(() => {
   debouncedFetchDatasetId();
   debouncedFetchGeneName();
   debouncedFetchEnsemblId();
-  debouncedFetchFunctionAssay();
+  debouncedFetchFunctionalAssay();
   debouncedFetchMaveTechnique();
   loadData();
   const $table = tableRef.value

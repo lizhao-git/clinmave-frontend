@@ -175,7 +175,7 @@
                   </template>
                 </vxe-column>
 
-                <vxe-column field="info" title="Information" min-width="200" align="center"></vxe-column>
+                <vxe-column field="infoTechnique" title="MAVE technique" min-width="200" align="center"></vxe-column>
 
               </vxe-table>
               <!-- Pagination -->

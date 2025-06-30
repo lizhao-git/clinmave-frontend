@@ -152,7 +152,7 @@
               :export-config="{}"
               :column-config="{ resizable: true }"
               :data="tableData"
-              stripe
+              :row-class-name="getRowClassName"
               round
               :loading="loading"
               :pager-config="{ currentPage, pageSize, total: totalRecords }"
@@ -173,6 +173,17 @@
                 </template>
               </vxe-column>
               
+              <vxe-column field="datasetId" title="#Visualize" min-width="80" align="center">
+                <template #default="{ row }">
+                  <v-btn
+                    color="primary"
+                    variant="compact"
+                    icon="mdi-eye"
+                    @click="VisualizeClicker(row.datasetId)"
+                  ></v-btn>
+                </template>
+              </vxe-column>
+
               <vxe-column field="pmid" title="PMID" min-width="153" align="center">
                 <template #default="{ row }">
                   <div v-if="row">
@@ -191,17 +202,6 @@
               <vxe-column field="phenotype" title="Phenotype" min-width="400" align="center"></vxe-column>
 
               <vxe-column field="varNum" title="#Variants" min-width="120" align="center" sortable></vxe-column>
-
-              <vxe-column field="datasetId" title="#Visualize" min-width="80" align="center">
-                <template #default="{ row }">
-                  <v-btn
-                    primary
-                    variant="compact"
-                    icon="mdi-bullseye"
-                    @click="VisualizeClicker(row.datasetId)"
-                  ></v-btn>
-                </template>
-              </vxe-column>
 
             </vxe-table>
             <!-- Pagination -->
@@ -360,6 +360,7 @@ const loadingPhenotype = ref(false)
 // 新增控制右侧结果显示的变量
 const showResults = ref(false);
 const showVisualize = ref(false);
+const highlightedRowId = ref(null)
 
 const oncoprintMap = ref({})
 const oncoprintLoading = ref(false)
@@ -378,7 +379,7 @@ const toolbarRef = ref()
 const tableRef = ref()
 const tableData = ref([]) 
 const currentPage = ref(1)
-const pageSize = ref(10)
+const pageSize = ref(5)
 const totalRecords = ref(0)
 const loading = ref(false)
 const sortParams = ref({
@@ -535,6 +536,13 @@ async function fetchConsequenceDensityData(query = '') {
   }
 }
 
+const getRowClassName = ({ row }) => {
+  if (row.datasetId === highlightedRowId.value) {
+    return 'highlighted-row'
+  }
+  return ''
+}
+
 const loadData = async () => {
   loading.value = true;
   try {
@@ -584,6 +592,7 @@ const applyFilters = () => {
 }
 
 const VisualizeClicker = (datasetId) => {
+  highlightedRowId.value = datasetId  // 设置高亮
   showVisualize.value = true;
   debouncedFetchClinVarBinData(datasetId);
   debouncedFetchScatterData(datasetId);
@@ -682,5 +691,12 @@ onMounted(() => {
 }
 .dot-icon {
   vertical-align: middle; /* 图标垂直居中 */
+}
+</style>
+
+<style>
+/* 全局样式，覆盖 vxe-table 的行 class */
+.highlighted-row {
+  background-color: #E3F2FD !important;
 }
 </style>

@@ -14,7 +14,7 @@
             <template #title>
               <h2 class="text-h5 font-weight-bold text-center">Welcome to ClinMAVE</h2>
             </template>
-            <v-card-text class="text-center font-size: 16px">
+            <v-card-text class="text-center" style="font-size: 15px;">
               A curated database of Multiplexed Assays of Variant Effect (MAVE) studies, providing variant-level functional annotations to support genetic variant interpretation, diagnostic decision-making, and exploration of genotype-phenotype relationships in diseases.
             </v-card-text>
             <v-divider class="mx-4 mb-1" />
@@ -118,74 +118,87 @@
       <v-divider class="mx-12 my-3" />
 
       <v-row class="mt-1" align="stretch">
-        <v-col cols="12">
+        <v-col cols="12" md="8" lg="8" sm="12">
           <v-img
             src="/clinmave/images/pipeline.png"
             contain
-            max-width="900"
-            class="mx-auto"
+            
           />
         </v-col>
-      </v-row>
-      <!-- Footer -->
-      <v-row>
-        <v-col cols="12" sm="4" md="4">
-          <v-card class="py-4" :rounded="defaultRounded" :variant="defaultCardVariant" height="120px">
-            <template #title>
-              <v-icon start class="mr-2" color="primary">mdi-egg-easter</v-icon>
-              How to cite
-            </template>
-            <v-card-text>
-              <span>ClinMAVE: Nucleic Acids Research 2026, in preparation<br>
-                <!-- [PMID=<a href="https://pubmed.ncbi.nlm.nih.gov/37027007" target="_blank">37027007</a>] <br>
-                [OpenLBID=<a href="" target="_blank">OLB-PM-37027007</a>] <br>
-                [DOI=<a href="https://doi.org/10.1158/1541-7786.MCR-22-0909" target="_blank">10.1158/1541-7786.MCR-22-0909</a>] -->
-              </span>
-            </v-card-text>
-          </v-card>
-        </v-col>
-        
-        
-        <v-col cols="12" sm="4" md="4">
-          <v-card class="py-4 d-flex flex-column" :rounded="defaultRounded" :variant="defaultCardVariant" height="120px">
-            <template #title>
-              <v-icon start class="mr-2" color="primary">mdi-google-downasaur</v-icon>
-              News
-            </template>
-            <v-card-text class="flex-grow-1 overflow-y-auto">
-              <div class="mb-4" v-for="nnew in nnews">
-                <div class="font-weight-normal">
-                  <strong>{{ nnew.from }}</strong> @{{nnew.time}}
-                </div>
-                <div>{{ nnew.message }}</div>
-              </div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <v-col cols="12" sm="4" md="4">
-          <v-card class="py-4" :rounded="defaultRounded" :variant="defaultCardVariant" height="120px">
-            <template #title>
-              <v-icon start class="mr-2" color="primary">mdi-halloween</v-icon>
-              Related resources
-            </template>
-            <v-card-text>
-              <v-chip class="mr-4" color="primary"><a href="https://gnomad.broadinstitute.org/" target="_blank">gnomAD</a></v-chip>
-              <v-chip class="mr-4" color="primary"><a href="https://www.ncbi.nlm.nih.gov/clinvar/" target="_blank">ClinVar</a></v-chip>
-              <v-chip class="mr-4" color="primary"><a href="https://www.mavedb.org/" target="_blank">MAVEDB</a></v-chip>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
 
-      <v-row>
-        <v-col>
-          <v-card :variant="defaultCardVariant">
-            <v-card-text>
-              To get the best experience, please visit us using the latest version of Google Chrome, Microsoft Edge or Firefox.
-            </v-card-text>
-          </v-card>
+        <v-col cols="12" md="4" lg="4" sm="12" class="d-flex flex-column fill-height">
+          <div class="d-flex flex-column justify-space-between fill-height">
+            <!-- How to cite -->
+            <v-row>
+              <v-col class="fill-height">
+                <v-card class="py-4 fill-height" :rounded="defaultRounded" :variant="defaultCardVariant">
+                  <template #title>
+                    <v-icon start class="mr-2" color="primary">mdi-egg-easter</v-icon>
+                    How to cite
+                  </template>
+                  <v-card-text>
+                    <span>ClinMAVE: Nucleic Acids Research 2026, in preparation</span>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+            
+            <v-divider class="my-5"></v-divider>
+
+            <!-- News -->
+            <v-row>
+              <v-col class="fill-height">
+                <v-card class="py-4 d-flex flex-column fill-height" :rounded="defaultRounded" :variant="defaultCardVariant">
+                  <template #title>
+                    <v-icon start class="mr-2" color="primary">mdi-google-downasaur</v-icon>
+                    News
+                  </template>
+                  <v-card-text class="flex-grow-1 overflow-y-auto">
+                    <div class="mb-4" v-for="nnew in nnews">
+                      <div class="font-weight-normal">
+                        <strong>{{ nnew.from }}</strong> @{{ nnew.time }}
+                      </div>
+                      <div>{{ nnew.message }}</div>
+                    </div>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+
+            <v-divider class="my-5"></v-divider>
+
+            <!-- Related Resources -->
+            <v-row>
+              <v-col class="fill-height">
+                <v-card class="py-4 fill-height" :rounded="defaultRounded" :variant="defaultCardVariant">
+                  <template #title>
+                    <v-icon start class="mr-2" color="primary">mdi-halloween</v-icon>
+                    Related resources
+                  </template>
+                  <v-card-text>
+                    <v-chip class="mr-4" color="primary"><a href="https://gnomad.broadinstitute.org/" target="_blank">gnomAD</a></v-chip>
+                    <v-chip class="mr-4" color="primary"><a href="https://www.ncbi.nlm.nih.gov/clinvar/" target="_blank">ClinVar</a></v-chip>
+                    <v-chip class="mr-4" color="primary"><a href="https://www.mavedb.org/" target="_blank">MAVEDB</a></v-chip>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+            
+            <v-divider class="my-5"></v-divider>
+            
+            <v-row>
+              <v-col>
+                <v-card :variant="defaultCardVariant">
+                  <v-card-text>
+                    To get the best experience, please visit us using the latest version of Google Chrome, Microsoft Edge or Firefox.
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+          </div>
         </v-col>
       </v-row>
+      
     </v-container>
   </v-main>
 </template>

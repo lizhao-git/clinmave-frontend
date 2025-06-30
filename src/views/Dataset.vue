@@ -23,29 +23,39 @@
       </v-row>
       
       <v-row class="mt-2" align="stretch">
-        <v-col cols="12" md="12">
+        <v-col cols="12" md="12" lg="12" sm="12">
           <v-card 
             flat
-            height="100%"
           >
             <v-card-title class="py-3">
               <v-icon icon="mdi-alert-circle-outline" class="mr-2" color="blue"></v-icon>
               <span class="text-h6 font-weight-bold">Dataset Details</span>
             </v-card-title>
             <v-card-text>
-              <v-row>
-              <v-col cols="12" sm="6">
-                <DensityPlot :size="200" :data="scoreData"
-                  :selection-strategy="VariantDensityData.selectionStrategy"
-                  :cutoff="VariantDensityData.cutoff" 
-                  :score="variantData.score"
-                />
-              </v-col>
-              
-            </v-row>
+              <v-row class="d-flex justify-center">
+                <v-col cols="12" sm="12" lg="4" md="4">
+                  <DensityPlot
+                    :size="200"
+                    :data="scoreData"
+                    :selection-strategy="VariantDensityData.selectionStrategy"
+                    :cutoff="VariantDensityData.cutoff"
+                    :score="variantData.score"
+                  />
+                </v-col>
+
+                <v-divider vertical />
+
+                <v-col cols="12" sm="12" lg="4" md="4" class="d-flex justify-center">
+                  <!-- <ConsequenceProporiton
+                    :data="ConsequenceProportionData"
+                  /> -->
+                </v-col>
+              </v-row>
             </v-card-text>
           </v-card>
         </v-col>
+
+
       </v-row>
 
       <v-row class="mt-2" align="stretch">
@@ -95,7 +105,7 @@
                   </template>
 
                 </vxe-column>
-
+                
                 <vxe-column field="position" title="Position" min-width="180">
                   <template #default="{ row }">
                     <a v-if="row" :href="row.ucscHg38" target="_blank" style="text-decoration: none;">
@@ -237,6 +247,7 @@
   import 'vxe-pc-ui/lib/style.css';
   import 'vxe-table/lib/style.css';
   import DensityPlot from '@/components/Visualization/DensityPlot.vue';
+  import ConsequenceProporiton from '@/components/Visualization/ConsequenceProportion.vue'
 
   // Reactive state for variant details
   const variantData = ref({
@@ -307,6 +318,8 @@
     label: null,
   });
 
+  const ConsequenceProportionData = ref({});
+
   // Get the route to extract the identifier
   const route = useRoute();
   
@@ -330,6 +343,19 @@
       ];
       
       loadData(); // Load table data after fetching variant data
+    } catch (error) {
+      console.error('Error fetching variant data:', error);
+    }
+  };
+
+  const fetchConsequenceProportionData = async () => {
+    try {
+      const datasetId = route.params.datasetId; // Get identifier from route
+      const response = await axios.get(`/clinmave/api/visualize/dataset/consequenceclass/proportion?datasetId=${encodeURIComponent(datasetId)}`);
+      console.console.log("ConsequeceCLas", response.data);
+      
+      ConsequenceProportionData.value = response.data || {}; // Directly assign API response
+      
     } catch (error) {
       console.error('Error fetching variant data:', error);
     }
@@ -492,6 +518,7 @@
   onMounted(() => {
     fetchVariantData();
     fetchVariantDensityData();
+    fetchConsequenceProportionData();
     loadData();
     const $table = tableRef.value
     const $toolbar = toolbarRef.value

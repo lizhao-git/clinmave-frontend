@@ -359,7 +359,9 @@
                 <v-alert border="start" border-color="deep-purple accent-4" variant="outlined"><span>Description: {{ VariantDensityData.functionalDescription }}</span></v-alert>
               </v-col>
             </v-row>
+
             <v-divider />
+            
             <v-row>
 
               <v-col cols="12" sm="6">
@@ -371,19 +373,29 @@
                       <td class="text-subtitle-1 font-weight-bold">#(Likely-benign)</td>
                     </tr>
                     <tr>
-                      <td class="text-body-1"> {{ variantData.oddsPath }}</td>
-                      <td class="text-body-1">{{ variantData.tpCount }}</td>
-                      <td class="text-body-1">{{ variantData.tnCount }}</td>
+                      <td class="text-body-1"> {{ VariantDensityData.oddsPath }}</td>
+                      <td class="text-body-1">{{ VariantDensityData.tpCount }}</td>
+                      <td class="text-body-1">{{ VariantDensityData.tnCount }}</td>
                     </tr>
                     
                   </tbody>
                 </v-table>
               </v-col>
-
-              <v-col cols="12" sm="6">
-                <EffectBar :strength="selectedStrength" :bar-height="12"
-                    :labels="['No effects', 'Weak', 'Moderate', 'Strong']"
-                    :colors="{ blue: '#1E88E5', purple: '#7B1FA2', text: '#212121', cardBorder: '#B0BEC5', cardBg: '#F5F5F5', strongText: '#D32F2F' }" />
+              
+              <v-col cols="12" sm="6" v-if="VariantDensityData.intensityLevel">
+                <EffectBar
+                  :strength="VariantDensityData.intensityLevel"
+                  :bar-height="12"
+                  :labels="['No effects', 'Weak', 'Moderate', 'Strong']"
+                  :colors="{
+                    blue: '#1E88E5',
+                    purple: '#7B1FA2',
+                    text: '#212121',
+                    cardBorder: '#B0BEC5',
+                    cardBg: '#F5F5F5',
+                    strongText: '#D32F2F'
+                  }"
+                />
               </v-col>
               
             </v-row>
@@ -480,9 +492,6 @@
     clvReviewstatus: null,
     clvClinicalsignificance: null,
     clvStar: null,
-    tpCount: null,
-    tnCount: null,
-    validationHits: null,
   });
 
   // Table state
@@ -505,6 +514,10 @@
     description: null,
     cutoff: null,
     label: null,
+    oddsPath: null,
+    tpCount: null,
+    tnCount: null,
+    intensityLevel: null,
   });
   
   // Reactive state for selected strength (for EffectBar)
@@ -690,12 +703,14 @@
       VariantDensityData.value = response.data; // Directly assign API response
 
       // Update selectedStrength based on consequenceClass
-      if (VariantDensityData.value.consequenceClass?.includes('neutral')) {
-        selectedStrength.value = 'No effects';
-      } else if (VariantDensityData.value.consequenceClass?.includes('pathogenic')) {
+      if (VariantDensityData.value.intensityLevel?.includes('Strong')) {
+        selectedStrength.value = 'Strong';
+      } else if (VariantDensityData.value.consequenceClass?.includes('Moderate')) {
         selectedStrength.value = 'Moderate';
-      } else {
+      } else if (VariantDensityData.value.consequenceClass?.includes('Weak')) {
         selectedStrength.value = 'Weak';
+      } else {
+        selectedStrength.value = 'No effect';
       }
 
     } catch (error) {

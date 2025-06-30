@@ -399,7 +399,6 @@ const resetFilters = () => {
   searchPmid.value = null;
   searchGeneName.value = null;
   searchJournal.value = null;
-  searchYear.value = null;
 
   filters.value = { 
     pmid: null, 

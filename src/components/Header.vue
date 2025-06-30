@@ -21,7 +21,7 @@
               class="text-subtitle-1"
               style="color: white; font-family: 'Arial';"
             >
-              Clinically curated database of Multiplexed Assays of Variant Effect
+              MAVE database for clinical application
             </span>
           </v-col>
         </v-row>
@@ -32,7 +32,7 @@
       <v-col cols="12" sm="1" md="2" lg="1" xl="1">
         <v-sheet color="transparent" class="icon-container">
           <v-img
-            src="/clinmave/images/brand.png"
+            src="/clinmave/images/brand.teal.png"
             contain
             width="140"
             height="140"
