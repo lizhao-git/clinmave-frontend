@@ -144,7 +144,8 @@
             </v-card-text>
           </v-card>
         </v-col>
-        <v-divider class="my-8" vertical />
+        
+        
         <v-col cols="12" sm="4" md="4">
           <v-card class="py-4 d-flex flex-column" :rounded="defaultRounded" :variant="defaultCardVariant" height="120px">
             <template #title>
@@ -161,7 +162,6 @@
             </v-card-text>
           </v-card>
         </v-col>
-        <v-divider class="my-8" vertical />
         <v-col cols="12" sm="4" md="4">
           <v-card class="py-4" :rounded="defaultRounded" :variant="defaultCardVariant" height="120px">
             <template #title>

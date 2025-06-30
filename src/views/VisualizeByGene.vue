@@ -73,6 +73,37 @@
 
         <!-- Table Content 右侧内容：根据showResults显示/隐藏 -->
         <v-col :cols="showResults ? 12 : 0" :md="showResults ? 10 : 0" v-if="showResults">
+          
+          <v-sheet class="pl-4" style="min-height: 320px; position: relative;">
+            <template v-if="oncoprintLoading">
+              <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                <v-progress-circular
+                  indeterminate
+                  color="primary"
+                  size="48"
+                ></v-progress-circular>
+                <div style="margin-top: 8px; color: #666;">Loading Oncoprint data...</div>
+              </div>
+            </template>
+
+            <template v-else-if="hasOncoprintData">
+              <Oncoprint
+                :gene-info="oncoprintMap.geneInfo"
+                :domains="oncoprintMap.domains"
+                :oncoprint-data="oncoprintMap.oncoprintData"
+                height="400"
+              />
+            </template>
+
+            <template v-else>
+              <div class="text-center" style="margin-top: 100px; color: #999;">
+                No Oncoprint data available.
+              </div>
+            </template>
+          </v-sheet>
+
+          <v-divider></v-divider>
+
           <v-sheet class="pa-3">
 
             <!-- Table -->
@@ -136,34 +167,8 @@
               @page-change="handlePageChange"
             ></vxe-pager>
           </v-sheet>
-          <v-divider></v-divider>
-          <v-sheet class="pl-4" style="min-height: 320px; position: relative;">
-            <template v-if="oncoprintLoading">
-              <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
-                <v-progress-circular
-                  indeterminate
-                  color="primary"
-                  size="48"
-                ></v-progress-circular>
-                <div style="margin-top: 8px; color: #666;">Loading Oncoprint data...</div>
-              </div>
-            </template>
-
-            <template v-else-if="hasOncoprintData">
-              <Oncoprint
-                :gene-info="oncoprintMap.geneInfo"
-                :domains="oncoprintMap.domains"
-                :oncoprint-data="oncoprintMap.oncoprintData"
-                height="400"
-              />
-            </template>
-
-            <template v-else>
-              <div class="text-center" style="margin-top: 100px; color: #999;">
-                No Oncoprint data available.
-              </div>
-            </template>
-          </v-sheet>
+         
+          
         </v-col>
       </v-row>
     </v-container>
