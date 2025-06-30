@@ -10,11 +10,11 @@
             <v-breadcrumbs :items="breadcrumbs">
               <template v-slot:item="{ item }">
                 <v-breadcrumbs-item
+                  :to="item.href"
+                  :class="{ 'text-primary': item.href }"
+                  link
                 >
-                  
-                  <span>
-                    {{ item.title }}
-                  </span>
+                  <span>{{ item.title }}</span>
                 </v-breadcrumbs-item>
               </template>
             </v-breadcrumbs>
@@ -279,23 +279,16 @@
   const breadcrumbs = ref([
       {
         title: 'Home',
-        icon: 'mdi-home',
         href: '/',
-        disabled: false,
       },
       {
         title: 'Browse',
-        disabled: false,
       },
       {
         title: 'Datasets',
-        disabled: true, 
       },
       {
         title: null,
-        icon: 'mdi-information',
-        href: '/products/details',
-        disabled: true,
       },
     ])
   

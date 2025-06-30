@@ -6,7 +6,11 @@
         <v-card flat>
           <v-breadcrumbs :items="breadcrumbs">
             <template v-slot:item="{ item }">
-              <v-breadcrumbs-item>
+              <v-breadcrumbs-item
+                :to="item.href"
+                :class="{ 'text-primary': item.href }"
+                link
+              >
                 <span>{{ item.title }}</span>
               </v-breadcrumbs-item>
             </template>
@@ -142,23 +146,33 @@
         <v-card flat height="100%">
           <v-card-title class="py-3">
             <v-icon icon="mdi-cactus" class="mr-2" color="teal"></v-icon>
-            <span class="text-h6 font-weight-bold">Germline pathogenicity</span>
+            <span class="text-h6 font-weight-bold">ClinVar classification</span>
           </v-card-title>
           <v-card-text>
             <v-table density="comfortable" class="no-border">
               <tbody>
                 <tr>
                   <td class="text-subtitle-1 font-weight-bold">
-                    <a :href="variantData.clvId" target="_blank">ClinVar:</a>
+                    ID:
                   </td>
                   <td class="text-body-1">
-                    <v-rating v-if="variantData.clvStar && variantData.clvStar !== 'null'" readonly :length="4"
-                      :size="32" :model-value="getStarValue(variantData.clvStar)" active-color="primary" />
+                     <template v-if="variantData.clvUrl">
+                        <a
+                          :href="variantData.clvUrl"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style="text-decoration: none;"
+                        >
+                          {{ variantData.clvUrl.split('/').pop() }}
+                        </a>
+                        <v-icon small color="primary">mdi-share</v-icon>
+                    </template>
                     <span v-else class="text-grey">——</span>
                   </td>
                 </tr>
+
                 <tr>
-                  <td class="text-subtitle-1 font-weight-bold">Clinical significance:</td>
+                  <td class="text-subtitle-1 font-weight-bold">Classification:</td>
                   <td class="text-body-1">
                     <v-chip v-if="variantData.clvClinicalsignificance"
                       :text="variantData.clvClinicalsignificance || '--'">
@@ -170,6 +184,11 @@
                 <tr>
                   <td class="text-subtitle-1 font-weight-bold">Review status:</td>
                   <td class="text-body-1">
+
+                    <v-rating v-if="variantData.clvStar && variantData.clvStar !== 'null'" readonly :length="4"
+                      :size="32" :model-value="getStarValue(variantData.clvStar)" active-color="primary" />
+                    <span v-else class="text-grey">——</span><br>
+
                     <v-chip v-if="variantData.clvReviewstatus"
                       :text="variantData.clvReviewstatus || '--'">
                       {{ variantData.clvReviewstatus }}
@@ -342,6 +361,25 @@
             </v-row>
             <v-divider />
             <v-row>
+
+              <v-col cols="12" sm="6">
+                 <v-table density="comfortable" class="no-border mt-3">
+                  <tbody>
+                    <tr>
+                      <td class="text-subtitle-1 font-weight-bold">Oddspath:</td>
+                      <td class="text-subtitle-1 font-weight-bold">#(Likely-pathogeniciy)</td>
+                      <td class="text-subtitle-1 font-weight-bold">#(Likely-benign)</td>
+                    </tr>
+                    <tr>
+                      <td class="text-body-1"> {{ variantData.oddsPath }}</td>
+                      <td class="text-body-1">{{ variantData.tpCount }}</td>
+                      <td class="text-body-1">{{ variantData.tnCount }}</td>
+                    </tr>
+                    
+                  </tbody>
+                </v-table>
+              </v-col>
+
               <v-col cols="12" sm="6">
                 <EffectBar :strength="selectedStrength" :bar-height="12"
                     :labels="['No effects', 'Weak', 'Moderate', 'Strong']"
@@ -442,6 +480,9 @@
     clvReviewstatus: null,
     clvClinicalsignificance: null,
     clvStar: null,
+    tpCount: null,
+    tnCount: null,
+    validationHits: null,
   });
 
   // Table state
@@ -476,22 +517,15 @@
       {
         title: 'Home',
         href: '/',
-        disabled: false,
       },
       {
         title: 'Browse',
-        href: '/products',
-        disabled: false,
       },
       {
         title: 'Variants',
-        href: '/products/details',
-        disabled: true, 
       },
       {
         title: null,
-        href: '/products/details',
-        disabled: true,
       },
     ])
   

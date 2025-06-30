@@ -7,13 +7,11 @@
             <v-breadcrumbs :items="breadcrumbs">
               <template v-slot:item="{ item }">
                 <v-breadcrumbs-item
-                  :disabled="item.disabled"
-                  :href="item.href"
+                  :to="item.href"
+                  :class="{ 'text-primary': item.href }"
+                  link
                 >
-                  <span>
-                    <v-icon v-if="item.icon" :icon="item.icon" left></v-icon>
-                    {{ item.title }}
-                  </span>
+                  <span>{{ item.title }}</span>
                 </v-breadcrumbs-item>
               </template>
             </v-breadcrumbs>
@@ -196,8 +194,8 @@
 
                 <template v-else-if="hasRocCurveData">
                   <RocCurve
-                    :scores="[2.5, -1.0, 3.2, 1.8, 0.3, -0.5, 2.0, 0.1, 2.8, -1.5]"
-                    :tags="[1, 0, 1, 1, 0, 0, 1, 0, 1, 0]"
+                    :scores="RocCurveMap.score"
+                    :tags="RocCurveMap.clvGroup"
                   />
                 </template>
 
@@ -261,7 +259,7 @@ import CompareConsequenceBox from '@/components/analyze/CompareConsequenceBox.vu
 const breadcrumbs = [
   {
     title: 'Home',
-    disabled: false,
+    href: '/',
   },
   {
     title: 'Visualize',

@@ -5,18 +5,16 @@
         <v-col cols="12">
           <v-card flat>
             <v-breadcrumbs :items="breadcrumbs">
-              <template v-slot:item="{ item }">
-                <v-breadcrumbs-item
-                  :disabled="item.disabled"
-                  :href="item.href"
-                >
-                  <span>
-                    <v-icon v-if="item.icon" :icon="item.icon" left></v-icon>
-                    {{ item.title }}
-                  </span>
-                </v-breadcrumbs-item>
-              </template>
-            </v-breadcrumbs>
+                <template v-slot:item="{ item }">
+                  <v-breadcrumbs-item
+                    :to="item.href"
+                    :class="{ 'text-primary': item.href }"
+                    link
+                  >
+                    <span>{{ item.title }}</span>
+                  </v-breadcrumbs-item>
+                </template>
+              </v-breadcrumbs>
           </v-card>
         </v-col>
       </v-row>
@@ -296,15 +294,13 @@ import ConsequenceDensity from '@/components/Visualization/ConsequenceDensity.vu
 const breadcrumbs = [
   {
     title: 'Home',
-    disabled: false,
+    href: '/',
   },
   {
     title: 'Visualize',
-    disabled: false,
   },
   {
     title: 'Dataset',
-    disabled: false,
   },
 ]
 
