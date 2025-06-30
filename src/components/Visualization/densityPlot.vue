@@ -1,29 +1,3 @@
-<template>
-  <div class="chart-container">
-    <!-- 下载按钮组 -->
-    <div class="download-menu">
-      <v-menu offset-y>
-        <template #activator="{ props }">
-          <v-btn v-bind="props" icon variant="text">
-            <v-icon>mdi-menu</v-icon>
-          </v-btn>
-        </template>
-        <v-list>
-          <v-list-item @click="downloadSVG">
-            <v-list-item-title>Download SVG</v-list-item-title>
-          </v-list-item>
-          <v-list-item @click="downloadPDF">
-            <v-list-item-title>Download PDF (Hi-Res)</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-    </div>
-
-    <!-- 图表 -->
-    <svg ref="svgRef" :viewBox="`0 0 ${totalWidth} ${totalHeight}`" preserveAspectRatio="xMinYMin meet" />
-  </div>
-</template>
-
 <script setup>
 import * as d3 from 'd3'
 import jsPDF from 'jspdf'
@@ -40,16 +14,14 @@ const props = defineProps({
 })
 
 const totalWidth = computed(() => props.size + props.legendWidth)
-const totalHeight = computed(() => props.size) // 增加高度以容纳底部图例
-
+const totalHeight = computed(() => props.size)
 const svgRef = ref(null)
 
-// 渲染主图
 const renderChart = () => {
   const svg = d3.select(svgRef.value)
   svg.selectAll('*').remove()
 
-  const margin = { top: 10, right: 10, bottom: 80, left: 60 } // 增加 bottom margin 以容纳图例
+  const margin = { top: 10, right: 10, bottom: 75, left: 50 }
   const width = props.size - margin.left - margin.right
   const height = props.size - margin.top - margin.bottom
   const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`)
@@ -63,42 +35,47 @@ const renderChart = () => {
   const kernel = epanechnikov(0.5)
   const density = kernelDensityEstimator(kernel, d3.range(xMin, xMax + 0.01, 0.01))(props.data)
 
-  const binWidth = 0.25
+  const binWidth = 0.1
   const bins = d3.bin()
     .domain([xMin, xMax])
     .thresholds(d3.range(xMin, xMax + binWidth, binWidth))(props.data)
 
   bins.forEach(bin => {
-    const binWidth = bin.x1 - bin.x0
-    bin.density = (bin.length / props.data.length) / binWidth
+    const binW = bin.x1 - bin.x0
+    bin.density = (bin.length / props.data.length) / binW
   })
 
+  const yMax = Math.max(d3.max(density, d => d[1]), d3.max(bins, d => d.density))
   const xScale = d3.scaleLinear().domain([xMin, xMax]).range([0, width])
-  const yScale = d3.scaleLinear().domain([0, 1]).range([height, 0])
+  const yScale = d3.scaleLinear().domain([0, yMax]).range([height, 0])
 
   g.append('g')
     .attr('transform', `translate(0,${height})`)
-    .call(d3.axisBottom(xScale).tickValues(d3.range(Math.floor(xMin), Math.ceil(xMax) + 1, 1)))
-    .call(g => g.selectAll('text').style('font-family', 'Arial').style('font-size', '12px'))
+    .call(d3.axisBottom(xScale)
+      .tickValues(d3.range(Math.floor(xMin), Math.ceil(xMax) + 1, 2)))
+    .call(g => g.selectAll('text')
+      .style('font-family', 'Arial')
+      .style('font-size', '10px'))
 
   g.append('g')
-    .call(d3.axisLeft(yScale).tickValues([0, 0.2, 0.4, 0.6, 0.8, 1.0]))
-    .call(g => g.selectAll('text').style('font-family', 'Arial').style('font-size', '12px'))
+    .call(d3.axisLeft(yScale).ticks(3))
+    .call(g => g.selectAll('text')
+      .style('font-family', 'Arial')
+      .style('font-size', '10px'))
 
   if (props.score !== null && !isNaN(props.score)) {
     const scoreX = xScale(props.score)
-    // 查找密度曲线上的对应 y 值
     const scoreDensity = density.find(d => Math.abs(d[0] - props.score) < 0.01)?.[1] || 0
 
     g.append('circle')
       .attr('cx', scoreX)
-      .attr('cy', yScale(Math.min(scoreDensity, 1)))
+      .attr('cy', yScale(scoreDensity))
       .attr('r', 4)
       .attr('fill', '#ff5722')
 
     g.append('text')
       .attr('x', scoreX)
-      .attr('y', yScale(Math.min(scoreDensity, 1)) - 10)
+      .attr('y', yScale(scoreDensity) - 10)
       .attr('text-anchor', 'middle')
       .attr('fill', '#000')
       .style('font-size', '10px')
@@ -109,7 +86,7 @@ const renderChart = () => {
     .attr('x', width / 2)
     .attr('y', height + margin.bottom - 45)
     .style('text-anchor', 'middle')
-    .style('font-size', '12px')
+    .style('font-size', '10px')
     .text('Functional score')
 
   g.append('text')
@@ -117,14 +94,14 @@ const renderChart = () => {
     .attr('x', -height / 2)
     .attr('y', -margin.left + 15)
     .style('text-anchor', 'middle')
-    .style('font-size', '12px')
+    .style('font-size', '10px')
     .text('Probability density')
 
   g.append('path')
     .datum(density)
     .attr('d', d3.line()
       .x(d => xScale(d[0]))
-      .y(d => yScale(Math.min(d[1], 1)))
+      .y(d => yScale(d[1]))
       .curve(d3.curveBasis))
     .attr('fill', 'none')
     .attr('stroke', '#1976d2')
@@ -155,10 +132,10 @@ const renderChart = () => {
         .attr('d', d3.area()
           .x(d => xScale(d[0]))
           .y0(yScale(0))
-          .y1(d => yScale(Math.min(d[1], 1)))
+          .y1(d => yScale(d[1]))
           .curve(d3.curveBasis))
         .attr('fill', color)
-        .attr('opacity', 0.2)
+        .attr('opacity', 0.8)
     }
   })
 
@@ -166,28 +143,36 @@ const renderChart = () => {
     .data(bins)
     .enter()
     .append('rect')
-    .attr('x', d => xScale(d.x0) + 1)
-    .attr('y', d => yScale(Math.min(d.density, 1)))
-    .attr('width', d => Math.max(0, xScale(d.x1) - xScale(d.x0) - 2))
-    .attr('height', d => height - yScale(Math.min(d.density, 1)))
+    .attr('x', d => xScale(d.x0) + 0.5)
+    .attr('y', d => yScale(d.density))
+    .attr('width', d => Math.max(0.5, xScale(d.x1) - xScale(d.x0) - 0.8))
+    .attr('height', d => height - yScale(d.density))
     .attr('fill', 'gray')
     .attr('opacity', 0.6)
 
-  // 图例放置在底部
+  // Modified legend to stack items vertically
+  const itemHeight = 15 // Height per legend item
+  const rectWidth = 12
+  const fontSize = 10
   const legend = g.append('g')
-    .attr('transform', `translate(${width / 2 - (legendItems.length * 100) / 2}, ${height + 50})`) // 水平居中
+    .attr('transform', `translate(${width / 2 - 60}, ${height + 35})`) // Center legend horizontally, move up slightly
 
   legend.selectAll('.legend-item')
     .data(legendItems)
     .enter()
     .append('g')
-    .attr('transform', (d, i) => `translate(${i * 100}, 0)`) // 水平排列
+    .attr('transform', (d, i) => `translate(6, ${i * itemHeight + 5})`) // Stack vertically
     .each(function (d) {
       const item = d3.select(this)
-      item.append('rect').attr('width', 18).attr('height', 9)
-        .attr('fill', d.color).attr('opacity', 0.2)
-      item.append('text').attr('x', 25).attr('y', 9)
-        .style('font-size', '12px')
+      item.append('rect')
+        .attr('width', rectWidth)
+        .attr('height', rectWidth / 2)
+        .attr('fill', d.color)
+        .attr('opacity', 1)
+      item.append('text')
+        .attr('x', rectWidth + 6)
+        .attr('y', rectWidth / 2 + 1)
+        .style('font-size', `${fontSize}px`)
         .text(d.label)
     })
 }
@@ -239,6 +224,29 @@ const downloadPDF = async () => {
 onMounted(renderChart)
 watch(() => [props.data, props.selectionStrategy, props.cutoff, props.score], renderChart, { deep: true })
 </script>
+
+<template>
+  <div class="chart-container">
+    <div class="download-menu">
+      <v-menu offset-y>
+        <template #activator="{ props }">
+          <v-btn v-bind="props" icon variant="text">
+            <v-icon>mdi-menu</v-icon>
+          </v-btn>
+        </template>
+        <v-list>
+          <v-list-item @click="downloadSVG">
+            <v-list-item-title>Download SVG</v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="downloadPDF">
+            <v-list-item-title>Download PDF</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </div>
+    <svg ref="svgRef" :viewBox="`0 0 ${totalWidth} ${totalHeight}`" preserveAspectRatio="xMinYMin meet" />
+  </div>
+</template>
 
 <style scoped>
 .chart-container {
