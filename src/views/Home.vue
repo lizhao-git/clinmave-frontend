@@ -14,7 +14,7 @@
             <template #title>
               <h2 class="text-h5 font-weight-bold text-center">Welcome to ClinMAVE</h2>
             </template>
-            <v-card-text class="text-center">
+            <v-card-text class="text-center font-size: 16px">
               A curated database of Multiplexed Assays of Variant Effect (MAVE) studies, providing variant-level functional annotations to support genetic variant interpretation, diagnostic decision-making, and exploration of genotype-phenotype relationships in diseases.
             </v-card-text>
             <v-divider class="mx-4 mb-1" />
@@ -93,14 +93,14 @@
                   >
                     <v-card
                       :href="item.link"
-                      class="pa-3"
+                      class="pa-1"
                       flat
                       link
-                      min-height="140"
+                      min-height="100"
                     >
                       <v-sheet class="pt-2" color="transparent">
-                        <div class="text-h4 d-flex align-center justify-center">
-                          <v-icon :color="item.color" size="36">{{ item.icon }}</v-icon>
+                        <div class="d-flex align-center justify-center" style="font-size: 30px;">
+                          <v-icon :color="item.color" size="30">{{ item.icon }}</v-icon>
                           <span class="ml-2">{{ item.count.toLocaleString() }}</span>
                         </div>
                         <v-divider class="my-1 mx-2" />
@@ -117,6 +117,16 @@
 
       <v-divider class="mx-12 my-3" />
 
+      <v-row class="mt-1" align="stretch">
+        <v-col cols="12">
+          <v-img
+            src="/clinmave/images/pipeline.png"
+            contain
+            max-width="900"
+            class="mx-auto"
+          />
+        </v-col>
+      </v-row>
       <!-- Footer -->
       <v-row>
         <v-col cols="12" sm="4" md="4">
