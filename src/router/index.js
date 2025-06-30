@@ -12,6 +12,7 @@ import VisualizeByDataset from '@/views/VisualizeByDataset.vue'
 // import ENCODESearch from '@/views/ENCODESearch.vue'
 import Statistics from '@/views/Statistics.vue'
 import Documentation from '@/views/Documentation.vue'
+import DocumentationHtm from '@/views/Documentation-htm.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -82,8 +83,8 @@ const router = createRouter({
     },
     {
       path: '/document',
-      name: 'Documentation',
-      component: Documentation,
+      name: 'Documentation-htm',
+      component: DocumentationHtm,
     }
   ],
 })
