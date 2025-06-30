@@ -6,6 +6,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
+  assetsInclude: ['**/*.htm'], // 包含HTM文件
   plugins: [
     vue(),
     vueDevTools(),

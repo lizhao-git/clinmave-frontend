@@ -52,8 +52,6 @@
         
       </v-row> -->
       <div style="display: flex;flex-direction: row;justify-content: center;align-items: center;">
-        
-        <!-- PDF预览区域 -->
         <main>
           <div>
             <div>
@@ -86,12 +84,10 @@
             </div>
             
             <div ref="pdfViewer">
-              <!-- PDF页面将在这里动态渲染 -->
             </div>
           </div>
         </main>
       </div>
-
     </v-container>
   </v-main>
 </template>
