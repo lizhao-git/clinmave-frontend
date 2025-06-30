@@ -6,7 +6,11 @@
         <v-card flat>
           <v-breadcrumbs :items="breadcrumbs">
             <template v-slot:item="{ item }">
-              <v-breadcrumbs-item>
+              <v-breadcrumbs-item
+                :to="item.href"
+                :class="{ 'text-primary': item.href }"
+                link
+              >
                 <span>{{ item.title }}</span>
               </v-breadcrumbs-item>
             </template>
@@ -123,7 +127,12 @@
           <v-card-text>
             <vxe-table border="inner" show-header auto-resize size="medium" class="no-border"
               :data="variantData.tcgaSummary">
-              <vxe-column field="cancerType" title="Cancer type" width="200" />
+              <vxe-column
+                field="cancerType"
+                title="Cancer type"
+                width="200"
+                :formatter="({ cellValue }) => (cellValue ? cellValue.toUpperCase() : '')"
+              />
               <vxe-column field="freq" title="Frequency" width="150" />
               <vxe-column field="af" title="AF" min-width="200" />
             </vxe-table>
@@ -137,23 +146,33 @@
         <v-card flat height="100%">
           <v-card-title class="py-3">
             <v-icon icon="mdi-cactus" class="mr-2" color="teal"></v-icon>
-            <span class="text-h6 font-weight-bold">Germline pathogenicity</span>
+            <span class="text-h6 font-weight-bold">ClinVar classification</span>
           </v-card-title>
           <v-card-text>
             <v-table density="comfortable" class="no-border">
               <tbody>
                 <tr>
                   <td class="text-subtitle-1 font-weight-bold">
-                    <a :href="variantData.clvId" target="_blank">ClinVar:</a>
+                    ID:
                   </td>
                   <td class="text-body-1">
-                    <v-rating v-if="variantData.clvStar && variantData.clvStar !== 'null'" readonly :length="4"
-                      :size="32" :model-value="getStarValue(variantData.clvStar)" active-color="primary" />
+                     <template v-if="variantData.clvUrl">
+                        <a
+                          :href="variantData.clvUrl"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style="text-decoration: none;"
+                        >
+                          {{ variantData.clvUrl.split('/').pop() }}
+                        </a>
+                        <v-icon small color="primary">mdi-share</v-icon>
+                    </template>
                     <span v-else class="text-grey">——</span>
                   </td>
                 </tr>
+
                 <tr>
-                  <td class="text-subtitle-1 font-weight-bold">Clinical significance:</td>
+                  <td class="text-subtitle-1 font-weight-bold">Classification:</td>
                   <td class="text-body-1">
                     <v-chip v-if="variantData.clvClinicalsignificance"
                       :text="variantData.clvClinicalsignificance || '--'">
@@ -165,6 +184,11 @@
                 <tr>
                   <td class="text-subtitle-1 font-weight-bold">Review status:</td>
                   <td class="text-body-1">
+
+                    <v-rating v-if="variantData.clvStar && variantData.clvStar !== 'null'" readonly :length="4"
+                      :size="32" :model-value="getStarValue(variantData.clvStar)" active-color="primary" />
+                    <span v-else class="text-grey">——</span><br>
+
                     <v-chip v-if="variantData.clvReviewstatus"
                       :text="variantData.clvReviewstatus || '--'">
                       {{ variantData.clvReviewstatus }}
@@ -230,7 +254,7 @@
         <v-card flat height="100%">
           <v-card-title>
             <v-icon icon="mdi-dna" class="mr-2" color="teal"></v-icon>
-            <span class="text-h6 font-weight-bold">MAVE characterization</span>
+            <span class="text-h6 font-weight-bold">MAVE score</span>
           </v-card-title>
           <v-card-text>
             <v-row>
@@ -298,10 +322,11 @@
                   <vxe-column field="datasetId" title="" min-width="80" align="center">
                     <template #default="{ row }">
                       <v-btn
-                        color="primary"
+                        :color="row.consequenceClass ? 'primary' : 'grey'"
                         variant="compact"
-                        icon="mdi-eye"
-                        @click="VisualizeClicker(row.datasetId)"
+                        :icon="row.consequenceClass ? 'mdi-eye' : 'mdi-cancel'"
+                        :disabled="!row.consequenceClass"
+                        @click="row.consequenceClass && VisualizeClicker(row.datasetId)"
                       ></v-btn>
                     </template>
                   </vxe-column>
@@ -321,12 +346,40 @@
 
               <v-col cols="12" sm="6">
                 <v-alert border="start" border-color="deep-purple accent-4" variant="outlined" class="mt-4 mb-3"><span>Score: {{ VariantDensityData.pointScore }}</span></v-alert>
-                <v-alert border="start" border-color="deep-purple accent-4" variant="outlined"class="mb-3"><span>Consequence: {{ VariantDensityData.consequenceClass }}</span></v-alert>
+                <v-alert border="start" border-color="deep-purple accent-4" variant="outlined"class="mb-3">
+                  <span>Functional classification: </span>
+                  <v-chip 
+                    small
+                    dark
+                    :color="getConsequenceClassColor(VariantDensityData.consequenceClass)"
+                  >
+                    {{ VariantDensityData.consequenceClass }}
+                  </v-chip>
+                </v-alert>
                 <v-alert border="start" border-color="deep-purple accent-4" variant="outlined"><span>Description: {{ VariantDensityData.functionalDescription }}</span></v-alert>
               </v-col>
             </v-row>
             <v-divider />
             <v-row>
+
+              <v-col cols="12" sm="6">
+                 <v-table density="comfortable" class="no-border mt-3">
+                  <tbody>
+                    <tr>
+                      <td class="text-subtitle-1 font-weight-bold">Oddspath:</td>
+                      <td class="text-subtitle-1 font-weight-bold">#(Likely-pathogeniciy)</td>
+                      <td class="text-subtitle-1 font-weight-bold">#(Likely-benign)</td>
+                    </tr>
+                    <tr>
+                      <td class="text-body-1"> {{ variantData.oddsPath }}</td>
+                      <td class="text-body-1">{{ variantData.tpCount }}</td>
+                      <td class="text-body-1">{{ variantData.tnCount }}</td>
+                    </tr>
+                    
+                  </tbody>
+                </v-table>
+              </v-col>
+
               <v-col cols="12" sm="6">
                 <EffectBar :strength="selectedStrength" :bar-height="12"
                     :labels="['No effects', 'Weak', 'Moderate', 'Strong']"
@@ -427,6 +480,9 @@
     clvReviewstatus: null,
     clvClinicalsignificance: null,
     clvStar: null,
+    tpCount: null,
+    tnCount: null,
+    validationHits: null,
   });
 
   // Table state
@@ -461,22 +517,15 @@
       {
         title: 'Home',
         href: '/',
-        disabled: false,
       },
       {
         title: 'Browse',
-        href: '/products',
-        disabled: false,
       },
       {
         title: 'Variants',
-        href: '/products/details',
-        disabled: true, 
       },
       {
         title: null,
-        href: '/products/details',
-        disabled: true,
       },
     ])
   
@@ -635,10 +684,9 @@
     }
   };
 
-  const fetchVariantDensityData = async (datasetId) => {
+  const fetchVariantDensityData = async (identifier, datasetId) => {
     try {
-      
-      const response = await axios.get(`/clinmave/api/visualize/density?datasetId=${datasetId}`);
+      const response = await axios.get(`/clinmave/api/visualize/density?identifier=${identifier}&datasetId=${datasetId}`);
       VariantDensityData.value = response.data; // Directly assign API response
 
       // Update selectedStrength based on consequenceClass
@@ -677,14 +725,14 @@
   });
 
   const VisualizeClicker = (datasetId) => {
-    fetchVariantDensityData(datasetId);
+    fetchVariantDensityData(route.params.identifier, datasetId);
   }
 
   watch(
     () => variantData.value?.datasetId,
     (newVal) => {
       if (newVal) {
-        fetchVariantDensityData(variantData.value.datasetId);
+        fetchVariantDensityData(route.params.identifier, variantData.value.datasetId);
       }
     }
   );

@@ -52,9 +52,9 @@ const router = createRouter({
       component: gene,
     },
     {
-      path: '/browse/mutagenesis_strategies',
-      name: 'mutagenesis_strategies',
-      component: () => import('@/views/MutagenesisStrategies.vue'),
+      path: '/browse/mave_techniques',
+      name: 'mave_techniques',
+      component: () => import('@/views/MaveTechniques.vue'),
     },
     {
       path: '/browse/studies',

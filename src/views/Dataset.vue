@@ -10,11 +10,11 @@
             <v-breadcrumbs :items="breadcrumbs">
               <template v-slot:item="{ item }">
                 <v-breadcrumbs-item
+                  :to="item.href"
+                  :class="{ 'text-primary': item.href }"
+                  link
                 >
-                  
-                  <span>
-                    {{ item.title }}
-                  </span>
+                  <span>{{ item.title }}</span>
                 </v-breadcrumbs-item>
               </template>
             </v-breadcrumbs>
@@ -108,18 +108,6 @@
                 <vxe-column field="refalt" title="Ref/Alt" min-width="100">
                   <template #default="{ row }">
                     {{ row.ref && row.alt ? `${row.ref}:${row.alt}` : 'N/A' }}
-                  </template>
-                </vxe-column>
-
-                <vxe-column field="dbsnpId" title="dbSNP ID" min-width="140" sortable>
-                   <template #default="{ row }">
-                    <div v-if="row">
-                      <span v-if="!row.dbsnpId || row.dbsnpId === 'NA'">-</span>
-                      <a v-else :href="row.dbsnpLink" target="_blank" style="text-decoration: none;">
-                        {{ row.dbsnpId }}
-                        <v-icon small color="blue">mdi-share</v-icon>
-                      </a>
-                    </div>
                   </template>
                 </vxe-column>
 
@@ -291,23 +279,16 @@
   const breadcrumbs = ref([
       {
         title: 'Home',
-        icon: 'mdi-home',
         href: '/',
-        disabled: false,
       },
       {
         title: 'Browse',
-        disabled: false,
       },
       {
         title: 'Datasets',
-        disabled: true, 
       },
       {
         title: null,
-        icon: 'mdi-information',
-        href: '/products/details',
-        disabled: true,
       },
     ])
   

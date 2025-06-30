@@ -9,14 +9,11 @@
               <v-breadcrumbs :items="breadcrumbs">
                 <template v-slot:item="{ item }">
                   <v-breadcrumbs-item
-                    :disabled="item.disabled"
-                    :href="item.href"
+                    :to="item.href"
+                    :class="{ 'text-primary': item.href }"
+                    link
                   >
-                    <!-- Customized icons -->
-                    <span>
-                      <v-icon v-if="item.icon" :icon="item.icon" left></v-icon>
-                      {{ item.title }}
-                    </span>
+                    <span>{{ item.title }}</span>
                   </v-breadcrumbs-item>
                 </template>
               </v-breadcrumbs>
@@ -62,28 +59,14 @@
 
                   <v-col cols="12">
                     <v-autocomplete
-                      v-model="filters.journal"
-                      v-model:search="searchJournal"
-                      :items="journalOptions"
-                      label="Journal"
+                      v-model="filters.geneName"
+                      v-model:search="searchGeneName"
+                      :items="geneNameOptions"
+                      label="Gene Name"
                       variant="outlined"
                       density="compact"
                       clearable
-                      :loading="loadingJournal"
-                    >
-                    </v-autocomplete>
-                  </v-col>
-
-                  <v-col cols="12">
-                    <v-autocomplete
-                      v-model="filters.year"
-                      v-model:search="searchYear"
-                      :items="yearOptions"
-                      label="Year"
-                      variant="outlined"
-                      density="compact"
-                      clearable
-                      :loading="loadingYear"
+                      :loading="loadingGeneName"
                     >
                     </v-autocomplete>
                   </v-col>
@@ -247,44 +230,38 @@ import 'vxe-table/lib/style.css'
 const breadcrumbs = [
   {
     title: 'Home',
-    disabled: false,
+    href: '/',
   },
   {
     title: 'Browse',
-    disabled: false,
   },
   {
     title: 'Studies',
-    disabled: false,
   },
 ]
 
 // Reactive state for filters
 const filters = ref({
   pmid: null,
-  title: null,
+  geneName: null,
   journal: null,
-  year: null,
 })
 
 
 // Reactive state for autocomplete options
 const pmidOptions = ref([])
-const titleOptions = ref([])
+const geneNameOptions = ref([])
 const journalOptions = ref([])
-const yearOptions = ref([])
 
 // Reactive state for search inputs
 const searchPmid = ref(null)
-const searchTitle = ref(null)
+const searchGeneName = ref(null)
 const searchJournal = ref(null)
-const searchYear = ref(null)
 
 // Loading states for autocomplete fields
 const loadingPmid = ref(false)
-const loadingTitle = ref(false)
+const loadingGeneName = ref(false)
 const loadingJournal = ref(false)
-const loadingYear = ref(false)
 
 // Reactive state for filter panel visibility
 const showFilters = ref(true)
@@ -303,9 +280,8 @@ const sortParams = ref({
 })
 
 const debouncedFetchPmid = debounce(fetchPmidOptions, 300)
-const debouncedFetchTitle = debounce(fetchTitleOptions, 300)
+const debouncedFetchGeneName = debounce(fetchGeneNameOptions, 300)
 const debouncedFetchJournal = debounce(fetchJournalOptions, 300)
-const debouncedFetchYear = debounce(fetchYearOptions, 300)
 
 // Debounced fetch functions for autocomplete options
 async function fetchPmidOptions(query = '') {
@@ -323,18 +299,18 @@ async function fetchPmidOptions(query = '') {
   }
 }
 
-async function fetchTitleOptions(query = '') {
+async function fetchGeneNameOptions(query = '') {
   try {
-    loadingTitle.value = true;
+    loadingGeneName.value = true;
     const response = await axios.get('/clinmave/api/select/studies', {
-      params: { title: !query ? '' : query },
+      params: { geneName: !query ? '' : query },
     });
-    titleOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
+    geneNameOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
   } catch (error) {
     VxeUI.message.error('Failed to load Titles');
-    titleOptions.value = [];
+    geneNameOptions.value = [];
   } finally {
-    loadingTitle.value = false;
+    loadingGeneName.value = false;
   }
 }
 
@@ -350,21 +326,6 @@ async function fetchJournalOptions(query = '') {
     journalOptions.value = [];
   } finally {
     loadingJournal.value = false;
-  }
-}
-
-async function fetchYearOptions(query = '') {
-  try {
-    loadingYear.value = true;
-    const response = await axios.get('/clinmave/api/select/studies', {
-      params: { year: !query ? '' : query },
-    });
-    yearOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
-  } catch (error) {
-    VxeUI.message.error('Failed to load Years');
-    yearOptions.value = [];
-  } finally {
-    loadingYear.value = false;
   }
 }
 
@@ -436,13 +397,13 @@ const applyFilters = () => {
 
 const resetFilters = () => {
   searchPmid.value = null;
-  searchTitle.value = null;
+  searchGeneName.value = null;
   searchJournal.value = null;
   searchYear.value = null;
 
   filters.value = { 
     pmid: null, 
-    title: null, 
+    geneName: null, 
     journal: null,
     year: null
   };
@@ -488,17 +449,12 @@ watch([currentPage, pageSize], () => {
   loadData()
 })
 
-// Watch search inputs for autocomplete
-watch(searchPmid, (newVal) => {
-  debouncedFetchPmid(newVal)
-})
 
 // Initialize
 onMounted(() => {
   debouncedFetchPmid();
-  debouncedFetchTitle();
+  debouncedFetchGeneName();
   debouncedFetchJournal();
-  debouncedFetchYear();
   loadData();
   const $table = tableRef.value
   const $toolbar = toolbarRef.value

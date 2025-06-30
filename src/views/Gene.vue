@@ -9,7 +9,11 @@
           >
             <v-breadcrumbs :items="breadcrumbs">
               <template v-slot:item="{ item, index }">
-                <v-breadcrumbs-item>
+                <v-breadcrumbs-item
+                  :to="item.href"
+                  :class="{ 'text-primary': item.href }"
+                  link
+                >
                   <span :style="{ 'font-style': index === breadcrumbs.length - 1 ? 'italic' : '' }">
                     {{ item.title }}
                   </span>
@@ -268,21 +272,16 @@
   const breadcrumbs = ref([
       {
         title: 'Home',
-        icon: 'mdi-home',
         href: '/',
-        disabled: false,
       },
       {
         title: 'Browse',
-        disabled: false,
       },
       {
         title: 'Genes',
-        disabled: true, 
       },
       {
         title: null,
-        disabled: true,
         style: { fontStyle: 'italic' },
       },
     ])
@@ -409,6 +408,19 @@
       }
     }
   );
+
+  const handlePageChange = (event) => {
+    console.log('[Page Change]', event) // Debug event data
+    currentPage.value = event.currentPage
+    pageSize.value = event.pageSize
+    loadData()
+  }
+
+  // Watch pagination parameters
+  watch([currentPage, pageSize], () => {
+    console.log('[Watch] Page or size changed:', currentPage.value, pageSize.value)
+    loadData()
+  })
 
   // Fetch data when component is mounted
   onMounted(() => {

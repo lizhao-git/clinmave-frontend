@@ -234,7 +234,7 @@ const pdfLoadError = ref(null)
 const pdfDocument = ref(null)
 
 // PDF文件路径（指向Document-V1.pdf）
-const pdfUrl = './src/assets/Document-V1.pdf'
+const pdfUrl = '/clinmave/files/Document-V1.pdf'
 
 // 基于Document-V1.pdf内容构建的目录结构（根据文档段落内容手动映射页面）
 const documentSections = ref([

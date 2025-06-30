@@ -9,14 +9,11 @@
               <v-breadcrumbs :items="breadcrumbs">
                 <template v-slot:item="{ item }">
                   <v-breadcrumbs-item
-                    :disabled="item.disabled"
-                    :href="item.href"
+                    :to="item.href"
+                    :class="{ 'text-primary': item.href }"
+                    link
                   >
-                    <!-- Customized icons -->
-                    <span>
-                      <v-icon v-if="item.icon" :icon="item.icon" left></v-icon>
-                      {{ item.title }}
-                    </span>
+                    <span>{{ item.title }}</span>
                   </v-breadcrumbs-item>
                 </template>
               </v-breadcrumbs>
@@ -214,15 +211,13 @@ import 'vxe-table/lib/style.css'
 const breadcrumbs = [
   {
     title: 'Home',
-    disabled: false,
+    href: '/',
   },
   {
     title: 'Browse',
-    disabled: false,
   },
   {
     title: 'Genes',
-    disabled: false,
   },
 ]
 

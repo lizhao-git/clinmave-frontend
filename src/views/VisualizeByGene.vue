@@ -7,13 +7,11 @@
             <v-breadcrumbs :items="breadcrumbs">
               <template v-slot:item="{ item }">
                 <v-breadcrumbs-item
-                  :disabled="item.disabled"
-                  :href="item.href"
+                  :to="item.href"
+                  :class="{ 'text-primary': item.href }"
+                  link
                 >
-                  <span>
-                    <v-icon v-if="item.icon" :icon="item.icon" left></v-icon>
-                    {{ item.title }}
-                  </span>
+                  <span>{{ item.title }}</span>
                 </v-breadcrumbs-item>
               </template>
             </v-breadcrumbs>
@@ -113,17 +111,6 @@
                   <span v-else>-</span>
                 </template>
               </vxe-column>
-              
-              <vxe-column field="pmid" title="PMID" min-width="153" align="center">
-                <template #default="{ row }">
-                  <div v-if="row">
-                    <a :href="`https://pubmed.ncbi.nlm.nih.gov/${row.pmid}`" target="_blank" style="text-decoration: none;">
-                      {{ row.pmid ? row.pmid : 'N/A' }}
-                    </a>
-                    <v-icon small color="primary">mdi-share</v-icon>
-                  </div>
-                </template>
-              </vxe-column>
 
               <vxe-column field="mutagenesisStrategy" title="Mutagenesis strategy" min-width="200" align="center"></vxe-column>
               
@@ -199,15 +186,13 @@ import Oncoprint from '@/components/Visualization/Oncoprint.vue'
 const breadcrumbs = [
   {
     title: 'Home',
-    disabled: false,
+    href: '/',
   },
   {
     title: 'Visualize',
-    disabled: false,
   },
   {
     title: 'Gene',
-    disabled: false,
   },
 ]
 
