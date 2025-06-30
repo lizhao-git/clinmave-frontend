@@ -73,7 +73,6 @@
 
         <!-- Table Content 右侧内容：根据showResults显示/隐藏 -->
         <v-col :cols="showResults ? 12 : 0" :md="showResults ? 10 : 0" v-if="showResults">
-<<<<<<< HEAD
           <v-banner single-line :sticky="false" class="banner-tips">
             <div class="d-flex flex-wrap">
               <span class="font-weight-bold mr-2">Tips:</span>
@@ -83,7 +82,6 @@
               </div>
             </div>
           </v-banner>
-=======
           
           <v-sheet class="pl-4" style="min-height: 320px; position: relative;">
             <template v-if="oncoprintLoading">
@@ -114,7 +112,6 @@
           </v-sheet>
 
           <v-divider></v-divider>
->>>>>>> 1299223e3cb68c4245be68bcd063a4fb71c786f1
 
           <v-sheet class="pa-3">
 
