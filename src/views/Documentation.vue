@@ -35,7 +35,9 @@
               >
                 <h1 class="mt-4 mb-2">Introduction</h1>
                 <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
-                  ClinMAVE is a curated database for the clinical application of data from multiplexed assays of variant effect (MAVEs). ClinMAVE bridges the gap between functional effect of variants and their clinical impact by systematically curating MAVE datasets and rigorously transforming the experimental assessment into strength of evidence supporting the pathogenicity classification. ClinMAVE also integrates available variant annotations from public repositories (e.g., ClinVar, gnomAD, TCGA) and provides a user-friendly interface to support visualization and analysis modules for further exploration. 
+                  ClinMAVE is a curated database for the clinical application of data from multiplexed assays of variant effect (MAVEs). 
+                  ClinMAVE bridges the gap between functional effect of variants and their clinical impact by systematically curating MAVE datasets and rigorously transforming the experimental assessment into strength of evidence supporting the pathogenicity classification. 
+                  ClinMAVE also integrates available variant annotations from public repositories (e.g., <a href="https://www.ncbi.nlm.nih.gov/clinvar" target="_blank">ClinVar</a>, <a href="https://gnomad.broadinstitute.org/" target="_blank">gnomAD</a>, <a href="" target="_blank">TCGA</a>) and provides a user-friendly interface to support visualization and analysis modules for further exploration. 
                 </p>
               </v-alert>
               
