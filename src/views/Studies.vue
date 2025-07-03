@@ -23,11 +23,11 @@
         <v-row>
 
           <!-- Filter Panel -->
-          <v-col cols="12" md="2" v-if="showFilters">
+          <v-col cols="12" xl="2" lg="3" md="3" sm="12" v-if="showFilters">
             <v-sheet v-if="showFilters" class="py-6 px-3">
               <v-row>
                 <v-col cols="12">
-                  <div class="text-body-1 font-weight-bold">Filters</div>
+                  <div class="text-body-1">Filters</div>
                   <v-btn 
                     size="small" 
                     dark 
@@ -71,6 +71,20 @@
                     </v-autocomplete>
                   </v-col>
 
+                  <v-col cols="12">
+                    <v-autocomplete
+                      v-model="filters.datasetId"
+                      v-model:search="searchDatasetId"
+                      :items="datasetIdOptions"
+                      label="Dataset ID"
+                      variant="outlined"
+                      density="compact"
+                      clearable
+                      :loading="loadingDatasetId"
+                    >
+                    </v-autocomplete>
+                  </v-col>
+
                 </v-row>
                 <v-row dense>
                   <v-spacer></v-spacer>
@@ -83,7 +97,7 @@
             </v-sheet>
           </v-col>
           <!-- Table Content -->
-          <v-col :cols="showFilters ? 12 : 12" :md="showFilters ? 10 : 12">
+          <v-col :cols="showFilters ? 12 : 12" :xl="showFilters ? 10 : 12" :lg="showFilters ? 9 : 12" :md="showFilters ? 9 : 12" :sm="showFilters ? 12 : 12">
             <v-sheet class="pa-3">
 
               <!-- Show Filters Button when filters are hidden -->
@@ -244,24 +258,24 @@ const breadcrumbs = [
 const filters = ref({
   pmid: null,
   geneName: null,
-  journal: null,
+  datasetId: null,
 })
 
 
 // Reactive state for autocomplete options
 const pmidOptions = ref([])
 const geneNameOptions = ref([])
-const journalOptions = ref([])
+const datasetIdOptions = ref([])
 
 // Reactive state for search inputs
 const searchPmid = ref(null)
 const searchGeneName = ref(null)
-const searchJournal = ref(null)
+const searchDatasetId = ref(null)
 
 // Loading states for autocomplete fields
 const loadingPmid = ref(false)
 const loadingGeneName = ref(false)
-const loadingJournal = ref(false)
+const loadingDatasetId = ref(false)
 
 // Reactive state for filter panel visibility
 const showFilters = ref(true)
@@ -281,7 +295,7 @@ const sortParams = ref({
 
 const debouncedFetchPmid = debounce(fetchPmidOptions, 300)
 const debouncedFetchGeneName = debounce(fetchGeneNameOptions, 300)
-const debouncedFetchJournal = debounce(fetchJournalOptions, 300)
+const debouncedFetchDatasetId = debounce(fetchDatasetIdOptions, 300)
 
 // Debounced fetch functions for autocomplete options
 async function fetchPmidOptions(query = '') {
@@ -314,18 +328,18 @@ async function fetchGeneNameOptions(query = '') {
   }
 }
 
-async function fetchJournalOptions(query = '') {
+async function fetchDatasetIdOptions(query = '') {
   try {
-    loadingJournal.value = true;
+    loadingDatasetId.value = true;
     const response = await axios.get('/clinmave/api/select/studies', {
-      params: { journal: !query ? '' : query },
+      params: { datasetId: !query ? '' : query },
     });
-    journalOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
+    datasetIdOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
   } catch (error) {
-    VxeUI.message.error('Failed to load Journals');
-    journalOptions.value = [];
+    VxeUI.message.error('Failed to load Titles');
+    datasetIdOptions.value = [];
   } finally {
-    loadingJournal.value = false;
+    loadingDatasetId.value = false;
   }
 }
 
@@ -398,13 +412,12 @@ const applyFilters = () => {
 const resetFilters = () => {
   searchPmid.value = null;
   searchGeneName.value = null;
-  searchJournal.value = null;
+  searchDatasetId.value = null;
 
   filters.value = { 
     pmid: null, 
     geneName: null, 
-    journal: null,
-    year: null
+    datasetId: null,
   };
   
   currentPage.value = 1;
@@ -453,7 +466,7 @@ watch([currentPage, pageSize], () => {
 onMounted(() => {
   debouncedFetchPmid();
   debouncedFetchGeneName();
-  debouncedFetchJournal();
+  debouncedFetchDatasetId();
   loadData();
   const $table = tableRef.value
   const $toolbar = toolbarRef.value

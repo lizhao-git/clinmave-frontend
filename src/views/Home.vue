@@ -99,12 +99,12 @@
                       min-height="100"
                     >
                       <v-sheet class="pt-2" color="transparent">
-                        <div class="d-flex align-center justify-center" style="font-size: 30px;">
+                        <div class="d-flex align-center justify-center text-h5">
                           <v-icon :color="item.color" size="30">{{ item.icon }}</v-icon>
                           <span class="ml-2">{{ item.count.toLocaleString() }}</span>
                         </div>
                         <v-divider class="my-1 mx-2" />
-                        <div class="text-h5 text-center">{{ item.label }}</div>
+                        <div class="text-h6 text-center">{{ item.label }}</div>
                       </v-sheet>
                     </v-card>
                   </v-col>
@@ -137,7 +137,9 @@
                     How to cite
                   </template>
                   <v-card-text>
-                    <span>ClinMAVE: Nucleic Acids Research 2026, in preparation</span>
+                    <span>
+                      ClinMAVE: a curated database for clinical application of data from multiplexed assays of variant effect (MAVEs). <span class="italic">Nucleic Acids Research</span> 2026, in preparation.
+                    </span>
                   </v-card-text>
                 </v-card>
               </v-col>
@@ -176,9 +178,11 @@
                     Related resources
                   </template>
                   <v-card-text>
-                    <v-chip class="mr-4" color="primary"><a href="https://gnomad.broadinstitute.org/" target="_blank">gnomAD</a></v-chip>
-                    <v-chip class="mr-4" color="primary"><a href="https://www.ncbi.nlm.nih.gov/clinvar/" target="_blank">ClinVar</a></v-chip>
-                    <v-chip class="mr-4" color="primary"><a href="https://www.mavedb.org/" target="_blank">MAVEDB</a></v-chip>
+                    <v-chip class="mr-2" color="primary"><a href="https://gnomad.broadinstitute.org" target="_blank">gnomAD</a></v-chip>
+                    <v-chip class="mr-2" color="primary"><a href="https://www.ncbi.nlm.nih.gov/clinvar" target="_blank">ClinVar</a></v-chip>
+                    <v-chip class="mr-2" color="primary"><a href="https://www.mavedb.org" target="_blank">MAVEDB</a></v-chip>
+                    <v-chip class="mr-2" color="primary"><a href="https://www.acmg.net" target="_blank">ACMG</a></v-chip>
+                    
                   </v-card-text>
                 </v-card>
               </v-col>
@@ -297,10 +301,10 @@ watch(searchDatasetId, (newVal) => {
 // Stats section
 const stats = computed(()=> [
   { label: 'Variants', count: HomeStatMap.value.variantCount || 0, icon: 'mdi-chemical-weapon', color: 'teal', link: '/clinmave/browse/variants' },
-  { label: 'Datasets', count: HomeStatMap.value.datasetCount || 0, icon: 'mdi-ballot-outline', color: 'purple', link: '/clinmave/browse/datasets' },
   { label: 'Genes', count: HomeStatMap.value.geneCount || 0, icon: 'mdi-butterfly-outline', color: 'red', link: '/clinmave/browse/genes' },
+  { label: 'Datasets', count: HomeStatMap.value.datasetCount || 0, icon: 'mdi-ballot-outline', color: 'purple', link: '/clinmave/browse/datasets' },
   { label: 'Studies', count: HomeStatMap.value.studyCount || 0, icon: 'mdi-book-open-page-variant', color: 'blue', link: '/clinmave/browse/studies' },
-  { label: 'MAVE techniques', count: 2, icon: 'mdi-flask-empty-outline', color: 'orange', link: '/clinmave/browse/mutagenesis_strategies' },
+  { label: 'MAVE techniques', count: 2, icon: 'mdi-flask-empty-outline', color: 'orange', link: '/clinmave/browse/mave_techniques' },
 ])
 
 // News timeline

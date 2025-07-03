@@ -18,13 +18,37 @@
           </v-card>
         </v-col>
       </v-row>
+
+      <v-row>
+        <v-col>
+          <v-alert border="start" border-color="deep-purple accent-4">
+            <div class="d-flex flex-wrap">
+              <span class="font-weight-bold mr-2">Tips:</span>
+              <div class="flex-grow-1">
+                <div class="mb-1">(1) Use filters to narrow the datasets table by gene, Mutagenesis strategy, experimental model and phenotype;</div>
+                <div>(2) Click the ‘Visualize’ button to:</div>
+                <ul class="list-disc pl-5 mt-1 mb-0">
+                  <li class="d-flex items-center">
+                    <v-icon color="black" size="12" class="mr-2" style="margin-top:5px">mdi-circle</v-icon>
+                    View the distribution of MAVE functional scores grouped by molecular consequence/Clinvar classification
+                  </li>
+                  <li class="d-flex items-center">
+                    <v-icon color="black" size="12" class="mr-2" style="margin-top:5px">mdi-circle</v-icon>
+                    Explore the relationship between population allele frequency (gnomAD) and MAVE functional score.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </v-alert>
+        </v-col>
+      </v-row>
       <v-row>
         <!-- Filter Panel 左侧筛选栏，始终显示 -->
-        <v-col cols="12" md="2" >
+        <v-col cols="12" xl="2" lg="3" md="3" sm="12">
           <v-sheet class="py-6 px-3">
             <v-row>
               <v-col cols="12">
-                <div class="text-body-1 font-weight-bold">Filters</div>
+                <div class="text-body-1">Filters</div>
                 <!-- 这里去掉了切换按钮，左侧筛选栏固定显示 -->
               </v-col>
             </v-row>
@@ -114,7 +138,7 @@
         </v-col>
         
         <!-- Table Content 右侧内容：根据showResults显示/隐藏 -->
-        <v-col :cols="showResults ? 12 : 0" :md="showResults ? 10 : 0" v-if="showResults">
+        <v-col cols="12" xl="10" lg="9" md="9" sm="12" v-if="showResults">
           <!-- <v-banner single-line :sticky="false">
             <div style="font-weight: bold;height: 100%;">Tips:&nbsp;</div>
             (1) Use filters to narrow the datasets table by gene, Mutagenesis strategy, experimental model and phenotype;<br>
@@ -122,25 +146,6 @@
             <v-icon color="black" size="12" class="dot-icon">mdi-circle</v-icon>View the distribution of MAVE functional scores grouped by molecular consequence/Clinvar classification<br>
             <v-icon color="black" size="12" class="dot-icon">mdi-circle</v-icon>Explore the relationship between population allele frequency (gnomAD) and MAVE functional score.
           </v-banner> -->
-          <v-banner single-line :sticky="false" class="banner-tips">
-            <div class="d-flex flex-wrap">
-              <span class="font-weight-bold mr-2">Tips:</span>
-              <div class="flex-grow-1">
-                <div class="mb-1">(1) Use filters to narrow the datasets table by gene, Mutagenesis strategy, experimental model and phenotype;</div>
-                <div>(2) Click the ‘Visualize’ button to:</div>
-                <ul class="list-disc pl-5 mt-1 mb-0">
-                  <li class="d-flex items-center">
-                    <v-icon color="black" size="12" class="mr-2" style="margin-top:5px">mdi-circle</v-icon>
-                    View the distribution of MAVE functional scores grouped by molecular consequence/Clinvar classification
-                  </li>
-                  <li class="d-flex items-center">
-                    <v-icon color="black" size="12" class="mr-2" style="margin-top:5px">mdi-circle</v-icon>
-                    Explore the relationship between population allele frequency (gnomAD) and MAVE functional score.
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </v-banner>
 
           <v-sheet class="pa-3">   
             <!-- Table -->
@@ -173,7 +178,7 @@
                 </template>
               </vxe-column>
               
-              <vxe-column field="datasetId" title="#Visualize" min-width="80" align="center">
+              <vxe-column field="datasetId" title="Visualize" min-width="100" align="center">
                 <template #default="{ row }">
                   <v-btn
                     color="primary"
@@ -195,9 +200,21 @@
                 </template>
               </vxe-column>
 
-              <vxe-column field="mutagenesisStrategy" title="Mutagenesis strategy" min-width="200" align="center"></vxe-column>
+              <vxe-column field="maveTechnique" title="MAVE technique" min-width="230" align="center">
+                  <template #default="{ row }">
+                      <a 
+                        v-if="row.maveTechnique" 
+                        :href="`/clinmave/browse/mave_techniques/${encodeURIComponent(row.maveTechnique)}`" 
+                        target="_blank"
+                        style="text-decoration: none;"
+                      >
+                        {{ row.maveTechnique }}
+                      </a>
+                      <span v-else>-</span>
+                    </template>
+                </vxe-column>
               
-              <vxe-column field="functionAssay" title="Function Assay" min-width="160" align="center"></vxe-column>
+              <vxe-column field="functionalAssay" title="Function Assay" min-width="160" align="center"></vxe-column>
 
               <vxe-column field="phenotype" title="Phenotype" min-width="400" align="center"></vxe-column>
 
@@ -215,7 +232,7 @@
           </v-sheet>
           <v-divider></v-divider>
 
-          <v-sheet style="min-height: 300px; position: relative;" v-if="showVisualize">
+          <v-sheet style="min-height: 300px; position: relative; overflow: visi;" v-if="showVisualize">
             <v-row>
               <v-col cols="12" md="4" sm="12">
                 <template v-if="clinVarBinLoading">
@@ -335,7 +352,7 @@ const breadcrumbs = [
 
 // Filters 保持不变
 const filters = ref({
-  geneName: null,
+  geneName: 'BRAF',
   mutagenesisStrategy: null,
   experimentModel: null,
   phenotype: null,
@@ -386,6 +403,8 @@ const sortParams = ref({
   field: '',
   order: ''
 })
+
+const datasetId = ref('dataset0146');
 
 const debouncedFetchGeneName = debounce(fetchGeneNameOptions, 300)
 const debouncedFetchMutagenesisStrategy = debounce(fetchMutagenesisStrategyOptions, 300)
@@ -593,6 +612,7 @@ const applyFilters = () => {
 
 const VisualizeClicker = (datasetId) => {
   highlightedRowId.value = datasetId  // 设置高亮
+  console.log('VisualizeClicker', datasetId)
   showVisualize.value = true;
   debouncedFetchClinVarBinData(datasetId);
   debouncedFetchScatterData(datasetId);
@@ -672,10 +692,19 @@ watch([currentPage, pageSize], () => {
 })
 
 onMounted(() => {
+  
   debouncedFetchGeneName();
   debouncedFetchMutagenesisStrategy();
   debouncedFetchExperimentModel();
   debouncedFetchPhenotype();
+  showResults.value = true;
+  showVisualize.value = true;
+  loadData()
+  console.log('onMounted', datasetId.value)
+  highlightedRowId.value = datasetId.value
+  debouncedFetchClinVarBinData(datasetId.value);
+  debouncedFetchScatterData(datasetId.value);
+  debouncedFetchConsequenceDensityData(datasetId.value);
   // 这里不自动加载表格，表格和oncoprint初始隐藏
   const $table = tableRef.value
   const $toolbar = toolbarRef.value

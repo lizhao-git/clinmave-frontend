@@ -18,13 +18,27 @@
           </v-card>
         </v-col>
       </v-row>
+
       <v-row>
+        <v-col>
+          <v-alert border="start" border-color="deep-purple accent-4"  >
+            <span class="font-weight-bold mr-2">Tips:</span>
+            <div class="flex-grow-1">
+              <div class="mb-1">(1) Select a gene (or functional classification) to visualize the (specific-) functional classification of variants across its protein domains;</div>
+              <div>(2) All relevant MAVE datasets are aligned by row, allowing direct comparison of functional scores across different assays and studies.</div>
+            </div>
+          </v-alert>         
+        </v-col>
+      </v-row>
+      
+      <v-row>
+      
         <!-- Filter Panel 左侧筛选栏，始终显示 -->
-        <v-col cols="12" md="2" >
+        <v-col cols="12" xl="2" lg="3" md="3" sm="12">
           <v-sheet class="py-6 px-3">
             <v-row>
               <v-col cols="12">
-                <div class="text-body-1 font-weight-bold">Filters</div>
+                <div class="text-body-1">Filters</div>
                 <!-- 这里去掉了切换按钮，左侧筛选栏固定显示 -->
               </v-col>
             </v-row>
@@ -72,17 +86,8 @@
         </v-col>
 
         <!-- Table Content 右侧内容：根据showResults显示/隐藏 -->
-        <v-col :cols="showResults ? 12 : 0" :md="showResults ? 10 : 0" v-if="showResults">
-          <v-banner single-line :sticky="false" class="banner-tips">
-            <div class="d-flex flex-wrap">
-              <span class="font-weight-bold mr-2">Tips:</span>
-              <div class="flex-grow-1">
-                <div class="mb-1">(1) Select a gene (or functional classification) to visualize the (specific-) functional classification of variants across its protein domains;</div>
-                <div>(2) All relevant MAVE datasets are aligned by row, allowing direct comparison of functional scores across different assays and studies.</div>
-              </div>
-            </div>
-          </v-banner>
-          
+        <v-col cols="12" xl="10" lg="9" md="9" sm="12" v-if="showResults">
+
           <v-sheet class="pl-4" style="min-height: 320px; position: relative;">
             <template v-if="oncoprintLoading">
               <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
@@ -152,9 +157,21 @@
                 </template>
               </vxe-column>
 
-              <vxe-column field="mutagenesisStrategy" title="Mutagenesis strategy" min-width="200" align="center"></vxe-column>
+              <vxe-column field="maveTechnique" title="MAVE technique" min-width="230" align="center">
+                <template #default="{ row }">
+                    <a 
+                      v-if="row.maveTechnique" 
+                      :href="`/clinmave/browse/mave_techniques/${encodeURIComponent(row.maveTechnique)}`" 
+                      target="_blank"
+                      style="text-decoration: none;"
+                    >
+                      {{ row.maveTechnique }}
+                    </a>
+                    <span v-else>-</span>
+                  </template>
+              </vxe-column>
               
-              <vxe-column field="functionAssay" title="Function Assay" min-width="160" align="center"></vxe-column>
+              <vxe-column field="functionalAssay" title="Function Assay" min-width="160" align="center"></vxe-column>
 
               <vxe-column field="experimentModel" title="Experiment Model" min-width="150" align="center"></vxe-column>
 
@@ -212,7 +229,7 @@ const breadcrumbs = [
 
 // Filters 保持不变
 const filters = ref({
-  geneName: null,
+  geneName: 'VHL',
   consequenceClass: null,
 })
 
@@ -422,8 +439,11 @@ watch([currentPage, pageSize], () => {
 })
 
 onMounted(() => {
+  showResults.value = true;
   debouncedFetchGeneName();
   debouncedFetchConsequenceClass();
+  loadData()
+  debouncedFetchGeneStructure();
   // 这里不自动加载表格，表格和oncoprint初始隐藏
   const $table = tableRef.value
   const $toolbar = toolbarRef.value

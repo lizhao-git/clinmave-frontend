@@ -23,11 +23,11 @@
         <v-row>
 
           <!-- Filter Panel -->
-          <v-col cols="12" md="2" v-if="showFilters">
+          <v-col cols="12" xl="2" lg="3" md="3" sm="12" v-if="showFilters">
             <v-sheet v-if="showFilters" class="py-6 px-3">
               <v-row>
                 <v-col cols="12">
-                  <div class="text-body-1 font-weight-bold">Filters</div>
+                  <div class="text-body-1">Filters</div>
                   <v-btn 
                     size="small" 
                     dark 
@@ -98,7 +98,7 @@
             </v-sheet>
           </v-col>
           <!-- Table Content -->
-          <v-col :cols="showFilters ? 12 : 12" :md="showFilters ? 10 : 12">
+          <v-col :cols="showFilters ? 12 : 12" :xl="showFilters ? 10 : 12" :lg="showFilters ? 9 : 12" :md="showFilters ? 9 : 12" :sm="showFilters ? 12 : 12">
             <v-sheet class="pa-3">
 
               <!-- Show Filters Button when filters are hidden -->

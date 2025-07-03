@@ -40,23 +40,23 @@
                   <v-table density="comfortable" class="no-border">
                     <tbody>
                       <tr>
-                        <td class="text-subtitle-1 font-weight-bold">Gene: </td>
+                        <td class="text-subtitle-1">Gene: </td>
                         <td class="text-body-1" style="font-style: italic">{{ variantData.geneName }}</td>
                       </tr>
                       <tr>
-                        <td class="text-subtitle-1 font-weight-bold">Ensembl ID: </td>
+                        <td class="text-subtitle-1">Ensembl ID: </td>
                         <td class="text-body-1"><a :href="variantData.ensemblLink" target="_blank">{{ variantData.ensemblId }}<v-icon small color="primary">mdi-share</v-icon></a></td>
                       </tr>
                       <tr>
-                        <td class="text-subtitle-1 font-weight-bold">NCBI ID: </td>
+                        <td class="text-subtitle-1">NCBI ID: </td>
                         <td class="text-body-1"><a :href="variantData.ncbiLink" target="_blank">{{ variantData.ncbiId }}<v-icon small color="primary">mdi-share</v-icon></a></td>
                       </tr>
                       <tr>
-                        <td class="text-subtitle-1 font-weight-bold">HGNC ID: </td>
+                        <td class="text-subtitle-1">HGNC ID: </td>
                         <td class="text-body-1"><a :href="variantData.hgncLink" target="_blank">{{ variantData.hgncId }}<v-icon small color="primary">mdi-share</v-icon></a></td>
                       </tr>
                       <tr>
-                        <td class="text-subtitle-1 font-weight-bold">UniprotKB ID: </td>
+                        <td class="text-subtitle-1">UniprotKB ID: </td>
                         <td class="text-body-1"><a :href="variantData.uniprotkbLink" target="_blank">{{ variantData.uniprotkbId }}<v-icon small color="primary">mdi-share</v-icon></a></td>
                       </tr>
                     </tbody>
@@ -76,11 +76,11 @@
                   <v-table density="comfortable" class="no-border">
                     <tbody>
                       <tr>
-                        <td class="text-subtitle-1 font-weight-bold">Full name: </td>
+                        <td class="text-subtitle-1">Full name: </td>
                         <td class="text-body-1 text-justify">{{ variantData.fullName }}</td>
                       </tr>
                       <tr>
-                        <td class="text-subtitle-1 font-weight-bold">Gene summary: </td>
+                        <td class="text-subtitle-1">Gene summary: </td>
                         <td class="text-body-1 text-justify">{{ variantData.geneSummary }}</td>
                       </tr>
                     </tbody>
@@ -154,7 +154,7 @@
 
               <vxe-column field="mutagenesisStrategy" title="Mutagenesis strategy" min-width="200" align="center"></vxe-column>
               
-              <vxe-column field="functionAssay" title="Function Assay" min-width="160" align="center"></vxe-column>
+              <vxe-column field="functionalAssay" title="Functional Assay" min-width="160" align="center"></vxe-column>
 
               <vxe-column field="experimentModel" title="Experiment Model" min-width="150" align="center"></vxe-column>
 
@@ -276,9 +276,11 @@
       },
       {
         title: 'Browse',
+        href: '/browse/genes'
       },
       {
         title: 'Genes',
+        href: '/browse/genes'
       },
       {
         title: null,

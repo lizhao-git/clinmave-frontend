@@ -6,28 +6,28 @@
             <v-card 
               flat
             >
-            <v-breadcrumbs :items="breadcrumbs">
-              <template v-slot:item="{ item }">
-                <v-breadcrumbs-item
-                  :to="item.href"
-                  :class="{ 'text-primary': item.href }"
-                  link
-                >
-                  <span>{{ item.title }}</span>
-                </v-breadcrumbs-item>
-              </template>
-            </v-breadcrumbs>
+              <v-breadcrumbs :items="breadcrumbs">
+                <template v-slot:item="{ item }">
+                  <v-breadcrumbs-item
+                    :to="item.href"
+                    :class="{ 'text-primary': item.href }"
+                    link
+                  >
+                    <span>{{ item.title }}</span>
+                  </v-breadcrumbs-item>
+                </template>
+              </v-breadcrumbs>
             </v-card>
           </v-col>
         </v-row>
         <v-row>
 
           <!-- Filter Panel -->
-          <v-col cols="12" md="2" v-if="showFilters">
+          <v-col cols="12" xl="2" lg="3" md="3" sm="12" v-if="showFilters">
             <v-sheet v-if="showFilters" class="py-6 px-3">
               <v-row>
                 <v-col cols="12">
-                  <div class="text-body-1 font-weight-bold">Filters</div>
+                  <div class="text-body-1">Filters</div>
                   <v-btn 
                     size="small" 
                     dark 
@@ -126,8 +126,9 @@
               </v-sheet>
             </v-sheet>
           </v-col>
+
           <!-- Table Content -->
-          <v-col :cols="showFilters ? 12 : 12" :md="showFilters ? 10 : 12">
+          <v-col :cols="showFilters ? 12 : 12" :xl="showFilters ? 10 : 12" :lg="showFilters ? 9 : 12" :md="showFilters ? 9 : 12" :sm="showFilters ? 12 : 12">
             <v-sheet class="pa-3">
 
               <!-- Show Filters Button when filters are hidden -->
@@ -165,7 +166,7 @@
                 :pager-config="{ currentPage, pageSize, total: totalRecords }"
                 @sort-change="handleSortChange"
               >
-                <vxe-column field="identifier" width="450" sortable>
+                <vxe-column field="identifier" width="340" sortable>
 
                   <template #header>
                     Identifier
@@ -245,11 +246,23 @@
                     </span>
                   </template>
                 </vxe-column>
+                
+                <vxe-column field="maveTechnique" title="MAVE technique" min-width="250" align="center">
+                  <template #default="{ row }">
+                      <a 
+                        v-if="row.maveTechnique" 
+                        :href="`/clinmave/browse/mave_techniques/${encodeURIComponent(row.maveTechnique)}`" 
+                        target="_blank"
+                        style="text-decoration: none;"
+                      >
+                        {{ row.maveTechnique }}
+                      </a>
+                      <span v-else>-</span>
+                    </template>
+                </vxe-column>
 
                 <vxe-column field="mutagenesisStrategy" title="Mutagenesis strategy" min-width="200" align="center"></vxe-column>
                 
-                <vxe-column field="maveTechnique" title="MAVE technique" min-width="250" align="center"></vxe-column>
-
                 <vxe-column field="pmid" title="Publication" min-width="153" align="center">
                   <template #default="{ row }">
                     <div v-if="row">
@@ -595,7 +608,7 @@ const getMolecularConsequenceColor = (molecularConsequence) => {
 
 const getConsequenceClassColor = (consequenceClass) => {
   const colorMap = {
-    'Gain-of-function': '#D55E00', 
+    'Gain-of-function': '#CC0000', 
     'Loss-of-function': '#0072B2',
     'Functional neutral': '#AAAAAA',
   };
