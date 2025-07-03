@@ -35,11 +35,16 @@ const vuetify = createVuetify({
 // Material Design Icons
 import '@mdi/font/css/materialdesignicons.css'
 
+
+// MathJax
+import mathjax from './directives/mathjax'
+
 const app = createApp(App)
 
 app.use(router)
 app.use(vuetify)
 app.use(VxeUI)
 app.use(VxeUITable)
+app.directive('mathjax', mathjax)
 
 app.mount('#app')
