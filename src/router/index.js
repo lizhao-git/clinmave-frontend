@@ -8,11 +8,8 @@ import genes from '@/views/Genes.vue'
 import studies from '@/views/Studies.vue'
 import gene from '@/views/Gene.vue'
 import VisualizeByGene from '@/views/VisualizeByGene.vue' 
-import VisualizeByDataset from '@/views/VisualizeByDataset.vue'
-// import ENCODESearch from '@/views/ENCODESearch.vue'
 import Statistics from '@/views/Statistics.vue'
-import Documentation from '@/views/Documentation.vue'
-import DocumentationHtm from '@/views/Documentation-htm.vue'
+import DocumentationHtm from '@/views/Documentation.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -55,6 +52,11 @@ const router = createRouter({
       path: '/browse/mave_techniques',
       name: 'mave_techniques',
       component: () => import('@/views/MaveTechniques.vue'),
+    },
+    {
+      path: '/browse/mave_techniques/:maveTechnique',
+      name: 'mave_summary',
+      component: () => import('@/views/MaveSummary.vue'),
     },
     {
       path: '/browse/studies',
