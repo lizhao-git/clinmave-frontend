@@ -5,42 +5,34 @@
     density="compact"
     class="px-3 py-2"
   >
-    <v-row class="mt-2">
-      <v-col cols="12" sm="6" md="4" lg="4" xl="4">
-        <v-row no-gutters>
-          <v-col cols="12">
-            <span
-              class="text-h4"
-              style="color: white; font-family: 'Arial';"
-            >
-              ClinMAVE
-            </span>
-          </v-col>
-          <v-col cols="12" class="mt-2">
-            <span
-              class="text-subtitle-1"
-              style="color: white; font-family: 'Arial';"
-            >
-              MAVE database for clinical application
-            </span>
+    <v-row class="ml-3">
+      <v-col cols="12" sm="6" md="6" lg="6" xl="6">
+        <v-row no-gutters align="end">
+          <v-col cols="12" md="auto" lg="auto" class="ma-0 pa-0">
+            <div class="d-flex align-end">
+              <router-link to="/" style="display: inline-block; text-decoration: none; margin-right: 0;">
+                <v-img
+                  src="/clinmave/images/brand.png"
+                  contain
+                  width="140"
+                  height="100"
+                  style="scale: 130%; max-width: 140px; display: inline-block;"
+                  class="floating-icon"
+                />
+              </router-link>
+              <span
+                class="text-subtitle-1 ml-5"
+                style="color: white !important; font-family: 'Arial'; font-size: 20px !important;"
+              >
+                MAVE database for clinical application
+              </span>
+            </div>
           </v-col>
         </v-row>
       </v-col>
     </v-row>
 
     <v-row class="align-center">
-      <v-col cols="12" sm="1" md="2" lg="1" xl="1">
-        <v-sheet color="transparent" class="icon-container">
-          <v-img
-            src="/clinmave/images/brand.teal.png"
-            contain
-            width="140"
-            height="140"
-            style="scale: 140%;"
-            class="floating-icon"
-          />
-        </v-sheet>
-      </v-col>
 
       <v-col cols="12" sm="10" md="9" lg="9" xl="8">
         <v-tabs
@@ -115,8 +107,8 @@
 <script setup>
 const browseItems = [
   { title: 'Variants', to: '/browse/variants' },
-  { title: 'Datasets', to: '/browse/datasets' },
   { title: 'Genes', to: '/browse/genes' },
+  { title: 'Datasets', to: '/browse/datasets' },
   { title: 'Studies', to: '/browse/studies' },
   { title: 'MAVE techniques', to: '/browse/mave_techniques' },
 ]
