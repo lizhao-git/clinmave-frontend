@@ -22,8 +22,8 @@ export default defineConfig({
       // 将所有以 /api 开头的请求代理到后端服务器
       '/clinmave/api': {
         // target: 'http://192.168.164.87:7777/clinmave',
-        target: 'http://localhost:12000/clinmave/',
-        // target: 'https://ngdc.cncb.ac.cn/clinmave/api/',
+        // target: 'http://localhost:12000/clinmave/',
+        target: 'https://ngdc.cncb.ac.cn/clinmave/api/',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/clinmave\/api/, ''), // 将 /clinmave/api 替换为空
       },
