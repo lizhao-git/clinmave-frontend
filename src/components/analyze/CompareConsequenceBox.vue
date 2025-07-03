@@ -1,87 +1,36 @@
-<template>
-  <v-container style="position: relative;">
-    <v-card-text class="d-flex flex-column">
-      <!-- 图表标题 -->
-      <h3 v-if="titleFlag" class="font-weight-bold text-center">
-        Distribution of variant predictive scores among MAVE-defined functional groups
-      </h3>
-      <v-btn
-        icon="$download"
-        size="x-small"
-        color="primary"
-        variant="text"
-        style="position: absolute; top: 10px; right: 10px;"
-        @click="downloadPDF"
-      ></v-btn>
-      <svg ref="svg" :width="width" :height="height"></svg>
-    </v-card-text>
-  </v-container>
-</template>
-
 <script setup>
 import * as d3 from "d3";
-import * as jStat from "jstat";
-import { ref, watch, onMounted, defineProps } from "vue";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { ref, watch, onMounted } from "vue";
+import * as jStat from "jstat";
 
 const props = defineProps({
-  data: {
-    type: Object,
-    required: true,
-  },
-  width: {
-    type: Number,
-    default: 800,
-  },
-  height: {
-    type: Number,
-    default: 400,
-  },
-  titleFlag: {
-    type: Boolean,
-    default: false,
-  },
+  data: { type: Object, required: true },
+  width: { type: Number, default: 800 },
+  height: { type: Number, default: 360 },
+  titleFlag: { type: Boolean, default: false },
 });
 
 const svg = ref(null);
 const { data, width, height } = props;
 
-function wilcoxonRankSum(sample1, sample2) {
+function tTest(sample1, sample2) {
   try {
-    const result = jStat.mannWhitneyU(sample1, sample2, { alternative: "two-sided" });
-    return result.p || 1;
-  } catch (error) {
-    console.warn("jStat Mann-Whitney U test failed:", error.message);
-    const all = sample1.concat(sample2).sort((a, b) => a - b);
-    const ranks = new Map();
-    let currentRank = 1;
-    for (let i = 0; i < all.length; i++) {
-      if (i > 0 && all[i] !== all[i - 1]) currentRank = i + 1;
-      ranks.set(all[i], currentRank);
-    }
-    const rankSum1 = sample1.reduce((acc, v) => acc + ranks.get(v), 0);
     const n1 = sample1.length;
     const n2 = sample2.length;
-    const U1 = rankSum1 - (n1 * (n1 + 1)) / 2;
-    const U2 = n1 * n2 - U1;
-    const U = Math.min(U1, U2);
-    const mu = (n1 * n2) / 2;
-    const sigma = Math.sqrt((n1 * n2 * (n1 + n2 + 1)) / 12);
-    const z = (U - mu) / sigma;
-    const p = 0.2316419;
-    const b1 = 0.319381530;
-    const b2 = -0.356563782;
-    const b3 = 1.781477937;
-    const b4 = -1.821255978;
-    const b5 = 1.330274429;
-    const t = 1 / (1 + p * Math.abs(z));
-    const t2 = t * t;
-    const t3 = t2 * t;
-    const t4 = t3 * t;
-    const t5 = t4 * t;
-    const pdf = Math.exp(-z * z / 2) / Math.sqrt(2 * Math.PI);
-    return 2 * (1 - (1 - pdf * (b1 * t + b2 * t2 + b3 * t3 + b4 * t4 + b5 * t5)));
+    const mean1 = jStat.mean(sample1);
+    const mean2 = jStat.mean(sample2);
+    const var1 = jStat.variance(sample1, true);
+    const var2 = jStat.variance(sample2, true);
+    const se = Math.sqrt(var1 / n1 + var2 / n2);
+    const t = (mean1 - mean2) / se;
+    const df = Math.pow(var1 / n1 + var2 / n2, 2) /
+      ((Math.pow(var1 / n1, 2) / (n1 - 1)) + (Math.pow(var2 / n2, 2) / (n2 - 1)));
+    const p = 2 * (1 - jStat.studentt.cdf(Math.abs(t), df));
+    return p;
+  } catch (e) {
+    return 1;
   }
 }
 
@@ -102,36 +51,55 @@ function downloadPDF() {
 function drawChart() {
   if (!svg.value) return;
   d3.select(svg.value).selectAll("*").remove();
+  d3.select(svg.value.parentNode).selectAll(".custom-tooltip").remove();
 
-  const margin = { top: 120, right: 30, bottom: 80, left: 80 };
-  const svgSel = d3.select(svg.value).attr("width", width).attr("height", height);
-
-  const tooltip = svgSel
-    .append("g")
-    .attr("class", "tooltip")
-    .style("display", "none");
-
-  tooltip
-    .append("rect")
-    .attr("fill", "white")
-    .attr("fill-opacity", "0.8")
-    .attr("stroke", "#ccc")
-    .attr("stroke-width", 1)
-    .attr("rx", 8)
-    .style("filter", "drop-shadow(2px 2px 5px rgba(0,0,0,0.2))");
-
-  const tooltipText = tooltip
-    .append("text")
-    .attr("fill", "black")
-    .style("font-size", "14px")
-    .attr("dy", "1em");
-
+  const margin = { top: 30, right: 20, bottom: 60, left: 50 };
   const keys = Object.keys(data);
   const plotWidth = (width - margin.left - margin.right) / keys.length;
   const innerHeight = height - margin.top - margin.bottom;
+  const svgSel = d3.select(svg.value);
+  const container = svg.value.parentNode;
 
+  const tooltip = d3.select(container)
+    .append("div")
+    .attr("class", "custom-tooltip")
+    .style("position", "absolute")
+    .style("pointer-events", "none")
+    .style("background", "white")
+    .style("box-shadow", "0 2px 6px rgba(0,0,0,0.2)")
+    .style("font-family", "Arial")
+    .style("font-size", "13px")
+    .style("padding", "10px")
+    .style("display", "none")
+    .style("z-index", 100);
+
+  const colorMap = { LOF: "#1f77b4", GOF: "#ff7f0e" };
+
+  // Step 1: compute global max box top Y
+  let globalMaxBoxY = Infinity;
+  keys.forEach(key => {
+    const lof = data[key].LOF;
+    const gof = data[key].GOF;
+    const all = lof.concat(gof);
+    const yScale = d3.scaleLinear()
+      .domain([d3.min(all) * 0.9, d3.max(all) * 1.1])
+      .range([innerHeight, 0]);
+
+    const q3LOF = d3.quantile(lof.slice().sort(d3.ascending), 0.75);
+    const q3GOF = d3.quantile(gof.slice().sort(d3.ascending), 0.75);
+    const iqrLOF = q3LOF - d3.quantile(lof.slice().sort(d3.ascending), 0.25);
+    const iqrGOF = q3GOF - d3.quantile(gof.slice().sort(d3.ascending), 0.25);
+
+    const maxLOF = Math.min(d3.max(lof), q3LOF + 1.5 * iqrLOF);
+    const maxGOF = Math.min(d3.max(gof), q3GOF + 1.5 * iqrGOF);
+
+    const localBoxTopY = Math.min(yScale(maxLOF), yScale(maxGOF));
+    globalMaxBoxY = Math.min(globalMaxBoxY, localBoxTopY);
+  });
+
+  // Step 2: draw boxplots
   keys.forEach((key, idx) => {
-    const keyG = svgSel
+    const groupG = svgSel
       .append("g")
       .attr("transform", `translate(${margin.left + idx * plotWidth}, ${margin.top})`);
 
@@ -141,202 +109,184 @@ function drawChart() {
     const yScale = d3.scaleLinear()
       .domain([d3.min(all) * 0.9, d3.max(all) * 1.1])
       .range([innerHeight, 0]);
+    const xScale = d3.scaleBand().domain(["LOF", "GOF"]).range([0, plotWidth - 40]).padding(0.3);
 
-    const xScale = d3.scaleBand()
-      .domain(["LOF", "GOF"])
-      .range([0, plotWidth - 50])
-      .padding(0.3);
+    groupG.append("g").call(d3.axisLeft(yScale).ticks(5));
+    groupG.append("text")
+      .attr("transform", `rotate(-90)`)
+      .attr("x", -innerHeight / 2)
+      .attr("y", -40)
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .style("font-size", "13px")
+      .text(key.toUpperCase());
 
-    keyG
-      .append("g")
-      .call(d3.axisLeft(yScale).ticks(6))
-      .append("text")
-      .attr("fill", "black")
-      .attr("x", -margin.left - 10)
-      .attr("y", -30)
-      .attr("text-anchor", "middle")
-      .attr("transform", "rotate(-90)")
-      .style("font-size", "12px")
-      .text(key);
-
-    keyG
-      .append("g")
-      .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale))
-      .selectAll("text")
-      .style("text-anchor", "middle");
-
-    const colorMap = { LOF: "#1f77b4", GOF: "#ff7f0e" };
-
-    let maxBoxY = Infinity;
     let xMidLOF, xMidGOF;
 
     ["LOF", "GOF"].forEach(group => {
-      const values = data[key][group];
-      const sorted = values.slice().sort(d3.ascending);
-      const min = d3.min(sorted);
-      const max = d3.max(sorted);
-      const q1 = d3.quantile(sorted, 0.25);
-      const median = d3.quantile(sorted, 0.5);
-      const q3 = d3.quantile(sorted, 0.75);
-      const q4 = max;
+      const values = data[key][group].slice().sort(d3.ascending);
+      const q1 = d3.quantile(values, 0.25);
+      const median = d3.quantile(values, 0.5);
+      const q3 = d3.quantile(values, 0.75);
       const iqr = q3 - q1;
-      const lowerWhisker = Math.max(min, q1 - 1.5 * iqr);
-      const upperWhisker = Math.min(max, q3 + 1.5 * iqr);
+      const min = Math.max(d3.min(values), q1 - 1.5 * iqr);
+      const max = Math.min(d3.max(values), q3 + 1.5 * iqr);
       const x = xScale(group);
       const boxWidth = xScale.bandwidth();
+      const color = colorMap[group];
+      const xMid = x + boxWidth / 2;
+      if (group === "LOF") xMidLOF = xMid; else xMidGOF = xMid;
 
-      maxBoxY = Math.min(maxBoxY, yScale(upperWhisker));
-      if (group === "LOF") xMidLOF = x + boxWidth / 2;
-      if (group === "GOF") xMidGOF = x + boxWidth / 2;
+      const boxGroup = groupG.append("g").attr("class", `box-group-${group}`);
 
-      keyG
-        .append("rect")
+      const boxRect = boxGroup.append("rect")
         .attr("x", x)
         .attr("y", yScale(q3))
         .attr("width", boxWidth)
         .attr("height", yScale(q1) - yScale(q3))
-        .attr("fill", colorMap[group])
-        .attr("opacity", 0.7)
-        .on("mouseover", function (event) {
-          tooltip.style("display", null);
-          const lines = [
-            { label: "Group", value: group },
-            { label: "Min", value: min.toFixed(3) },
-            { label: "Lower Whisker", value: lowerWhisker.toFixed(3) },
-            { label: "Q1", value: q1.toFixed(3) },
-            { label: "Median", value: median.toFixed(3) },
-            { label: "Q3", value: q3.toFixed(3) },
-            { label: "Upper Whisker", value: upperWhisker.toFixed(3) },
-            { label: "Max", value: max.toFixed(3) },
-          ];
-          tooltipText.selectAll("*").remove();
-          lines.forEach((line, i) => {
-            tooltipText
-              .append("tspan")
-              .attr("x", 10)
-              .attr("dy", i === 0 ? 0 : "1.4em")
-              .style("font-weight", "bold")
-              .text(`${line.label}: `);
-            tooltipText
-              .append("tspan")
-              .text(line.value)
-              .style("font-weight", "normal");
-          });
-          const bbox = tooltipText.node().getBBox();
-          tooltip
-            .select("rect")
-            .attr("x", bbox.x - 5)
-            .attr("y", bbox.y - 5)
-            .attr("width", bbox.width + 20)
-            .attr("height", bbox.height + 10);
-        })
-        .on("mousemove", function (event) {
-          const [mx, my] = d3.pointer(event);
-          let tooltipX = mx + margin.left + idx * plotWidth + 15;
-          let tooltipY = my + margin.top + 15;
-          const bbox = tooltipText.node().getBBox();
-          if (tooltipX + bbox.width + 20 > width) {
-            tooltipX = mx + margin.left + idx * plotWidth - bbox.width - 20;
-          }
-          if (tooltipY + bbox.height + 10 > height) {
-            tooltipY = my + margin.top - bbox.height - 10;
-          }
-          tooltip.attr("transform", `translate(${tooltipX}, ${tooltipY})`);
-        })
-        .on("mouseout", function () {
-          tooltip.style("display", "none");
-        });
+        .attr("fill", "none")
+        .attr("stroke", color)
+        .attr("stroke-width", 2);
 
-      keyG
-        .append("line")
+      const medianLine = boxGroup.append("line")
         .attr("x1", x)
         .attr("x2", x + boxWidth)
         .attr("y1", yScale(median))
         .attr("y2", yScale(median))
-        .attr("stroke", "black")
+        .attr("stroke", color)
         .attr("stroke-width", 2);
 
-      keyG
-        .append("line")
-        .attr("x1", x + boxWidth / 2)
-        .attr("x2", x + boxWidth / 2)
-        .attr("y1", yScale(lowerWhisker))
-        .attr("y2", yScale(q1))
-        .attr("stroke", "black");
+      const whiskers = [
+        { x1: xMid, x2: xMid, y1: yScale(min), y2: yScale(q1) },
+        { x1: xMid, x2: xMid, y1: yScale(q3), y2: yScale(max) },
+        { x1: x + boxWidth / 4, x2: x + boxWidth * 3 / 4, y1: yScale(min), y2: yScale(min) },
+        { x1: x + boxWidth / 4, x2: x + boxWidth * 3 / 4, y1: yScale(max), y2: yScale(max) },
+      ];
+      whiskers.forEach(w => {
+        boxGroup.append("line")
+          .attr("x1", w.x1)
+          .attr("x2", w.x2)
+          .attr("y1", w.y1)
+          .attr("y2", w.y2)
+          .attr("stroke", color)
+          .attr("stroke-width", 1);
+      });
 
-      keyG
-        .append("line")
-        .attr("x1", x + boxWidth / 2)
-        .attr("x2", x + boxWidth / 2)
-        .attr("y1", yScale(q3))
-        .attr("y2", yScale(upperWhisker))
-        .attr("stroke", "black");
+      boxGroup.on("mouseover", (event) => {
+        boxRect.attr("stroke-width", 3);
+        medianLine.attr("stroke-width", 3);
+        boxGroup.selectAll("line").attr("stroke-width", 3);
+        const containerRect = container.getBoundingClientRect();
+        tooltip.html(`
+          <table>
+            <tr><td>Group: </td><td>${group}</td></tr>
+            <tr><td>#Variants: </td><td>${values.length}</td></tr>
+            <tr><td>Q1: </td><td>${q1.toFixed(3)}</td></tr>
+            <tr><td>Median: </td><td>${median.toFixed(3)}</td></tr>
+            <tr><td>Q3: </td><td>${q3.toFixed(3)}</td></tr>
+          </table>
+        `)
+          .style("left", event.clientX - containerRect.left + 10 + "px")
+          .style("top", event.clientY - containerRect.top + "px")
+          .style("display", "block");
+      }).on("mouseout", () => {
+        boxRect.attr("stroke-width", 2);
+        medianLine.attr("stroke-width", 2);
+        boxGroup.selectAll("line").attr("stroke-width", 1);
+        tooltip.style("display", "none");
+      });
 
-      keyG
-        .append("line")
-        .attr("x1", x + boxWidth / 4)
-        .attr("x2", x + boxWidth * 3 / 4)
-        .attr("y1", yScale(lowerWhisker))
-        .attr("y2", yScale(lowerWhisker))
-        .attr("stroke", "black");
-
-      keyG
-        .append("line")
-        .attr("x1", x + boxWidth / 4)
-        .attr("x2", x + boxWidth * 3 / 4)
-        .attr("y1", yScale(upperWhisker))
-        .attr("y2", yScale(upperWhisker))
-        .attr("stroke", "black");
+      groupG.selectAll(`.dot-${group}`)
+        .data(values)
+        .enter()
+        .append("circle")
+        .attr("cx", () => xMid + (Math.random() - 0.5) * boxWidth * 0.6)
+        .attr("cy", d => yScale(d))
+        .attr("r", 2.5)
+        .attr("fill", color)
+        .attr("opacity", 0.7)
+        .on("mouseover", function (event, d) {
+          d3.select(this).attr("r", 5).attr("opacity", 1);
+          const containerRect = container.getBoundingClientRect();
+          tooltip.html(`${group}<br/>Value: ${d.toFixed(3)}`)
+            .style("left", event.clientX - containerRect.left + 10 + "px")
+            .style("top", event.clientY - containerRect.top + "px")
+            .style("display", "block");
+          event.stopPropagation();
+        })
+        .on("mouseout", function () {
+          d3.select(this).attr("r", 2.5).attr("opacity", 0.7);
+          tooltip.style("display", "none");
+        });
     });
 
-    const p = wilcoxonRankSum(lof, gof);
-    const pFormatted = p.toExponential(3);
-    const yMark = maxBoxY - 10;
-
-    keyG
-      .append("line")
-      .attr("x1", xMidLOF)
-      .attr("x2", xMidGOF)
-      .attr("y1", yMark)
-      .attr("y2", yMark)
-      .attr("stroke", "black")
-      .attr("stroke-width", 1);
-
-    keyG
-      .append("line")
-      .attr("x1", xMidLOF)
-      .attr("x2", xMidLOF)
-      .attr("y1", yMark)
-      .attr("y2", yMark + 6)
-      .attr("stroke", "black")
-      .attr("stroke-width", 1);
-
-    keyG
-      .append("line")
-      .attr("x1", xMidGOF)
-      .attr("x2", xMidGOF)
-      .attr("y1", yMark)
-      .attr("y2", yMark + 6)
-      .attr("stroke", "black")
-      .attr("stroke-width", 1);
-
-    keyG
-      .append("text")
+    // draw unified significance line
+    const p = tTest(lof, gof);
+    const yMark = globalMaxBoxY - 10;
+    const pStr = `p=${p.toExponential(2)}`;
+    groupG.append("line").attr("x1", xMidLOF).attr("x2", xMidGOF).attr("y1", yMark).attr("y2", yMark).attr("stroke", "black");
+    groupG.append("line").attr("x1", xMidLOF).attr("x2", xMidLOF).attr("y1", yMark).attr("y2", yMark + 6).attr("stroke", "black");
+    groupG.append("line").attr("x1", xMidGOF).attr("x2", xMidGOF).attr("y1", yMark).attr("y2", yMark + 6).attr("stroke", "black");
+    groupG.append("text")
       .attr("x", (xMidLOF + xMidGOF) / 2)
-      .attr("y", yMark - 10)
+      .attr("y", yMark - 8)
       .attr("text-anchor", "middle")
-      .style("font-size", "12px")
-      .text(p < 0.05 ? `p=${pFormatted}` : `ns (p=${pFormatted})`);
+      .text(pStr)
+      .style("font-size", "12px");
+  });
+
+  const legend = svgSel.append("g").attr("transform", `translate(${width / 2 - 150}, ${height - 30})`);
+  [
+    { label: "Functional neutral", key: "LOF", color: colorMap.LOF },
+    { label: "Functional altered", key: "GOF", color: colorMap.GOF },
+  ].forEach((item, i) => {
+    const lg = legend.append("g").attr("transform", `translate(${i * 150}, 0)`);
+    lg.append("rect").attr("width", 14).attr("height", 14).attr("fill", item.color);
+    lg.append("text").attr("x", 20).attr("y", 12).text(item.label).style("font-size", "14px").style("font-family", "Arial");
   });
 }
 
-watch(() => data, () => { drawChart(); }, { immediate: true });
-onMounted(() => { drawChart(); });
+watch(() => data, () => drawChart(), { immediate: true });
+onMounted(() => drawChart());
 </script>
 
+<template>
+  <v-container class="d-flex justify-center" style="position: relative;">
+    <v-card flat style="width: 100%; position: relative;">
+      
+      <v-card-text class="d-flex flex-column align-center" style="padding-top: 40px;">
+        <h3 v-if="titleFlag" class="text-center mb-4" style="font-size: 14px; color:black;">
+          Distribution of variant predictive scores among MAVE-defined functional groups
+        </h3>
+        <div style="width: 100%; position: relative;">
+          <svg
+            ref="svg"
+            :height="height"
+            :viewBox="`0 0 ${width} ${height}`"
+            preserveAspectRatio="xMidYMid meet"
+            style="width: 100%;"
+          ></svg>
+        </div>
+      </v-card-text>
+    </v-card>
+  </v-container>
+</template>
+
 <style scoped>
-.tooltip {
+svg {
+  font-family: Arial, sans-serif;
+}
+.v-card-text {
+  padding: 16px;
+}
+.custom-tooltip {
+  position: absolute;
+  background-color: white;
   pointer-events: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  padding: 10px;
+  font-size: 14px;
+  line-height: 1.4;
+  z-index: 1000;
 }
 </style>

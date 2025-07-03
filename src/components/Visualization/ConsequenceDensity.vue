@@ -1,14 +1,32 @@
 <template>
   <v-container>
-    <!-- 图表标题 -->
+    <!-- Chart title -->
     <v-card-text class="d-flex flex-column">
-      <h3 v-if="titleFlag" class="font-weight-bold text-center">
-        Scatter plot between gnomAD frequency and functional score
-      </h3>
+      <h4 v-if="titleFlag" class="text-center">
+        Functional score distribution across molecular consequence categories
+      </h4>
+
       <div ref="chartWrapper" style="position: relative; width: 100%;">
         <svg ref="svg" :height="height"></svg>
       </div>
     </v-card-text>
+
+    <!-- Tooltip rendered globally to avoid being clipped -->
+    <teleport to="body">
+      <div
+        v-if="tooltip.visible"
+        class="custom-tooltip"
+        :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }"
+      >
+        <table style="font-family: Arial; font-size: 14px; border-collapse: collapse;">
+          <tbody>
+            <tr><td>Dataset:</td><td>{{ tooltip.data.dataset }}</td></tr>
+            <tr><td>Score:</td><td>{{ tooltip.data.score?.toFixed(2) }}</td></tr>
+            <tr><td>Mutation:</td><td>{{ tooltip.data.mutations }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </teleport>
   </v-container>
 </template>
 
@@ -23,23 +41,17 @@ const props = defineProps({
   titleFlag: { type: Boolean, default: false }
 })
 
-// Fixed mutation categories
+// Mutation categories
 const categories = [
-  'Synonymous',
-  'Stop-gained',
-  'Missense',
-  'Codon deletion',
-  'Frameshift',
-  'Intron',
-  'Splice site',
-  'UTR'
+  'Synonymous', 'Stop-gained', 'Missense', 'Codon deletion',
+  'Frameshift', 'Intron', 'Splice site', 'UTR'
 ]
 
-// Refs
+// Refs and settings
 const svg = ref(null)
 const chartWrapper = ref(null)
-const rowHeight = 60
-const margin = { top: 60, right: 30, bottom: 40, left: 120 }
+const rowHeight = 50
+const margin = { top: 40, right: 30, bottom: 40, left: 120 }
 const height = ref(300)
 const tooltip = ref({
   visible: false,
@@ -78,19 +90,20 @@ function drawChart(rawData) {
     .domain([d3.min(allScores), d3.max(allScores)])
     .range([margin.left, width - margin.right])
 
-  // Bottom axis
+  // X-axis
   const xAxis = d3.axisBottom(x).ticks(8)
   svgSel.append('g')
     .attr('transform', `translate(0, ${height.value - margin.bottom})`)
     .call(xAxis)
     .append('text')
-    .attr('x', width - margin.right)
+    .attr('x', (width - margin.left - margin.right) / 2 + margin.left)
     .attr('y', 35)
-    .attr('text-anchor', 'end')
+    .attr('text-anchor', 'middle')
     .text('Functional score')
     .style('font-size', '14px')
+    .style('fill', 'black')
 
-  // KDE setup
+  // KDE
   const kde = (kernel, X) => V => X.map(x => [x, d3.mean(V, v => kernel(x - v))])
   const epanechnikov = k => v => Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0
   const xTicks = x.ticks(100)
@@ -123,7 +136,7 @@ function drawChart(rawData) {
       .attr('stroke-width', 1)
       .attr('d', area)
 
-    // Rug lines
+    // Rug lines with tooltip
     svgSel.selectAll(`.rug-${i}`)
       .data(group.mutations)
       .enter()
@@ -137,12 +150,12 @@ function drawChart(rawData) {
       .on('mouseover', (event, d) => {
         tooltip.value.visible = true
         tooltip.value.data = { ...d, dataset: group.dataset }
-        tooltip.value.x = event.pageX + 10
-        tooltip.value.y = event.pageY + 10
+        tooltip.value.x = event.clientX + 12
+        tooltip.value.y = event.clientY + 12
       })
       .on('mousemove', event => {
-        tooltip.value.x = event.pageX + 10
-        tooltip.value.y = event.pageY + 10
+        tooltip.value.x = event.clientX + 12
+        tooltip.value.y = event.clientY + 12
       })
       .on('mouseleave', () => {
         tooltip.value.visible = false
@@ -158,5 +171,14 @@ watch(() => props.smoothing, () => nextTick(() => drawChart(props.data)))
 <style scoped>
 svg {
   font-family: Arial, sans-serif;
+}
+
+.custom-tooltip {
+  position: fixed;
+  z-index: 9999;
+  background-color: white;
+  padding: 10px;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
 }
 </style>

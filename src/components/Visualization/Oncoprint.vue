@@ -9,7 +9,6 @@
       style="position: absolute; pointer-events: none; background: #222; color: #eee; padding: 5px 8px; border-radius: 4px; font-size: 14px; display: none; z-index: 10;"
     ></div>
 
-    <!-- 控制按钮 -->
     <div
       class="d-flex justify-center"
       style="position: absolute; bottom: 10px; width: 100%; z-index: 20; gap: 6px;"
@@ -26,8 +25,6 @@
       <v-btn icon class="ma-1" color="white" elevation="1" @click="panRight" title="Pan Right">
         <v-icon>mdi-arrow-right</v-icon>
       </v-btn>
-
-      <!-- 只保留PDF导出 -->
       <v-btn icon class="ma-1" color="white" elevation="1" @click="downloadPDF" title="Download PDF">
         <v-icon>mdi-file-pdf-box</v-icon>
       </v-btn>
@@ -106,8 +103,8 @@ onUnmounted(() => {
 
 const pfamColorMap = ref({})
 const mutationColorMap = {
-  'Gain-of-function': '#8B0000',
-  'Loss-of-function': '#169e35',
+  'Gain-of-function': '#CC0000',
+  'Loss-of-function': '#0072B2',
   'Functional neutral': '#bcbcbc',
   'null': 'white'
 }
@@ -118,50 +115,48 @@ function drawTrack() {
   const svgEl = d3.select(svg.value)
   svgEl.selectAll('*').remove()
 
-  const margin = { top: 10, right: 10, bottom: 30, left: 80 }
+  const margin = { top: 10, right: 10, bottom: 30, left: 90 }
   const innerWidth = computedWidth.value - margin.left - margin.right
-  const innerHeight = props.height - margin.top - margin.bottom
   const g = svgEl.append('g').attr('transform', `translate(${margin.left},${margin.top})`)
 
   const totalLength = props.geneInfo.proteinLength
   const windowSize = totalLength / zoomScale.value
   const start = zoomOffset.value
   const end = start + windowSize
-
   const x = d3.scaleLinear().domain([start + 1, end]).range([0, innerWidth - 100])
-
-  const xAxis = d3.axisBottom(x)
-    .tickValues([
-      Math.max(start + 1, 1),
-      Math.min(end, props.geneInfo.proteinLength)
-    ])
-    .tickFormat(d => `${Math.round(d)} aa`)
+  const xAxis = d3.axisBottom(x).tickValues([Math.max(start + 1, 1), Math.min(end, props.geneInfo.proteinLength)]).tickFormat(d => `${Math.round(d)} aa`)
 
   const yGene = 30
   const geneRectHeight = 20
-  const geneX = 0
   const geneWidth = x(end) - x(start + 1)
+  g.append('rect').attr('x', 0).attr('y', yGene).attr('width', geneWidth).attr('height', geneRectHeight).attr('fill', 'white').attr('stroke', 'black')
 
-  g.append('rect')
-    .attr('x', geneX)
-    .attr('y', yGene)
-    .attr('width', geneWidth)
-    .attr('height', geneRectHeight)
-    .attr('fill', 'white')
-    .attr('stroke', 'black')
-
-  const domainGroup = g.selectAll('g.domain')
-    .data(props.domains)
-    .enter().append('g').attr('class', 'domain')
-
+  const domainGroup = g.selectAll('g.domain').data(props.domains).enter().append('g').attr('class', 'domain')
   domainGroup.append('rect')
     .attr('x', d => x(d.start))
     .attr('y', yGene)
     .attr('width', d => Math.max(x(d.end) - x(d.start), 1))
     .attr('height', geneRectHeight)
     .attr('fill', d => pfamColorMap.value[d.pfamId] || '#888')
-    .on('mouseover', (event, d) => showTooltip(event, `Pfam: ${d.pfamId}<br>${d.pfamName}<br>${d.pfamDescription}`))
-    .on('mouseout', hideTooltip)
+    .attr('opacity', 1)
+    .attr('stroke', 'black')
+    .attr('stroke-width', 1)
+    .on('mouseover', function (event, d) {
+      d3.select(this)
+        .transition().duration(150)
+        .style('filter', 'drop-shadow(0 0 6px rgba(255, 165, 0, 0.8))')
+        .attr('stroke-width', 2)
+        .attr('stroke', '#ffa500')
+      showTooltip(event, `Pfam: ${d.pfamId}<br>${d.pfamName}<br>${d.pfamDescription}`)
+    })
+    .on('mouseout', function () {
+      d3.select(this)
+        .transition().duration(150)
+        .style('filter', 'none')
+        .attr('stroke-width', 1)
+        .attr('stroke', 'black')
+      hideTooltip()
+    })
 
   const occupied = []
   domainGroup.append('text')
@@ -172,25 +167,11 @@ function drawTrack() {
       const textWidth = d.pfamName.length * 6.5
       const labelObj = { start: xCenter - textWidth / 2, end: xCenter + textWidth / 2 }
       let level = 0
-      while (occupied.some(o => !(labelObj.end < o.start || labelObj.start > o.end) && o.level === level)) {
-        level++
-      }
+      while (occupied.some(o => !(labelObj.end < o.start || labelObj.start > o.end) && o.level === level)) level++
       occupied.push({ ...labelObj, level })
       return yGene + (level % 2 === 0 ? -6 - 12 * level : geneRectHeight + 12 * level)
     })
-    .attr('text-anchor', 'middle')
-    .attr('font-size', 14)
-    .attr('fill', 'black')
-
-  g.append('text')
-    .attr('x', -60).attr('y', yGene + geneRectHeight / 2)
-    .attr('text-anchor', 'start').attr('font-size', 14)
-    .text(props.geneInfo.geneName)
-
-  g.append('text')
-    .attr('x', -60).attr('y', yGene + geneRectHeight / 2 + 16)
-    .attr('text-anchor', 'start').attr('font-size', 14)
-    .text(props.geneInfo.uniprotId)
+    .attr('text-anchor', 'middle').attr('font-size', 14).attr('fill', 'black')
 
   const rectHeight = 15
   const gap = 5
@@ -198,10 +179,7 @@ function drawTrack() {
 
   props.oncoprintData.forEach((sample, i) => {
     const y = yStart + i * (rectHeight + gap)
-    g.append('text')
-      .attr('x', -10).attr('y', y + rectHeight / 2 - 1).attr('dy', '0.35em')
-      .attr('text-anchor', 'end').attr('font-size', 12)
-      .text(sample.sample)
+    g.append('text').attr('x', -10).attr('y', y + rectHeight / 2 - 1).attr('dy', '0.35em').attr('text-anchor', 'end').attr('font-size', 13).text(sample.sample)
     g.selectAll(`.mut-${i}`)
       .data(sample.mutations)
       .enter()
@@ -214,21 +192,29 @@ function drawTrack() {
       .attr('fill', d => mutationColorMap[d.type] || '#ccc')
       .attr('stroke', 'white')
       .attr('stroke-width', 0.5)
-      .on('mouseover', (event, d) => showTooltip(event, `Ref: ${d.ref || ''}<br>${d.type}<br>Position: ${d.start}`))
-      .on('mouseout', hideTooltip)
+      .attr('opacity', 1)
+      .on('mouseover', function (event, d) {
+        d3.select(this)
+          .transition().duration(150)
+          .style('filter', 'drop-shadow(0 0 6px rgba(30, 144, 255, 0.8))')
+          .attr('stroke-width', 2)
+          .attr('stroke', '#1e90ff')
+        showTooltip(event, `Ref: ${d.ref || ''}<br>${d.type}<br>Position: ${d.start}`)
+      })
+      .on('mouseout', function () {
+        d3.select(this)
+          .transition().duration(150)
+          .style('filter', 'none')
+          .attr('stroke-width', 0.5)
+          .attr('stroke', 'white')
+        hideTooltip()
+      })
   })
 
-  g.append('g')
-    .attr('transform', `translate(0, ${yGene + geneRectHeight + 2})`)
-    .call(xAxis)
-    .selectAll('text')
-    .style('font-size', '14px')
+  g.append('g').attr('transform', `translate(0, ${yGene + geneRectHeight + 3})`).call(xAxis).selectAll('text').style('font-size', '14px')
 
   const legendY = yStart + props.oncoprintData.length * (rectHeight + gap) + 60
-  const legend = g.append('g')
-    .attr('class', 'mutation-legend')
-    .attr('transform', `translate(0, ${legendY})`)
-
+  const legend = g.append('g').attr('class', 'mutation-legend').attr('transform', `translate(0, ${legendY})`)
   Object.entries(mutationColorMap).forEach(([type, color], i) => {
     const xOffset = i * 150
     legend.append('rect').attr('x', xOffset).attr('y', 0).attr('width', 15).attr('height', 15).attr('fill', color).attr('stroke', 'black').attr('stroke-width', 0.5)
@@ -249,60 +235,34 @@ function hideTooltip() {
   tooltip.style.display = 'none'
 }
 
-// 提升PDF质量时的放大倍数（可调）
 const DPI_SCALE = 1
-
 async function downloadPDF() {
   if (!svg.value) return
   const svgEl = svg.value
-
   const serializer = new XMLSerializer()
   let svgString = serializer.serializeToString(svgEl)
-
   if (!svgString.includes('xmlns="http://www.w3.org/2000/svg"')) {
     svgString = svgString.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"')
   }
   if (!svgString.match(/^<\?xml/)) {
     svgString = '<?xml version="1.0" standalone="no"?>\r\n' + svgString
   }
-
-  // 目标canvas尺寸，放大 DPI_SCALE 倍
   const width = (svgEl.clientWidth || computedWidth.value) * DPI_SCALE
   const height = (svgEl.clientHeight || props.height) * DPI_SCALE
-
   const canvas = document.createElement('canvas')
   canvas.width = width
   canvas.height = height
-
   const ctx = canvas.getContext('2d')
-  // 放大绘制，先 scale context 再绘制svg
   ctx.scale(DPI_SCALE, DPI_SCALE)
-
   const v = await Canvg.from(ctx, svgString)
   await v.render()
-
-  // 生成 PDF，单位pt，尺寸对应放大后的canvas尺寸 / DPI_SCALE，保持单位一致
-  const pdf = new jsPDF({
-    orientation: width > height ? 'landscape' : 'portrait',
-    unit: 'pt',
-    format: [width / DPI_SCALE, height / DPI_SCALE]
-  })
-
-  // 把canvas按原尺寸导入pdf，pdf尺寸是放大后的尺寸除以DPI_SCALE
+  const pdf = new jsPDF({ orientation: width > height ? 'landscape' : 'portrait', unit: 'pt', format: [width / DPI_SCALE, height / DPI_SCALE] })
   const imgData = canvas.toDataURL('image/png')
   pdf.addImage(imgData, 'PNG', 0, 0, width / DPI_SCALE, height / DPI_SCALE)
   pdf.save(`${props.geneInfo.geneName}_oncoprint.pdf`)
 }
 
-watch([
-  () => computedWidth.value,
-  () => props.height,
-  () => props.geneInfo,
-  () => props.oncoprintData,
-  () => zoomScale.value,
-  () => zoomOffset.value
-], drawTrack, { deep: true })
-
+watch([() => computedWidth.value, () => props.height, () => props.geneInfo, () => props.oncoprintData, () => zoomScale.value, () => zoomOffset.value], drawTrack, { deep: true })
 watch(() => props.domains, (newDomains) => {
   const map = {}
   const uniquePfamIds = [...new Set(newDomains.map(d => d.pfamId))]

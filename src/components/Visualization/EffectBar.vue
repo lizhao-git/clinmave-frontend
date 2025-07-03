@@ -1,5 +1,16 @@
 <template>
   <div ref="container" class="nature-container">
+    <div class="title-wrapper">
+      <span class="chart-title">{{ titleText }}</span>
+      <v-tooltip location="top">
+        <template v-slot:activator="{ props }">
+          <div v-bind="props">
+            <v-icon style="font-size: 16px;">mdi-help-circle-outline</v-icon>
+          </div>
+        </template>
+        <span>Distance-based scoring method to measure strength tier of functional effect within specific assay. See documentation for further details.</span>
+      </v-tooltip>
+    </div>
     <svg ref="svg"></svg>
   </div>
 </template>
@@ -13,7 +24,7 @@ import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
  * Displays a gradient bar with labeled ticks and a compact card showing classification strength.
  * @component
  * @example
- * <EffectBar :strength="'Weak'" :bar-height="8" :labels="['None', 'Low', 'Medium', 'High']" />
+ * <EffectBar :strength="'Strong'" :bar-height="8" :labels="['No effects', 'Weak', 'Moderate', 'Strong']" />
  */
 const props = defineProps({
   strength: {
@@ -32,9 +43,9 @@ const props = defineProps({
   colors: {
     type: Object,
     default: () => ({
-      start: '#4C78A8', // 浅蓝，Nature 风格起始色
-      mid: '#F8E08E',   // 浅黄，Nature 风格中间色
-      end: '#E06259',   // 珊瑚红，Nature 风格结束色
+      start: '#4C78A8', // Light blue, Nature style start color
+      mid: '#F8E08E',   // Light yellow, Nature style mid color
+      end: '#E06259',   // Coral red, Nature style end color
       text: '#333333',
       cardBorder: '#e8ecef',
       cardBg: '#ffffff',
@@ -43,7 +54,10 @@ const props = defineProps({
   }
 })
 
-// Validate strength against labels using a computed property
+// Define title text
+const titleText = 'Per-variant functional strength'
+
+// Validate strength against labels
 const isValidStrength = computed(() => props.labels.includes(props.strength))
 
 const container = ref(null)
@@ -78,31 +92,26 @@ const drawScientificBar = () => {
     return
   }
 
-  // Skip rendering if strength is invalid
   if (!isValidStrength.value) {
     console.warn(`Invalid strength value: ${props.strength}. Must be one of: ${props.labels.join(', ')}`)
     return
   }
 
   const { clientWidth: totalWidth } = container.value
-  const { 
-    padding,
-    fontSize,
-    fontFamily,
-    card: cardConfig
-  } = config
+  const { padding, fontSize, fontFamily, card: cardConfig } = config
 
-  // 计算核心尺寸
+  // Calculate core dimensions
   const chartWidth = totalWidth - padding.left - padding.right
   const chartHeight = props.barHeight + padding.top + padding.bottom + 30
 
-  // 初始化SVG容器
+  // Initialize SVG container
   const svgEl = d3.select(svg.value)
   svgEl.selectAll('*').remove()
-  svgEl.attr('viewBox', `0 0 ${totalWidth} ${chartHeight}`)
+  svgEl
+    .attr('viewBox', `0 0 ${totalWidth} ${chartHeight}`)
     .attr('preserveAspectRatio', 'xMidYMid meet')
 
-  // 创建颜色渐变
+  // Create color gradient
   const gradientId = 'sciGradient'
   const gradient = svgEl.append('defs')
     .append('linearGradient')
@@ -112,7 +121,6 @@ const drawScientificBar = () => {
     .attr('x2', '100%')
     .attr('y2', '0%')
 
-  // 确保渐变颜色有效
   const safeColors = {
     start: props.colors.start || '#4C78A8',
     mid: props.colors.mid || '#F8E08E',
@@ -123,7 +131,7 @@ const drawScientificBar = () => {
   gradient.append('stop').attr('offset', '50%').attr('stop-color', safeColors.mid)
   gradient.append('stop').attr('offset', '100%').attr('stop-color', safeColors.end)
 
-  // 绘制渐变条
+  // Draw gradient bar
   svgEl.append('rect')
     .attr('x', padding.left)
     .attr('y', padding.top)
@@ -133,23 +141,19 @@ const drawScientificBar = () => {
     .style('fill', `url(#${gradientId})`)
     .style('shape-rendering', 'geometricPrecision')
 
-  // 创建比例尺和坐标轴
+  // Create scale and axis
   const xScale = d3.scaleLinear()
     .domain([0, 100])
     .range([0, chartWidth])
 
-  // 定义标签颜色与渐变对应
   const labelColors = props.labels.map((_, i) => {
-    const position = [20, 40, 60, 80][i] / 100 // 归一化到0-1
+    const position = [20, 40, 60, 80][i] / 100
     if (position <= 0.5) {
       return d3.interpolateRgb(safeColors.start, safeColors.mid)(position / 0.5)
     } else {
       return d3.interpolateRgb(safeColors.mid, safeColors.end)((position - 0.5) / 0.5)
     }
   })
-
-  // 调试标签颜色
-  console.log('Label colors:', labelColors)
 
   const axis = d3.axisBottom(xScale)
     .tickValues([20, 40, 60, 80])
@@ -163,11 +167,9 @@ const drawScientificBar = () => {
     .style('font-size', `${fontSize}pt`)
     .call(axis)
 
-  // 设置每个标签的颜色
   axisGroup.selectAll('.tick text')
     .style('fill', (d, i) => labelColors[i])
 
-  // 优化坐标轴样式
   axisGroup.select('.domain')
     .attr('stroke', props.colors.text)
     .attr('stroke-width', 0.6)
@@ -176,22 +178,20 @@ const drawScientificBar = () => {
     .attr('stroke-width', 0.6)
     .attr('opacity', 0.8)
 
-  // 映射strength到对应的刻度值
+  // Map strength to tick values
   const strengthMap = props.labels.reduce((map, label, i) => {
     map[label] = [20, 40, 60, 80][i]
     return map
   }, {})
   const markPos = xScale(strengthMap[props.strength]) + padding.left
 
-  // 创建现代卡片
+  // Create modern card
   const createModernCard = (textLines) => {
-    // 文本测量
     const textMeasurer = svgEl.append('text')
       .style('font-family', fontFamily)
       .style('font-size', `${fontSize}pt`)
       .style('visibility', 'hidden')
 
-    // 计算文本尺寸
     const measurements = textLines.map((text, i) => {
       textMeasurer.text(text)
       if (i === textLines.length - 1 && text === props.labels[3]) {
@@ -206,7 +206,6 @@ const drawScientificBar = () => {
     })
     textMeasurer.remove()
 
-    // 计算卡片尺寸
     const contentWidth = d3.max(measurements, d => d.width)
     const contentHeight = measurements.reduce((acc, curr) => acc + curr.height, 0)
     const cardWidth = Math.min(
@@ -218,21 +217,16 @@ const drawScientificBar = () => {
     )
     const cardHeight = contentHeight + cardConfig.padding.y * 2
 
-    // 计算尾巴的x位置，确保与标签对齐
-    let tailX
     const labelIndex = props.labels.indexOf(props.strength)
+    let tailX
     if (labelIndex === 0) {
-      // None: 尾巴对齐到卡片左边缘
       tailX = cardConfig.padding.x
     } else if (labelIndex === props.labels.length - 1) {
-      // High: 尾巴对齐到卡片右边缘
       tailX = cardWidth - cardConfig.padding.x
     } else {
-      // 中间值：尾巴居中
       tailX = cardWidth / 2
     }
 
-    // 卡片定位：确保尾巴位于markPos
     const cardX = Math.max(
       padding.left,
       Math.min(
@@ -244,7 +238,6 @@ const drawScientificBar = () => {
     const cardGroup = svgEl.append('g')
       .attr('transform', `translate(${cardX}, ${padding.top - cardHeight - 15})`)
 
-    // 卡片阴影
     cardGroup.append('rect')
       .attr('width', cardWidth)
       .attr('height', cardHeight)
@@ -252,7 +245,6 @@ const drawScientificBar = () => {
       .style('fill', props.colors.cardBg)
       .style('filter', `drop-shadow(0 ${cardConfig.elevation}px ${cardConfig.elevation*1.5}px rgba(0,0,0,0.15))`)
 
-    // 卡片边框
     cardGroup.append('rect')
       .attr('width', cardWidth)
       .attr('height', cardHeight)
@@ -261,7 +253,6 @@ const drawScientificBar = () => {
       .style('stroke', props.colors.cardBorder)
       .style('stroke-width', cardConfig.strokeWidth)
 
-    // 卡片内容
     const contentGroup = cardGroup.append('g')
       .attr('transform', `translate(${cardWidth / 2}, ${cardConfig.padding.y + contentHeight / 2})`)
 
@@ -274,12 +265,11 @@ const drawScientificBar = () => {
         .style('font-family', fontFamily)
         .style('font-size', i === textLines.length - 1 && text === props.labels[3] ? `${fontSize * 1.1}pt` : `${fontSize}pt`)
         .style('fill', i === textLines.length - 1 ? labelColors[labelIndex] : props.colors.text)
-        .style('font-weight', i === textLines.length - 1 && text === props.labels[3] ? '700' : '400')
+        .style('font-weight', '700')
         .text(text)
       yPos += measurements[i].height
     })
 
-    // 连接线：从卡片底部尾巴位置到markPos
     cardGroup.append('line')
       .attr('x1', tailX)
       .attr('y1', cardHeight)
@@ -289,7 +279,6 @@ const drawScientificBar = () => {
       .attr('stroke-width', cardConfig.strokeWidth)
       .attr('stroke-dasharray', '2,2')
 
-    // 小尾巴指示器：定位于尾巴位置
     cardGroup.append('path')
       .attr('d', `M${tailX - 5} ${cardHeight} l6 6 l6 -6`)
       .style('fill', props.colors.cardBg)
@@ -297,7 +286,6 @@ const drawScientificBar = () => {
       .style('stroke-width', cardConfig.strokeWidth)
   }
 
-  // 创建卡片
   createModernCard(['Suggested classification', props.strength])
 }
 
@@ -322,6 +310,36 @@ onBeforeUnmount(() => {
   max-width: 400px;
   background: white;
   border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.chart-title {
+  font-weight: bold;
+  font-size: 14px;
+  color: #333333;
+  text-align: center;
+}
+
+.question-icon {
+  width: 16px;
+  height: 16px;
+  background: #ccc;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: white;
+  cursor: pointer;
 }
 
 svg {
@@ -330,7 +348,6 @@ svg {
   min-height: 150px;
 }
 
-/* 确保 SVG 元素不被外部 CSS 覆盖 */
 svg rect {
   fill: url(#sciGradient) !important;
 }
