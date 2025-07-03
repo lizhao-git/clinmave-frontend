@@ -1,6 +1,5 @@
 <template>
     <div style="margin-bottom: 50px;">
-      <h3 class="text-xl font-bold mb-4 text-gray-800">Molecular Consequence Percentage Statistics</h3>
       <PieChart 
         :chartData="molecularConsequenceData" 
         chartHeight="500px"
@@ -24,7 +23,7 @@
   ];
   
   const molecularConsequenceData = {
-    title: '',
+    title: 'Molecular Consequence Percentage Statistics',
     seriesName: '#Variants',
     seriesData: [
       { value: 1378955, name: 'Missense' },

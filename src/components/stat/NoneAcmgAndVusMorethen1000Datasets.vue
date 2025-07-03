@@ -1,6 +1,5 @@
 <template>
     <div style="margin-bottom: 50px;">
-      <h3 class="text-xl font-bold mb-4 text-gray-800">Non-ACMG genes with OMIM relevance and VUS >1000 in ClinVar gene datasets</h3>
       <BarChart :chartData="chartData" chartHeight="500px" />
     </div>
   </template>
@@ -9,6 +8,7 @@
   import BarChart from '@/components/Visualization/BarChart.vue';
   
   const chartData = {
+    title: 'Non-ACMG genes with OMIM relevance and VUS >1000 in ClinVar gene datasets',
     xAxisData: [
       'EGFR', 'SMARCA4', 'CBL', 'ANK2', 
       'BAP1', 'CHD7', 'CHEK2', 'KMT2A', 'NEB',

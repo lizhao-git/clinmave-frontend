@@ -1,6 +1,5 @@
 <template>
     <div style="margin-bottom: 50px;">
-      <h3 class="text-xl font-bold mb-4 text-gray-800">ACMG-recommended Gene Variants</h3>
       <BarChart :chartData="chartData" :yAxisNameGap="50" chartHeight="500px" />
     </div>
   </template>
@@ -9,6 +8,7 @@
   import BarChart from '@/components/Visualization/BarChart.vue';
   
   const chartData = {
+    title: 'ACMG-recommended Gene Datasets',
     xAxisData: [
       'MSH2', 'BRCA2', 'TP53', 'PTEN', 
       'BRCA1', 'HNF1A', 'VHL', 'SMAD3', 'TGFBR2',

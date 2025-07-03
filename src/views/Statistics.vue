@@ -10,15 +10,15 @@
             <v-breadcrumbs :items="breadcrumbs">
               <template v-slot:item="{ item }">
                 <v-breadcrumbs-item
+                  :to="item.href"
+                  :class="{ 'text-primary': item.href }"
+                  link
                 >
-                  
-                  <span>
-                    {{ item.title }}
-                  </span>
+                  <span>{{ item.title }}</span>
                 </v-breadcrumbs-item>
               </template>
             </v-breadcrumbs>
-          </v-card>
+        </v-card>
         </v-col>
       </v-row>
       
@@ -51,7 +51,7 @@
                 
               </v-row>
 
-              <v-row class="mt-8">
+              <v-row class="my-10">
 
                 <v-col col="12" md="4" sm="12">
                   <MolecularConsequencePercentageStatistics />
@@ -65,8 +65,10 @@
                 </v-col>
                 
               </v-row>
-              
-              <v-row class="mt-8">
+
+              <v-row class="my-6"></v-row>
+
+              <v-row class="my-10">
                 <v-col col="12" md="4" sm="12">
                   <ExperimentModelDS />
                 </v-col>
@@ -172,13 +174,10 @@
   const breadcrumbs = ref([
       {
         title: 'Home',
-        icon: 'mdi-home',
         href: '/',
-        disabled: false,
       },
       {
         title: 'Statistics',
-        disabled: false,
       },
     ])
   

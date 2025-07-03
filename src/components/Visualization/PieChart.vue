@@ -62,9 +62,9 @@
         text: props.chartData.title,
         left: 'center',
         textStyle: {
-          fontSize: 16,
-          fontWeight: 'bold',
-          color: '#333'
+          fontSize: 14,
+          fontWeight: 'normal',
+          color: 'black'
         }
       },
       tooltip: {
@@ -72,7 +72,7 @@
         formatter: '{b}: {c} ({d}%)',
         backgroundColor: 'rgba(255, 255, 255, 0.9)',
         textStyle: {
-          color: '#333'
+          color: 'black'
         }
       },
       legend: {
@@ -85,10 +85,10 @@
         data: props.chartData.seriesData.map(item => item.name),
         pageButtonItemGap: 5,
         pageButtonStyle: {
-          color: '#666'
+          color: 'black'
         },
         textStyle: {
-          fontSize: 12
+          fontSize: 14
         }
       },
       series: [
@@ -106,7 +106,7 @@
           label: {
             formatter: '{b}: {d}%',
             fontStyle: 'normal',
-            fontSize: 12
+            fontSize: 14
           },
           labelLine: {
             length: 10,

@@ -1,6 +1,5 @@
 <template>
     <div style="margin-bottom: 50px;">
-      <h3 class="text-xl font-bold mb-4 text-gray-800">Functional Assay Percentage Statistics</h3>
       <PieChart 
         :chartData="molecularConsequenceData" 
         chartHeight="500px"

@@ -38,7 +38,7 @@
     },
     xAxisNameGap: {
       type: Number,
-      default: 45
+      default: 55
     },
     yAxisNameGap: {
       type: Number,
@@ -59,6 +59,15 @@
     : { color: props.chartData.colors };
 
     const option = {
+      title: {
+        text: props.chartData.title,
+        left: 'center',
+        textStyle: {
+          fontSize: 14,
+          fontWeight: 'normal',
+          color: 'black'
+        }
+      },
       tooltip: {
         trigger: 'axis',
         axisPointer: {
@@ -66,7 +75,8 @@
         },
         backgroundColor: 'rgba(255, 255, 255, 0.9)',
         textStyle: {
-          color: '#333'
+          color: 'black',
+          fontFamily: 'Arial'
         }
       },
       grid: {
@@ -78,18 +88,23 @@
       xAxis: {
         type: 'category',
         data: props.chartData.xAxisData,
+        nameTextStyle: {
+          fontFamily: 'Arial',
+          fontSize: 14,        
+          fontWeight: 'normal',
+        },
         axisLabel: {
           rotate: props.rotateXAxisLabel,
           interval: 0,
-          fontSize: 10,
+          fontSize: 14,
           align: props.rotateXAxisLabel > 0 ? 'right' : 'center'
         },
         axisTick: {
-          show: false
+          show: true
         },
         axisLine: {
           lineStyle: {
-            color: '#999'
+            color: 'black'
           }
         },
         name: props.chartData.xAxisName,
@@ -98,11 +113,22 @@
       },
       yAxis: {
         type: 'value',
+        nameTextStyle: {
+          fontFamily: 'Arial',
+          fontSize: 14,        
+          fontWeight: 'normal',
+        },
+        axisLabel: {
+          fontSize: 14,
+        },
         axisLine: {
-          show: false
+          show: true,
+          lineStyle: {
+            color: 'black'
+          }
         },
         axisTick: {
-          show: false
+          show: true
         },
         splitLine: {
           lineStyle: {
@@ -125,6 +151,14 @@
     };
     
     chartInstance.setOption(option);
+
+    chartInstance.off('click');  // 确保旧的监听被清除
+    chartInstance.on('click', (params) => {
+    if (params.componentType === 'series') {
+      const geneId = params.name; // 假设 xAxis 的 name 是 gene id
+      window.open(`/clinmave/browse/gene/${geneId}`, '_blank'); // 在新标签页打开
+    }
+});
   };
   
   const resizeChart = () => {
