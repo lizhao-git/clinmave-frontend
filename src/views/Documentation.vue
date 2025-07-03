@@ -1,215 +1,342 @@
 <template>
   <v-main>
     <v-container fluid class="mt-4">
-
+      
       <v-row>
         <v-col cols="12">
           <v-card 
             flat
           >
             <v-breadcrumbs :items="breadcrumbs">
-              <template v-slot:item="{ item }">
-                <v-breadcrumbs-item
-                >
-                  
-                  <span>
-                    {{ item.title }}
-                  </span>
-                </v-breadcrumbs-item>
-              </template>
-            </v-breadcrumbs>
+                <template v-slot:item="{ item }">
+                  <v-breadcrumbs-item
+                    :to="item.href"
+                    :class="{ 'text-primary': item.href }"
+                    link
+                  >
+                    <span>{{ item.title }}</span>
+                  </v-breadcrumbs-item>
+                </template>
+              </v-breadcrumbs>
           </v-card>
         </v-col>
       </v-row>
-      <!-- <v-row>
-        <v-col cols="12">
-          <aside>
-            <div>
-              <h3>文档目录</h3>
-              <button @click="toggleSidebar">
-                <i></i>
-              </button>
-            </div>
-            
-            <ul>
-              <li v-for="(section, secIdx) in documentSections">
-                <div @click="toggleSection(secIdx)">
-                  <span>{{ section.title }}</span>
-                  <i></i>
-                </div>
-                <ul>
-                  <li v-for="(subSection, subIdx) in section.subSections" :key="subIdx">
-                    <a href="#" @click.prevent="navigateToPage(subSection.page)">
-                      <span>{{ subSection.title }}</span>
-                      <span>{{ subSection.page }}</span>
-                    </a>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </aside>
-        </v-col>
+      
+      <v-row>
+
         
-      </v-row> -->
-      <div style="display: flex;flex-direction: row;justify-content: center;align-items: center;">
-        <main>
-          <div>
-            <div>
-              <button @click="prevPage" :disabled="currentPage === 1">
-                上一页
-              </button>
-              <button @click="nextPage" :disabled="currentPage === totalPages">
-                下一页
-              </button>
-              <span>
-                第 <span>{{ currentPage }}</span> 页，共 <span>{{ totalPages }}</span> 页
-              </span>
-            </div>
-          </div>
-          
-          <div ref="pdfContainer">
-            <div v-if="loading">
-              <div></div>
-            </div>
-            
-            <div v-if="pdfLoadError">
-              <div>
-                <i></i>
-              </div>
-              <h3>PDF加载失败</h3>
-              <p >{{ pdfLoadError }}</p>
-              <button @click="reloadPdf">
-                <i></i>重新加载
-              </button>
-            </div>
-            
-            <div ref="pdfViewer">
-            </div>
-          </div>
-        </main>
-      </div>
+        <v-col cols="12">
+
+              <v-alert
+                border="end"
+                variant="outlined"
+                border-color="error"
+                class="mb-4"
+              >
+                <h1 class="mt-4 mb-2">Introduction</h1>
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  ClinMAVE is a curated database for the clinical application of data from multiplexed assays of variant effect (MAVEs). ClinMAVE bridges the gap between functional effect of variants and their clinical impact by systematically curating MAVE datasets and rigorously transforming the experimental assessment into strength of evidence supporting the pathogenicity classification. ClinMAVE also integrates available variant annotations from public repositories (e.g., ClinVar, gnomAD, TCGA) and provides a user-friendly interface to support visualization and analysis modules for further exploration. 
+                </p>
+              </v-alert>
+              
+              <v-alert
+                border="end"
+                variant="outlined"
+                border-color="success"
+                class="mb-4"
+              >
+                <h1 class="mt-4 mb-2">Data Collection and Processing</h1>
+
+                <h2 class="mt-2 mb-1">1. Data collection</h2>
+
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  ClinMAVE compiles a comprehensive collection of Multiplexed Assays of Variant Effect (MAVE) studies, encompassing both deep mutational scanning and CRISPR-based genome editing techniques.
+                </p>
+
+                <h3 class="mt-2 mb-1">1.1 Deep mutation scanning MAVE</h3>
+
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  We collected deep mutational scanning data primarily from MAVEdb, a centralized repository of multiplexed functional assay results. Notably, raw protein-level variants are uniformly mapped to genomic DNA coordinates by Ensembl, enabling standardized genomic annotation for downstream analyses. To ensure data quality and relevance, only datasets with more than 100 variants and an associated peer-reviewed publication or publicly available preprint are retained. This filtering guarantees that included studies meet a minimum threshold of experimental scale, scientific rigor, and transparency.
+                </p>
+
+                <h3 class="mt-2 mb-1">1.2 CRISPR-based genome editing MAVE</h3>
+
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  For CRISPR-based genome editing datasets, we collect studies primarily through searches in PubMed. Only datasets that report more than 100 variants are retained to ensure adequate scale. For base-editing studies, the reported protein- or transcript-level changes are mapped to genomic DNA coordinates, rather than relying on guide RNA target sites. For Prime editing and Saturated Genome Editing (SGE) studies, the DNA-level coordinates are directly extracted from the supplementary materials provided with the publications.
+                </p>
+              
+              
+                <h2 class="mt-2 mb-1">2. Processing</h2>
+
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  ClinMAVE employs a unified variant processing suite designed to standardize and enrich variant-level data across all studies. This suite integrates two key components:
+                </p>
+
+                <h3 class="mt-2 mb-1">2.1 Genomic annotation: </h3>
+
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  Variants are mapped to genomic DNA coordinates and annotated using the MANE (Matched Annotation from NCBI and EMBL-EBI) transcript to ensure clinical consistency. Each variant is then formatted according to HGVS (Human Genome Variation Society) nomenclature for structured and interoperable representation.
+                </p>
+
+                <h3 class="mt-2 mb-1">2.2 External Annotation Integration: </h3>
+
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  To provide biological and clinical context, the pipeline incorporates external annotations from clinical relevant resources, including:
+                  <ul>
+                    <li>(1)	ClinVar: clinical significance interpretations;</li>
+                    <li>(2)	gnomAD: population allele frequencies;</li>
+                    <li>(3)	TCGA: Somatic variant frequencies from cancer cohorts;</li>
+                    <li>(4)	In silico predictors: Scores from variant effect prediction tools such as CADD, EVE, and REVEL;</li>
+                    <li>(5)	dbSNP: standardized reference IDs that facilitate cross-referencing with external genomic databases.</li>
+                  </ul>
+                </p>
+
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  In addition, in silico predictor scores were translated into ACMG-style pathogenicity classifications based on the recommended thresholds provided by VarSome.
+                </p>
+
+                <v-data-table
+                  :headers="InsilicoCutoffHeader"
+                  :items="InsilicoCutoffItems"
+                  :disable-sort="true"
+                  class="my-5"
+                  hide-default-footer
+                ></v-data-table>
+                
+                <h2 class="mt-2 mb-1">3. Software and external resources: </h2>
+
+                <v-data-table
+                  :headers="SoftwareHeader"
+                  :items="SoftwareItems"
+                  :disable-sort="true"
+                  hide-default-footer
+                  class="my-5"
+                ></v-data-table>
+              </v-alert>
+              
+              <v-alert
+                border="end"
+                variant="outlined"
+                border-color="primary"
+                class="mb-4"
+              >
+                <h1 class="mt-4 mb-2">Data Curation</h1>
+
+                <h2 class="mt-2 mb-1">1. Curation model</h2>
+
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  We curated both quantitative information (e.g., score thresholds used to define functional classification) and qualitative information (e.g., experimental model, phenotype) from published MAVE studies. To standardize the interpretation of functional effects across diverse assays and reporting formats, we applied a structured curation model, as detailed below:
+                </p>
+
+                <v-data-table
+                  :headers="CurationModelHeader"
+                  :items="CurationModelItems"
+                  :disable-sort="true"
+                  hide-default-footer
+                  class="my-5"
+                >
+                  <template v-slot:item.value="{ item }">
+                    <div class="chip-container">
+                      <v-chip
+                        v-for="(func, index) in item.value.split(',')"
+                        :key="index"
+                        :color="getChipColor()"
+                        text-color="white"
+                        size="small"
+                        variant="tonal"
+                        class="mr-1"
+                      >
+                        {{ func.trim() }}
+                      </v-chip>
+                    </div>
+                  </template>
+                </v-data-table>
+
+                <h2 class="mt-2 mb-1">2. MAVE quantitative calibration</h2>
+
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  ClinMAVE organizes functional data to support variant interpretation at both the dataset level and the individual variant level, aligning with ACMG/AMP recommendations for evaluating experimental evidence (e.g., PS3/BS3 criteria). To compute this, we define the control sets as follows:
+                  <ul>
+                    <li>Clinvar-classified Pathogenic/Likely Pathogenic (P/LP) variants as true positives (TPs); </li>
+                    <li>Clinvar-classified Benign/Likely Benign (B/LB) variants as true negatives (TNs); </li>
+                  </ul>
+                </p>
+                
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  To ensure statistical reliability, we only conduct evidence strength evaluations for datasets that meet the following minimum requirements:
+                  
+                  <ul>
+                    <li>A total of at least 11 benchmark variants (TPs + TNs ≥ 11); </li>
+                    <li>At least 4 TPs and 4 TNs, respectively;</li>
+                  </ul>
+                </p>
+
+                <h3 class="mt-2 mb-1">2.1 Dataset-level strength of evidence: </h3>
+
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  The ClinGen Sequence Variant Interpretation (SVI) Working Group (2022) introduced the use of the Odds of Pathogenicity (OddsPath) to quantify the strength of functional evidence at the dataset level. This approach enables a standardized, quantitative mapping of functional assay results to ACMG/AMP evidence strength levels (e.g., PS3/BS3). 
+                </p>
+
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  OddsPath is calculated using two conditional probabilities:
+                  <ul>
+                    <li>P1: The proportion of pathogenic variants (TPs) in the control sets (TPs + TNs);</li>
+                    <li>P2: The proportion of pathogenic variants (TPs) with abnormal functionality (including both loss-of-function and gain-of-function) out of all abnormal variants.</li>
+                  </ul>
+                </p>
+
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  The OddsPath formula is defined as:
+                </p>
+
+                <div v-mathjax>
+                  $$ \text{OddsPath} = \frac{P_2}{P_1} \cdot \frac{1 - P_1}{1 - P_2} $$
+                </div>
+
+                <h3 class="mt-2 mb-1">2.2 Per-variant level strength of evidence: </h3>
+
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  ClinMAVE assigns functional evidence strength at the per-variant level by quantifying how similar a variant’s functional score is to known pathogenic (TP) and benign (TN) variants within the same dataset. This is achieved using a distance–based scoring method, which accounts for score distribution and variance. Each variant’s score is transformed into a normalized "distance_score" on a [–1, 1] scale, where:
+                  <ul>
+                    <li>+1 indicates high similarity to pathogenic variants (strong functional abnormality)</li>
+                    <li>–1 indicates high similarity to benign variants (normal function)</li>
+                  </ul>
+                </p>
+
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  For datasets eligible for ACMG-style strength scaling, variants classified as functionally abnormal are assigned one of the following evidence levels:
+                  <ul>
+                    <li>Strong: distance_score ≥ 0.9</li>
+                    <li>Moderate: distance_score ≥ 0.75</li>
+                    <li>Weak: distance_score < 0.75</li>
+                  </ul>
+                </p>
+
+              </v-alert>
+              
+              
+              <v-alert
+                border="end"
+                variant="outlined"
+                border-color="warning"
+                class="mb-4"
+              >
+                <h1 class="mt-4 mb-2">Database Usage</h1>
+
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  The ClinMAVE database provides an interactive platform for browsing, searching, visualizing, and analyzing curated functional evidence from MAVE. The portal is organized into four core modules.
+                </p>
+
+                <!-- <v-row class="mx-auto my-3 d-flex justify-center">
+                  <video controls autoplay loop muted height="600px">
+                    <source src="/clinmave/images/usage.mp4" type="video/mp4">
+                  </video>
+                </v-row> -->
+
+                <h2 class="mt-2 mb-1">1. Browse module</h2>
+                
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  The Browser Module in ClinMAVE provides a flexible and user-friendly interface for navigating curated MAVE datasets. Users can explore data through multiple entry points—from gene- and technique-level overviews to detailed variant-level records—using either the homepage search bar or the dedicated browser interface.
+                </p>
+
+                <h2 class="mt-2 mb-1">2. Search Module</h2>
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  ClinMAVE offers robust search capabilities to help users efficiently locate relevant functional variant data across genes, variants, and MAVE techniques. Accessible from the homepage, the quick search bar supports intuitive, keyword-based searches. Users can search using:
+                  <ul>
+                    <li>Gene symbol (e.g., BRCA1, TP53)</li>
+                    <li>Gene ID (e.g., Ensembl Gene ID)</li>
+                    <li>HGVS-formatted variant notation (e.g., NM_000059.3:c.4035del)</li>
+                    <li>MAVE technique (e.g., "deep mutational scanning", "CRISPR-based genome editing")</li>
+                  </ul>
+                </p>
+
+                <h2 class="mt-2 mb-1">3. Visualization module</h2>
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  ClinMAVE provides intuitive and informative visualizations to help users explore functional variant data in both dataset-specific and gene-centric contexts.
+                </p>
+
+                <h3 class="mt-2 mb-1">3.1 Visualization by Dataset:</h3>
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  Each MAVE dataset includes interactive plots that integrate functional scores with key biological annotations:
+                  <ul>
+                    <li>MAVE score distribution plots, color-coded by: (1). molecular consequence (e.g., missense, nonsense, synonymous); (2). ClinVar classification (e.g., pathogenic, benign, VUS).</li>
+                    <li>Scatterplots or violin plots illustrate how variant functional scores correlate with population allele frequency from gnomAD.</li>
+                  </ul>
+                </p>
+
+                <h3 class="mt-2 mb-1">3.2 Visualization by Gene:</h3>
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  ClinMAVE offers comprehensive gene-centric visualizations that map variant effects across the full length of a protein, with integrated domain annotations and support for cross-dataset comparison.
+                </p>
+
+                <h2 class="mt-2 mb-1">4. Analysis module</h2>
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  The Analysis Module in ClinMAVE provides tools for evaluating how well functional scores from MAVE experiments align with computational predictions and clinical classifications. This supports benchmarking of variant effect predictors and assessment of functional assay reliability.
+                </p>
+
+                <h3 class="mt-2 mb-1">4.1 MAVE score vs. In-silico Predictors</h3>
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  Users can compare MAVE-derived functional scores with widely used in silico predictors.
+                </p>
+
+                <h3 class="mt-2 mb-1">4.2 Clinical classification analysis</h3>
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  ClinMAVE enables quantitative benchmarking of functional assays by measuring their ability to distinguish clinically classified variants. Receiver Operating Characteristic (ROC) curves are generated to evaluate the ability of MAVE scores to separate (Likely-) pathogenic from (Likely-) benign variants.
+                </p>
+              </v-alert>
+
+              <v-alert
+                border="end"
+                variant="outlined"
+                border-color="teal"
+                class="mb-4"
+              >
+                <h1 class="mt-4 mb-2">ClinMAVE Tabular Summary</h1>
+
+                <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+                  This concise summary highlights how ClinMAVE addresses the critical gaps of MAVE and contributes to improved clinical variant interpretation.
+                </p>
+
+                <v-data-table
+                  :headers="TabularHeader"
+                  :items="TabularItems"
+                  :disable-sort="true"
+                  hide-default-footer
+                  class="my-5"
+                ></v-data-table>
+              </v-alert>
+        </v-col>
+      </v-row>
+      
     </v-container>
   </v-main>
 </template>
 
-<style scoped>
-  /* 自定义表格样式：无边框，仅行间分隔线 */
-  .v-table.no-border {
-    border: none !important;
-    background: transparent;
+<style>
+
+  /* Striped rows */
+  .v-data-table__tr:nth-child(even) {
+    background-color: #f5f5f5;
   }
-  .v-table.no-border tbody tr {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-  }
-  .v-table.no-border tbody tr:last-child {
-    border-bottom: none;
-  }
-  .table-row {
-    transition: background-color 0.2s ease;
-  }
-  .table-row:hover {
-    background-color: rgba(0, 0, 0, 0.04);
-  }
-
-  /* 字体和颜色 */
-  .text-h6 {
-    color: #1a3c5e;
-  }
-  .text-subtitle-1 {
-    color: #1a3c5e;
-  }
-  .text-body-1 {
-    color: #2e4b6b;
-  }
-
-  /* 表格单元格内边距 */
-  td {
-    padding: 16px 20px;
-  }
-
-  /* 扩展面板标题和背景 */
-
-  .v-expansion-panel-title {
-    color: #1a3c5e;
-    border-radius: 8px;
-    transition: background-color 0.2s ease;
-  }
-  .v-expansion-panel-title:hover {
-    background-color: rgba(0, 0, 0, 0.04);
-  }
-  /* 自定义样式 */
-.pdf-container {
-  overflow: auto;
-}
-
-.pdf-viewer {
-  transition: transform 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.toc-item {
-  cursor: pointer;
-}
-
-.toc-item:hover {
-  background-color: #f0f0f0;
-}
-
-.sidebar-collapsed {
-  width: 4rem !important;
-  transition: width 0.3s ease;
-}
-
-.sidebar-collapsed .toc-text {
-  display: none;
-}
-
-/* 导航栏高亮样式 */
-.active-section {
-  background-color: #e8f0fe !important;
-  color: #1a73e8;
-  font-weight: 500;
-}
-
-/* 自定义滚动条 */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
-}
 </style>
 
+
 <script setup>
-  import { ref, onMounted, watch, computed, nextTick, toRaw} from 'vue';
-  import * as pdfjsLib from 'pdfjs-dist';
+  import { ref, onMounted, watch, computed} from 'vue';
   // import workerSrc from 'pdfjs-dist/build/pdf.worker.min?url';
-  import 'pdfjs-dist/web/pdf_viewer.css'
   import { VxeTable, VxeColumn } from 'vxe-table';
   import { useRoute } from 'vue-router';
   import axios from 'axios';
   import * as d3 from 'd3'
   
-  // 配置PDF.js（使用3.4.120版本确保兼容性）
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
-
   import { debounce } from 'lodash'
 
   import VxeUI from 'vxe-pc-ui';
   import 'vxe-pc-ui/lib/style.css';
   import 'vxe-table/lib/style.css';
   // Reactive state for variant details
+
+
   const breadcrumbs = ref([
       {
         title: 'Home',
@@ -222,252 +349,245 @@
         disabled: false,
       },
     ])
-
-const pdfContainer = ref(null)
-const pdfViewer = ref(null)
-const loading = ref(true)
-const currentPage = ref(1)
-const totalPages = ref(0)
-const zoom = ref(1.5)
-const sidebarCollapsed = ref(false)
-const pdfLoadError = ref(null)
-const pdfDocument = ref(null)
-
-// PDF文件路径（指向Document-V1.pdf）
-const pdfUrl = '/clinmave/files/Document-V1.pdf'
-
-// 基于Document-V1.pdf内容构建的目录结构（根据文档段落内容手动映射页面）
-const documentSections = ref([
-  {
-    id: 1,
-    title: '1. 引言 (Introduction)',
-    expanded: true,
-    page: 1,
-    subSections: []
-  },
-  {
-    id: 2,
-    title: '2. 数据收集与处理 (Data Collection and Processing)',
-    expanded: false,
-    page: 3,
-    subSections: [
-      { id: 21, title: '2.1 数据收集 (Data collection)', page: 3 },
-      { id: 22, title: '2.2 数据处理 (Processing)', page: 8 },
-      { id: 23, title: '2.3 软件和外部资源 (Software and external resources)', page: 12 }
-    ]
-  },
-  {
-    id: 3,
-    title: '3. 数据策划 (Data Curation)',
-    expanded: false,
-    page: 14,
-    subSections: [
-      { id: 31, title: '3.1 策划模型 (Curation model)', page: 14 },
-      { id: 32, title: '3.2 MAVE定量校准 (MAVE quantitative calibration)', page: 15 }
-    ]
-  },
-  {
-    id: 4,
-    title: '4. 数据库使用 (Database Usage)',
-    expanded: false,
-    page: 18,
-    subSections: [
-      { id: 41, title: '4.1 浏览模块 (Browser module)', page: 18 },
-      { id: 42, title: '4.2 搜索模块 (Search Module)', page: 19 },
-      { id: 43, title: '4.3 可视化模块 (Visualization module)', page: 20 },
-      { id: 44, title: '4.4 分析模块 (Analysis module)', page: 22 }
-    ]
-  }
-])
-
-// 加载PDF文件
-const loadPdf = async () => {
-  try {
-    loading.value = true
-    pdfLoadError.value = null
-    
-    // 验证PDF路径
-    if (!pdfUrl) {
-      throw new Error('未设置Document-V1.pdf路径')
-    }
-    
-    // 加载PDF文档
-    const loadingTask = pdfjsLib.getDocument({
-      url: pdfUrl,
-      disableFontFace: true, // 禁用字体加载以提高兼容性
-      verbosity: pdfjsLib.VerbosityLevel.ERRORS // 只显示错误信息
-    })
-    
-    pdfDocument.value = await loadingTask.promise
-    totalPages.value = pdfDocument.value.numPages
-    
-    // 渲染第一页
-    await renderPage(1)
-    
-    loading.value = false
-  } catch (error) {
-    console.error('PDF加载错误:', error)
-    pdfLoadError.value = error.message || '无法加载Document-V1.pdf'
-    loading.value = false
-  }
-}
-
-// 渲染PDF页面
-const renderPage = async (pageNum) => {
-  if (!pdfDocument.value) return
   
-  try {
-    const page = await toRaw(pdfDocument.value).getPage(pageNum)
-    const viewport = page.getViewport({ scale: zoom.value })
-    
-    // 创建画布
-    const canvas = document.createElement('canvas')
-    const context = canvas.getContext('2d')
-    canvas.height = viewport.height
-    canvas.width = viewport.width
-    
-    // 添加页码指示器
-    const pageIndicator = document.createElement('div')
-    pageIndicator.className = 'text-center text-gray-500 text-sm py-2 bg-gray-50'
-    pageIndicator.textContent = `第 ${pageNum} 页`
-    
-    // 清空并添加新内容
-    if (pdfViewer.value) {
-      pdfViewer.value.innerHTML = ''
-      pdfViewer.value.appendChild(canvas)
-      pdfViewer.value.appendChild(pageIndicator)
-    }
-    
-    // 渲染页面
-    const renderContext = {
-      canvasContext: context,
-      viewport: viewport
-    }
-    
-    await page.render(renderContext).promise
-    currentPage.value = pageNum
-    
-    // 更新导航栏高亮状态
-    updateNavHighlight()
-  } catch (error) {
-    console.error('页面渲染错误:', error)
-    pdfLoadError.value = `第${pageNum}页渲染失败: ${error.message}`
-  }
-}
-
-// 导航到指定页面
-const navigateToPage = async (pageNum) => {
-  if (pageNum < 1 || pageNum > totalPages.value) return
+  const InsilicoCutoffHeader = [
+    {
+      key: 'software',
+      title: 'Software',
+    },
+    { key: 'bstr', title: 'Benign Strong' },
+    { key: 'bm', title: 'Benign Moderate' },
+    { key: 'bsup', title: 'Beingn Supporting' },
+    { key: 'vus', title: 'VUS' },
+    { key: 'psup', title: 'Pathogenic Supporting' },
+    { key: 'pmod', title: 'Pathogenic Moderate' },
+    { key: 'pstr', title: 'Pathogenic Strong' },
+  ]
   
-  try {
-    loading.value = true
-    
-    // 确保PDF已加载
-    if (!pdfDocument.value) {
-      await loadPdf()
-    }
-    
-    await renderPage(pageNum)
-    
-    // 平滑滚动到视图中心
-    await nextTick()
-    if (pdfViewer.value) {
-      pdfViewer.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    }
-    
-    loading.value = false
-  } catch (error) {
-    console.error('页面导航错误:', error)
-    pdfLoadError.value = `导航到第${pageNum}页失败: ${error.message}`
-    loading.value = false
-  }
-}
+  const InsilicoCutoffItems = [
+    {
+      software: 'AlphaMissense',
+      bstr: '<= 0.0853',
+      bm: '<= 0.166',
+      bsup: '<= 0.316',
+      vus: '/',
+      psup: '>= 0.787',
+      pmod: '>= 0.956',
+      pstr: '>= 0.994'
+    },
 
-// 更新导航栏高亮状态
-const updateNavHighlight = () => {
-  // 重置所有章节高亮
-  documentSections.value.forEach(section => {
-    section.active = false
-    section.subSections.forEach(sub => {
-      sub.active = false
-    })
-  })
+    {
+      software: 'CADD',
+      bstr: '<= 16.1',
+      bm: '<= 22',
+      bsup: '<= 23.2',
+      vus: '/',
+      psup: '>= 25.6',
+      pmod: '>= 28.8',
+      pstr: '>= 33'
+    },
+
+    {
+      software: 'EVE',
+      bstr: '/',
+      bm: '<= 0.162',
+      bsup: '<= 0.255',
+      vus: '/',
+      psup: '>= 0.603',
+      pmod: '>= 0.723',
+      pstr: '>= 0.905'
+    },
+
+    {
+      software: 'MetaSVM',
+      bstr: '/',
+      bm: '<= -0.677',
+      bsup: '<= -0.286',
+      vus: '/',
+      psup: '>= 0.794',
+      pmod: '>= 0.901',
+      pstr: '/'
+    },
+
+    {
+      software: 'REVEL',
+      bstr: '<= 0.133',
+      bm: '<= 0.351',
+      bsup: '<= 0.471',
+      vus: '/',
+      psup: '>= 0.685',
+      pmod: '>= 0.798',
+      pstr: '>= 0.946'
+    },
+
+    {
+      software: 'Polyphen2',
+      bstr: '<= -1.04',
+      bm: '<= 1.08',
+      bsup: '<= 3.58',
+      vus: '/',
+      psup: '>= 7.52',
+      pmod: '>= 9.88',
+      pstr: '/'
+    },
+  ]
   
-  // 找到当前页面对应的章节
-  let matchedSection = null
-  documentSections.value.forEach(section => {
-    if (section.page === currentPage.value) {
-      section.active = true
-      matchedSection = section
-    } else {
-      section.subSections.forEach(sub => {
-        if (sub.page === currentPage.value) {
-          sub.active = true
-          matchedSection = section
-        }
-      })
-    }
-  })
+  const SoftwareHeader = [
+    {
+      key: 'software',
+      title: 'Software/Database',
+    },
+    { key: 'version', title: 'Version' },
+  ]
   
-  // 如果找到匹配的章节，则展开它
-  if (matchedSection && !matchedSection.expanded) {
-    matchedSection.expanded = true
-  }
-}
-
-// 重新加载PDF
-const reloadPdf = () => {
-  pdfDocument.value = null
-  loadPdf()
-}
-
-// 生命周期钩子
-onMounted(() => {
-  nextTick(() => {
-    loadPdf()
-  })
-})
-
-// 切换侧边栏展开/折叠状态
-const toggleSidebar = () => {
-  sidebarCollapsed.value = !sidebarCollapsed.value
-}
-
-// 切换章节展开/折叠状态
-const toggleSection = (index) => {
-  documentSections.value[index].expanded = !documentSections.value[index].expanded
-}
-
-// 上一页
-const prevPage = () => {
-  if (currentPage.value > 1) {
-    navigateToPage(currentPage.value - 1)
-  }
-}
-
-// 下一页
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    navigateToPage(currentPage.value + 1)
-  }
-}
-
-// 放大
-const zoomIn = () => {
-  zoom.value = Math.min(zoom.value + 0.1, 2.0)
-  navigateToPage(currentPage.value)
-}
-
-// 缩小
-const zoomOut = () => {
-  zoom.value = Math.max(zoom.value - 0.1, 0.5)
-  navigateToPage(currentPage.value)
-}
-
-// 重置缩放
-const resetZoom = () => {
-  zoom.value = 1
-  navigateToPage(currentPage.value)
-}
+  const SoftwareItems = [
+    {
+      software: 'ANNOVAR',
+      version: 'V2.3.0',
+    },
+    {
+      software: 'MANE',
+      version: 'GRCh38 v1.4',
+    },
+    {
+      software: 'dbSNP',
+      version: 'avSNP150',
+    },
+    {
+      software: 'gnomAD',
+      version: 'V2.1.1',
+    },
+    {
+      software: 'AlphaMissense',
+      version: 'dbNSFP v4.7a',
+    },
+    {
+      software: 'CADD',
+      version: 'dbNSFP v4.7a',
+    },
+    {
+      software: 'EVE',
+      version: 'dbNSFP v4.7a',
+    },
+    {
+      software: 'MetaSVM',
+      version: 'dbNSFP v4.7a',
+    },
+    {
+      software: 'REVEL',
+      version: 'dbNSFP v4.7a',
+    },
+    {
+      software: 'Polyphen2',
+      version: 'dbNSFP v4.7a',
+    },
+    {
+      software: 'Cbioportal',
+      version: 'Accessed on 2025/05/22',
+    },
+    {
+      software: 'Varsome',
+      version: 'Accessed on 2025/05/12',
+    },
+  ]
   
+  const CurationModelHeader = [
+    {
+      key: 'datatype',
+      title: 'Data type',
+    },
+    { key: 'description', title: 'Description' },
+    { key: 'value', title: 'Value'}
+  ]
+  
+  const CurationModelItems = [
+    {
+      datatype: 'Gene',
+      description: 'Gene identifier',
+      value: 'BRCA1'
+    },
+    {
+      datatype: 'Functional score',
+      description: 'Quantification of the functional impact of a specific genetic variant',
+      value: '0.34'
+    },
+    {
+      datatype: 'Functional classification',
+      description: 'Controlled vocabulary',
+      value: 'Loss-of-function, Gain-of-function, Functional neutral'
+    },
+    {
+      datatype: 'MAVE technique',
+      description: 'Controlled vocabulary',
+      value: 'Deep mutational scanning,CRISPR-based genome editing'
+    },
+    {
+      datatype: 'Mutagenesis strategy',
+      description: 'Controlled vocabulary',
+      value: 'Prime editing,Base editing,Saturation genome editing,Oligonucleotide synthesis,Mutagenic PCR'
+    },
+    {
+      datatype: 'Functional assay',
+      description: 'Controlled vocabulary',
+      value: 'Protein abundance and stability,Protein binding,Specialized molecular function,Cellular fitness'
+    },
+    {
+      datatype: 'Experiment model',
+      description: 'The cell types used to perform MAVE',
+      value: 'HAP1'
+    },
+    {
+      datatype: 'Phenotype',
+      description: 'The specific biological outcome measured by a MAVE experiment',
+      value: 'MLH1 mediated mismatch repair function'
+    },
+    {
+      datatype: 'Direction of Effect',
+      description: 'how a variant alters the measured phenotype relative to the wild-type or reference allele',
+      value: 'diminished, enhanced'
+    },
+  ]
+
+  const getChipColor = () => {
+    const colors = ['green', 'blue', 'purple', 'orange', 'teal', 'pink', 'cyan', 'indigo'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
+
+
+  const TabularHeader = [
+     {
+      key: 'gap',
+      title: 'Gap In MAVE Field',
+    },
+    { key: 'how', title: 'How ClinMAVE Improves' },
+    { key: 'contribution', title: 'The Contribution of ClinMAVE on Clinical Application'}
+  ]
+
+  const TabularItems = [
+    {
+      gap: 'Lack of standardized variant-level annotations',
+      how: 'ClinMAVE provides DNA-level annotations, mapping functional data to specific genomic coordinates and HGVS nomenclature',
+      contribution: 'Enables variant look-up and direct ACMG/AMP PS3/BS3 application'
+    },
+    {
+      gap: 'Missing metadata about assay validation, controls, and reproducibility',
+      how: 'ClinMAVE includes structured metadata such as assay system, validation status, strength of effect, and reproducibility',
+      contribution: 'Supports evidence grading (e.g., strong/moderate/supporting) per Brnich et al. and ClinGen SVI guidance'
+    },
+    {
+      gap: 'Poor data discoverability and inconsistent nomenclature',
+      how: 'ClinMAVE standardizes gene/variant identifiers, links to ClinVar, gnomAD, and other clinical databases',
+      contribution: 'Improves interoperability and searchability for clinicians and labs'
+    },
+    {
+      gap: 'Lack of harmonization across studies',
+      how: 'ClinMAVE curates studies using a unified schema, applying consistent criteria for variant effect strength and significance',
+      contribution: 'Facilitates cross-study comparison and evidence aggregation'
+    },
+    {
+      gap: 'Limited accessibility for clinical users',
+      how: 'ClinMAVE offers user-friendly query tools, interactive visualization, and ACMG-ready evidence summaries',
+      contribution: 'Makes functional data directly usable in variant curation workflows'
+    },
+  ]
 </script>
