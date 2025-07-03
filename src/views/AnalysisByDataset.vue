@@ -18,13 +18,37 @@
           </v-card>
         </v-col>
       </v-row>
+
+      <v-row>
+        <v-col>
+          <v-alert border="start" border-color="deep-purple accent-4">
+            <div class="d-flex flex-wrap">
+              <span class="font-weight-bold mr-2">Tips:</span>
+              <div class="flex-grow-1">
+                <div class="mb-1">(1) Use filters to narrow the datasets table by gene, Mutagenesis strategy, experimental model and phenotype;</div>
+                <div>(2) Click the ‘Visualize’ button to:</div>
+                <ul class="list-disc pl-5 mt-1 mb-0">
+                  <li class="d-flex items-center">
+                    <v-icon color="black" size="12" class="mr-2" style="margin-top:5px">mdi-circle</v-icon>
+                    Measure the ability of functional score to distinguish clinically classified pathogenic (P/LP) and benign (B/LB) variants ;
+                  </li>
+                  <li class="d-flex items-center">
+                    <v-icon color="black" size="12" class="mr-2" style="margin-top:5px">mdi-circle</v-icon>
+                    Compare functional scores in MAVE with widely used in-silico prediction tools.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </v-alert>
+        </v-col>
+      </v-row>
       <v-row>
         <!-- Filter Panel 左侧筛选栏，始终显示 -->
-        <v-col cols="12" md="2" >
+        <v-col cols="12" xl="2" lg="3" md="3" sm="12">
           <v-sheet class="py-6 px-3">
             <v-row>
               <v-col cols="12">
-                <div class="text-body-1 font-weight-bold">Filters</div>
+                <div class="text-body-1">Filters</div>
                 <!-- 这里去掉了切换按钮，左侧筛选栏固定显示 -->
               </v-col>
             </v-row>
@@ -114,26 +138,8 @@
         </v-col>
         
         <!-- Table Content 右侧内容：根据showResults显示/隐藏 -->
-        <v-col :cols="showResults ? 12 : 0" :md="showResults ? 10 : 0" v-if="showResults">
-          <v-banner single-line :sticky="false" class="banner-tips">
-            <div class="d-flex flex-wrap">
-              <span class="font-weight-bold mr-2">Tips:</span>
-              <div class="flex-grow-1">
-                <div class="mb-1">(1) Use filters to narrow the datasets table by gene, Mutagenesis strategy, experimental model and phenotype;</div>
-                <div>(2) Click the ‘Visualize’ button to:</div>
-                <ul class="list-disc pl-5 mt-1 mb-0">
-                  <li class="d-flex items-center">
-                    <v-icon color="black" size="12" class="mr-2" style="margin-top:5px">mdi-circle</v-icon>
-                    Measure the ability of functional score to distinguish clinically classified pathogenic (P/LP) and benign (B/LB) variants ;
-                  </li>
-                  <li class="d-flex items-center">
-                    <v-icon color="black" size="12" class="mr-2" style="margin-top:5px">mdi-circle</v-icon>
-                    Compare functional scores in MAVE with widely used in-silico prediction tools.
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </v-banner>
+        <v-col cols="12" xl="10" lg="9" md="9" sm="12" v-if="showResults">
+          
           <v-sheet class="pa-3">
 
             <!-- Table -->
@@ -145,7 +151,7 @@
               :export-config="{}"
               :column-config="{ resizable: true }"
               :data="tableData"
-              stripe
+              :row-class-name="getRowClassName"
               round
               :loading="loading"
               :pager-config="{ currentPage, pageSize, total: totalRecords }"
@@ -166,15 +172,7 @@
                 </template>
               </vxe-column>
 
-              <vxe-column field="mutagenesisStrategy" title="Mutagenesis strategy" min-width="200" align="center"></vxe-column>
-              
-              <vxe-column field="functionAssay" title="Function Assay" min-width="160" align="center"></vxe-column>
-
-              <vxe-column field="phenotype" title="Phenotype" min-width="400" align="center"></vxe-column>
-
-              <vxe-column field="varNum" title="#Variants" min-width="120" align="center" sortable></vxe-column>
-
-              <vxe-column field="datasetId" title="#Visualize" min-width="80" align="center">
+              <vxe-column field="datasetId" title="Visualize" min-width="80" align="center">
                 <template #default="{ row }">
                   <v-btn
                     color="primary"
@@ -184,6 +182,26 @@
                   ></v-btn>
                 </template>
               </vxe-column>
+
+              <vxe-column field="maveTechnique" title="MAVE technique" min-width="200" align="center">
+                  <template #default="{ row }">
+                      <a 
+                        v-if="row.maveTechnique" 
+                        :href="`/clinmave/browse/mave_techniques/${encodeURIComponent(row.maveTechnique)}`" 
+                        target="_blank"
+                        style="text-decoration: none;"
+                      >
+                        {{ row.maveTechnique }}
+                      </a>
+                      <span v-else>-</span>
+                    </template>
+                </vxe-column>
+              
+              <vxe-column field="functionalAssay" title="Function Assay" min-width="160" align="center"></vxe-column>
+
+              <vxe-column field="phenotype" title="Phenotype" min-width="400" align="center"></vxe-column>
+
+              <vxe-column field="varNum" title="#Variants" min-width="120" align="center" sortable></vxe-column>
 
             </vxe-table>
             <!-- Pagination -->
@@ -199,7 +217,8 @@
 
           <v-sheet style="min-height: 300px; position: relative;" v-if="showVisualize">
             <v-row>
-              <v-col cols="12" md="3" sm="12">
+
+              <v-col cols="12" md="4" sm="12">
                 <template v-if="RocCurveLoading">
                   <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
                     <v-progress-circular
@@ -226,7 +245,7 @@
                 </template>
               </v-col>
 
-              <v-col cols="12" md="9" sm="12">
+              <v-col cols="12" md="8" sm="12">
                 <template v-if="scatterLoading">
                   <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
                     <v-progress-circular
@@ -283,7 +302,7 @@ const breadcrumbs = [
     href: '/',
   },
   {
-    title: 'Visualize',
+    title: 'Analyze',
     disabled: false,
   },
   {
@@ -294,7 +313,7 @@ const breadcrumbs = [
 
 // Filters 保持不变
 const filters = ref({
-  geneName: null,
+  geneName: 'BRAF',
   mutagenesisStrategy: null,
   experimentModel: null,
   phenotype: null,
@@ -319,6 +338,7 @@ const loadingPhenotype = ref(false)
 // 新增控制右侧结果显示的变量
 const showResults = ref(false);
 const showVisualize = ref(false);
+const highlightedRowId = ref(null)
 
 const oncoprintMap = ref({})
 const oncoprintLoading = ref(false)
@@ -332,6 +352,7 @@ const ClinVarBinArray = ref([])
 const consequenceArray = ref([])
 const consequencecomparingboxArray = ref({})
 
+const datasetId = ref('dataset0145');
 
 const RocCurveMap = ref({})
 const RocCurveLoading = ref(false)
@@ -340,7 +361,7 @@ const toolbarRef = ref()
 const tableRef = ref()
 const tableData = ref([]) 
 const currentPage = ref(1)
-const pageSize = ref(10)
+const pageSize = ref(5)
 const totalRecords = ref(0)
 const loading = ref(false)
 const sortParams = ref({
@@ -488,6 +509,13 @@ async function fetchCompareConsequenceBox(query = '') {
   }
 }
 
+const getRowClassName = ({ row }) => {
+  if (row.datasetId === highlightedRowId.value) {
+    return 'highlighted-row'
+  }
+  return ''
+}
+
 const loadData = async () => {
   loading.value = true;
   try {
@@ -537,6 +565,7 @@ const applyFilters = () => {
 }
 
 const VisualizeClicker = (datasetId) => {
+  highlightedRowId.value = datasetId  // 设置高亮
   showVisualize.value = true;
 
   debouncedFetchCompareConsequenceBox(datasetId);
@@ -545,10 +574,16 @@ const VisualizeClicker = (datasetId) => {
 
 const resetFilters = () => {
   showVisualize.value = false;
-  searchDatasetId.value = null;
+  searchGeneName.value = null;
+  searchMutagenesisStrategy.value = null;
+  searchExperimentModel.value = null;
+  searchPhenotype.value = null;
 
   filters.value = { 
-    datasetId: null, 
+    geneName: null,
+    mutagenesisStrategy: null,
+    experimentModel: null,
+    phenotype: null,
   };
   
   currentPage.value = 1;
@@ -614,6 +649,14 @@ onMounted(() => {
   debouncedFetchMutagenesisStrategy();
   debouncedFetchExperimentModel();
   debouncedFetchPhenotype();
+
+  showResults.value = true;
+  loadData();
+
+  showVisualize.value = true;
+  highlightedRowId.value = datasetId.value
+  debouncedFetchCompareConsequenceBox(datasetId.value);
+  debouncedFetchRocCurve(datasetId.value);
   // 这里不自动加载表格，表格和oncoprint初始隐藏
   const $table = tableRef.value
   const $toolbar = toolbarRef.value
@@ -625,4 +668,11 @@ onMounted(() => {
 
 <style scoped>
 
+</style>
+
+<style>
+/* 全局样式，覆盖 vxe-table 的行 class */
+.highlighted-row {
+  background-color: #E3F2FD !important;
+}
 </style>
