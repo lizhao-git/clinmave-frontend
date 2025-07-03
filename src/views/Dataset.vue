@@ -95,7 +95,7 @@
                   <template #default="{ row }">
                     <a 
                       v-if="row.identifier" 
-                      :href="`/clinmave/browse/variant/${encodeURIComponent(row.identifier)}`" 
+                      :href="`/clinmave/browse/variant/${encodeURIComponent(row.identifier)}?datasetId=${encodeURIComponent(variantData.datasetId)}`" 
                       target="_blank"
                       style="text-decoration: none;"
                     >
@@ -294,9 +294,11 @@
       },
       {
         title: 'Browse',
+        href: '/browse/datasets'
       },
       {
         title: 'Datasets',
+        href: '/browse/datasets'
       },
       {
         title: null,
