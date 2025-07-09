@@ -185,15 +185,12 @@
                   </template>
 
                 </vxe-column>
-<!-- 
+
                 <vxe-column field="position" title="Position" min-width="180">
                   <template #default="{ row }">
-                    <a v-if="row" :href="row.ucscHg38" target="_blank" style="text-decoration: none;">
                       {{ row.chr && row.pos ? `${row.chr}:${row.pos}` : 'N/A' }}
-                      <v-icon small color="blue">mdi-share</v-icon>
-                    </a>
                   </template>
-                </vxe-column> -->
+                </vxe-column>
 
                 <vxe-column field="refalt" title="Ref/Alt" min-width="100">
                   <template #default="{ row }">
