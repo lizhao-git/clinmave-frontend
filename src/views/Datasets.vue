@@ -246,10 +246,6 @@
 
                 <vxe-column field="varNum" title="#Variants" min-width="120" align="center" sortable></vxe-column>
 
-                <vxe-column field="aaNum" title="#Amino acids" min-width="150" align="center" sortable></vxe-column>
-
-                <vxe-column field="siteNum" title="#Sites" min-width="100" align="center" sortable></vxe-column>
-
               </vxe-table>
               <!-- Pagination -->
               <vxe-pager
