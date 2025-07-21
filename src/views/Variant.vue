@@ -57,6 +57,7 @@
                     <span v-else class="text-grey">--</span>
                   </td>
                 </tr>
+
                 <tr>
                   <td class="text-subtitle-1">dbSNP ID:</td>
                   <td class="text-body-1">
@@ -111,7 +112,7 @@
                     </span>
                   </template>
                 </vxe-column>
-              </vxe-table>
+            </vxe-table>
           </v-card-text>
         </v-card>
           </v-col>
@@ -144,11 +145,14 @@
         <v-row>
           <v-col cols="12" v-if="!isClinvarEmpty">
         <v-card flat height="100%">
+
           <v-card-title class="py-3">
             <v-icon icon="mdi-cactus" class="mr-2" color="blue"></v-icon>
             <span class="text-h6 font-weight-bold">ClinVar classification</span>
           </v-card-title>
+
           <v-card-text>
+
             <v-table density="comfortable" class="no-border">
               <tbody>
                 <tr>
@@ -181,6 +185,7 @@
                     <span v-else class="text-grey">——</span>
                   </td>
                 </tr>
+
                 <tr>
                   <td class="text-subtitle-1">Review status:</td>
                   <td class="text-body-1">
@@ -198,6 +203,7 @@
                 </tr>
               </tbody>
             </v-table>
+
           </v-card-text>
         </v-card>
           </v-col>
@@ -253,7 +259,7 @@
       <v-col cols="12" md="7" v-if="!isFunctionCurationEmpty">
         <v-card flat height="100%">
           <v-card-title>
-            <v-icon icon="mdi-dna" class="mr-2" color="blue"></v-icon>
+            <v-icon icon="mdi-speedometer" class="mr-2" color="blue"></v-icon>
             <span>
               <v-tooltip>
                 <template v-slot:activator="{ props }">
@@ -282,6 +288,17 @@
                   :pager-config="{ currentPage, pageSize, total: totalRecords }"
                   @sort-change="handleSortChange"
                 >
+                 <vxe-column field="datasetId" title="" min-width="80" align="center">
+                    <template #default="{ row }">
+                      <v-btn
+                        :color="row.consequenceClass ? 'primary' : 'grey'"
+                        variant="compact"
+                        :icon="clickedRows[row.datasetId] ? 'mdi-eye' : 'mdi-eye-off'"
+                        :disabled="!row.consequenceClass"
+                        @click="handleEyeClick(row.datasetId)"
+                      ></v-btn>
+                    </template>
+                  </vxe-column>
 
                   <vxe-column field="dataset" title="Dataset ID" min-width="100" align="center">
                     <template #default="{ row }">
@@ -342,18 +359,6 @@
                   
                   <vxe-column field="functionalAssay" title="Functional assay" min-width="140" align="center"></vxe-column>
 
-                  <vxe-column field="datasetId" title="" min-width="80" align="center">
-                    <template #default="{ row }">
-                      <v-btn
-                        :color="row.consequenceClass ? 'primary' : 'grey'"
-                        variant="compact"
-                        :icon="row.consequenceClass ? 'mdi-eye' : 'mdi-cancel'"
-                        :disabled="!row.consequenceClass"
-                        @click="row.consequenceClass && VisualizeClicker(row.datasetId)"
-                      ></v-btn>
-                    </template>
-                  </vxe-column>
-
                 </vxe-table>
               </v-col>
             </v-row>
@@ -385,12 +390,13 @@
                 <v-alert border="start" border-color="deep-purple accent-4" variant="outlined" class="mb-3"><span>Description: {{ VariantDensityData.functionalDescription }}</span></v-alert>
 
                 <v-alert 
-                  v-if="VariantDensityData.validationHits != null"
                   border="start" 
-                  border-color="deep-purple accent-4" 
+                  border-color="deep-yellow accent-4" 
                   variant="outlined"
                 >
-                  <span>Functional validation: {{ VariantDensityData.validationHits }}</span>
+                  <span>Functional validation: 
+                    {{ VariantDensityData.validationHits != null ? VariantDensityData.validationHits : '——' }}
+                  </span>
                 </v-alert>
 
               </v-col>
@@ -399,7 +405,7 @@
             <v-divider class="mx-6"/>
 
             <v-card-title>
-              <v-icon icon="mdi-dna" class="mr-2" color="blue"></v-icon>
+              <v-icon icon="mdi-transit-detour" class="mr-2" color="blue"></v-icon>
               <span>
                 <v-tooltip>
                   <template v-slot:activator="{ props }">
@@ -418,57 +424,80 @@
             <v-row>
 
               <v-col cols="12" sm="6">
-                 <v-table density="comfortable" class="no-border mt-3">
-                  <tbody>
-                    <tr>
-                      <td class="text-subtitle-1 font-weight-bold">
-                        <v-tooltip>
-                          <template v-slot:activator="{ props }">
-                            <span v-bind="props" class="title-hover">
-                              Oddspath
-                              <v-icon style="font-size: 16px;">mdi-help-circle-outline</v-icon>
-                            </span>
-                          </template>
-                          <span class="tooltip-text">
-                            A quantifiable metric that maps the strength of functional evidence according to the recommendations of the ClinGen Sequence Variant Interpretation (SVI) Working Group. See documentation for further details on calculation.
+                <vxe-table 
+                  border="inner"
+                  show-header
+                  auto-resize
+                  size="medium"
+                  class="no-border"
+                  :data="calibrationData"
+                >
+                  <vxe-column field="oddsPath" width="100">
+                    <!-- 自定义表头 -->
+                    <template #header>
+                      <v-tooltip>
+                        <template v-slot:activator="{ props }">
+                          <span v-bind="props" class="title-hover" style="cursor: pointer; display: inline-flex; align-items: center">
+                            Oddspath
+                            <v-icon style="font-size: 16px; margin-left: 4px">mdi-help-circle-outline</v-icon>
                           </span>
-                        </v-tooltip>
-                      </td>
-                      <td class="text-subtitle-1 font-weight-bold">
-                        <v-tooltip>
-                          <template v-slot:activator="{ props }">
-                            <span v-bind="props" class="title-hover">
-                              #(Likely-) pathogenicity
-                              <v-icon style="font-size: 16px;">mdi-help-circle-outline</v-icon>
-                            </span>
-                          </template>
-                          <span>
-                            Number of variants classified as Pathogenic/Likely pathogenic (P/LP) in ClinVar.
-                          </span>
-                        </v-tooltip>
-                      </td>
-                      <td class="text-subtitle-1 font-weight-bold">
-                        <v-tooltip>
-                          <template v-slot:activator="{ props }">
-                            <span v-bind="props" class="title-hover">
-                              #(Likely-) benign
-                              <v-icon style="font-size: 16px;">mdi-help-circle-outline</v-icon>
-                            </span>
-                          </template>
-                          <span>
-                            Number of variants classified as Benign/Likely benign (B/LB) in ClinVar.
-                          </span>
-                        </v-tooltip>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="text-body-1"> {{ VariantDensityData.oddsPath }}</td>
-                      <td class="text-body-1">{{ VariantDensityData.tpCount }}</td>
-                      <td class="text-body-1">{{ VariantDensityData.tnCount }}</td>
-                    </tr>
+                        </template>
+                        <span class="tooltip-text">
+                          A quantifiable metric that maps the strength of functional evidence according to the recommendations of the ClinGen Sequence Variant Interpretation (SVI) Working Group. See documentation for further details on calculation.
+                        </span>
+                      </v-tooltip>
+                    </template>
                     
-                  </tbody>
-                </v-table>
+                    <!-- 保留原有的单元格内容 -->
+                    <template #default="{ row }">
+                      <span class="text-body-1">{{ row.oddsPath }}</span>
+                    </template>
+                  </vxe-column>
+                  
+                  <vxe-column field="tpCount" width="200">
+                    <template #header>
+                      <v-tooltip>
+                        <template v-slot:activator="{ props }">
+                          <span v-bind="props" class="title-hover" style="cursor: pointer; display: inline-flex; align-items: center">
+                            #(Likely-) pathogenicity
+                            <v-icon style="font-size: 16px; margin-left: 4px">mdi-help-circle-outline</v-icon>
+                          </span>
+                        </template>
+                        <span class="tooltip-text">
+                          Number of variants classified as Pathogenic/Likely pathogenic (P/LP) in ClinVar.
+                        </span>
+                      </v-tooltip>
+                    </template>
+
+                    <template #default="{ row }">
+                      <span class="text-body-1">
+                        {{ row.tpCount }}
+                      </span>
+                    </template>
+                  </vxe-column>
+                  
+                  <vxe-column field="tnCount" min-width="100">
+                    <template #header>
+                      <v-tooltip>
+                        <template v-slot:activator="{ props }">
+                          <span v-bind="props" class="title-hover" style="cursor: pointer; display: inline-flex; align-items: center">
+                            #(Likely-) benign
+                            <v-icon style="font-size: 16px; margin-left: 4px">mdi-help-circle-outline</v-icon>
+                          </span>
+                        </template>
+                        <span class="tooltip-text">
+                          Number of variants classified as Benign/Likely benign (B/LB) in ClinVar.
+                        </span>
+                      </v-tooltip>
+                    </template>
+
+                    <template #default="{ row }">
+                      <span class="text-body-1">
+                        {{ row.tnCount }}
+                      </span>
+                    </template>
+                  </vxe-column>
+                </vxe-table>
               </v-col>
               
               <v-col cols="12" sm="6" class="mt-3 flex-col">
@@ -544,6 +573,10 @@
   .v-expansion-panel-title:hover {
     background-color: rgba(0, 0, 0, 0.04);
   }
+
+  :deep(.highlighted-row) {
+    background-color: #E3F2FD !important;
+  }
 </style>
 
 <script setup>
@@ -551,7 +584,6 @@
   import { VxeTable, VxeColumn } from 'vxe-table';
   import { useRoute } from 'vue-router';
   import axios from 'axios';
-  import * as d3 from 'd3'
   import DensityPlot from '@/components/Visualization/densityPlot.vue';
   import EffectBar from '@/components/Visualization/EffectBar.vue';
 
@@ -618,11 +650,11 @@
   const selectedStrength = ref(null);
 
   const highlightedRowId = ref(null)
-
+  const clickedRows = ref({})
 
   // Computed property to extract score data
   const scoreData = computed(() => VariantDensityData.value.score ?? []);
-  console.log("scoreData", scoreData)
+  
   const breadcrumbs = ref([
       {
         title: 'Home',
@@ -684,7 +716,7 @@
       
       // Replace with your actual API endpoint
       const response = await axios.get('/clinmave/api/fetch/table/variant', { params });
-      console.log('API Response:', response.data);
+      
       // Verify response structure
       tableData.value = response.data.data || [];
       totalRecords.value = response.data.totalRows || 0;
@@ -780,9 +812,18 @@
     {
       software: 'Polyphen2',
       score: variantData.value.polyphen2,
-      classification: variantData.polyphen2Class
+      classification: variantData.value.polyphen2Class
     }
   ]);
+
+  const calibrationData = computed(() => [
+    {
+      oddsPath: VariantDensityData.value.oddsPath,
+      tpCount: VariantDensityData.value.tpCount,
+      tnCount: VariantDensityData.value.tnCount
+    },
+  ]);
+
   // Get the route to extract the identifier
   const route = useRoute();
   
@@ -792,7 +833,6 @@
       const identifier = route.params.identifier; // Get identifier from route
       const response = await axios.get(`/clinmave/api/summary/variant?identifier=${encodeURIComponent(identifier)}`);
       variantData.value = response.data; // Directly assign API response
-      console.log('Variant Data:', variantData.value);
       
       // Update the last breadcrumb item with the identifier
       breadcrumbs.value[3].title = variantData.value.identifier;
@@ -830,7 +870,7 @@
   };
 
   const isVariantDetailEmpty = computed(() => {
-  const d = variantData.value;
+    const d = variantData.value;
     return !d.identifier && !d.typeAndLength && !d.locationHg19 && !d.locationHg38 && !d.molecularConsequence && !d.dbsnpId;
   });
   const isFunctionCurationEmpty = computed(() => {
@@ -850,6 +890,20 @@
     return !variantData.value.gadSummary || variantData.value.gadSummary.length === 0;
   });
 
+  const handleEyeClick = (datasetId) => {
+    
+    if (clickedRows.value[datasetId]) {
+      clickedRows.value = { ...clickedRows.value, [datasetId]: false };
+    } else {
+      // Close all other eyes and open the clicked one
+      const newClickedRows = {};
+      newClickedRows[datasetId] = true;
+      clickedRows.value = newClickedRows;
+      VisualizeClicker(datasetId);
+    }
+    
+  }
+
   const VisualizeClicker = (datasetId) => {
     highlightedRowId.value = datasetId  // 设置高亮
     fetchVariantDensityData(route.params.identifier, datasetId);
@@ -861,7 +915,6 @@
       if (newVal) {
         fetchVariantDensityData(route.params.identifier, variantData.value.datasetId);
         highlightedRowId.value = route.query.datasetId ? route.query.datasetId : variantData.value.datasetId;
-        console.log(localStorage.getItem('datasetId'))
       }
     }
   );
@@ -874,6 +927,7 @@
     const $toolbar = toolbarRef.value
     if ($table && $toolbar) {
       $table.connect($toolbar)
-    }   
+    }
+    handleEyeClick(route.query.datasetId ? route.query.datasetId : variantData.value.datasetId);
   });
 </script>
