@@ -68,7 +68,7 @@
           <v-menu open-on-hover>
             <template v-slot:activator="{ props }">
               <v-tab v-bind="props">
-                <v-icon icon="mdi-state-machine" size="small"></v-icon>
+                <v-icon icon="mdi-gauge-full" size="small"></v-icon>
                 <span class="ml-1">Visualize</span>
                 <v-icon icon="mdi-menu-down" size="small"></v-icon>
               </v-tab>
@@ -85,7 +85,7 @@
           </v-menu>
 
           <v-tab to="/analysis/dataset">
-            <v-icon icon="mdi-toolbox-outline" size="small"></v-icon>
+            <v-icon icon="mdi-cloud-minus-outline" size="small"></v-icon>
             <span class="ml-1">Analyze</span>
           </v-tab>
 
