@@ -166,7 +166,7 @@
                 :pager-config="{ currentPage, pageSize, total: totalRecords }"
                 @sort-change="handleSortChange"
               >
-                <vxe-column field="identifier" width="340" sortable>
+                <vxe-column field="identifier" width="340" sortable align="center">
 
                   <template #header>
                     Identifier
@@ -186,13 +186,13 @@
 
                 </vxe-column>
 
-                <vxe-column field="position" title="Position" min-width="180">
+                <vxe-column field="position" title="Position" min-width="180" align="center">
                   <template #default="{ row }">
                       {{ row.chr && row.pos ? `${row.chr}:${row.pos}` : 'N/A' }}
                   </template>
                 </vxe-column>
 
-                <vxe-column field="refalt" title="Ref/Alt" min-width="100">
+                <vxe-column field="refalt" title="Ref/Alt" min-width="100" align="center">
                   <template #default="{ row }">
                     {{ row.ref && row.alt ? `${row.ref}:${row.alt}` : 'N/A' }}
                   </template>
