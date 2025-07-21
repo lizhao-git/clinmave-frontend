@@ -500,7 +500,7 @@
                 </vxe-table>
               </v-col>
               
-              <v-col cols="12" sm="6" class="mt-3 flex-col">
+              <v-col cols="12" sm="6" class="mt-3 flex-col d-flex justify-center">
 
                 <EffectBar
                   :strength="VariantDensityData.intensityLevel || 'No effects'"
