@@ -42,6 +42,12 @@ import mathjax from './directives/mathjax'
 const app = createApp(App)
 
 app.use(router)
+
+router.beforeEach((to, from, next) => {
+  document.title = to.meta.title || 'ClinMAVE';
+  next();
+});
+
 app.use(vuetify)
 app.use(VxeUI)
 app.use(VxeUITable)
