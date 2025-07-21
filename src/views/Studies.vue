@@ -166,29 +166,58 @@
                       <v-chip
                         color="primary"
                         variant="outlined"
-                        class="mr-2"
+                        class="mr-2 mb-1"
                       >
                         <a :href="'/clinmave/browse/gene/' + id" target="_blank" style="color: #1976d2;font-style: italic;text-decoration: none">{{ id }}</a>
                       </v-chip>
                     </span>
 
-                    <div v-if="splitDatasetIds(row.geneName).length > (row.geneShowCount || 10)" class="mt-1">
+                    <div v-if="splitDatasetIds(row.geneName).length > 5" class="mt-1">
                       <v-btn
                         small
                         text
+                        density="compact"
                         color="primary"
-                        @click="expandMore(row, 10)"
                         class="mr-1"
+                        @click="expandMore(row, 10)"
+                        v-if="row.geneShowCount < splitDatasetIds(row.geneName).length"
                       >
                         +10
                       </v-btn>
+
                       <v-btn
                         small
                         text
                         color="primary"
+                        density="compact"
+                        class="mr-1"
                         @click="expandAll(row)"
+                        v-if="row.geneShowCount < splitDatasetIds(row.geneName).length"
                       >
                         All
+                      </v-btn>
+
+                      <v-btn
+                        small
+                        text
+                        density="compact"
+                        color="primary"
+                        class="mr-1"
+                        @click="collapseMore(row, 10)"
+                        v-if="row.geneShowCount > 5"
+                      >
+                        -10
+                      </v-btn>
+
+                      <v-btn
+                        small
+                        text
+                        density="compact"
+                        color="primary"
+                        @click="collapseAll(row)"
+                        v-if="row.geneShowCount > 5"
+                      >
+                        Collapse
                       </v-btn>
                     </div>
 
@@ -199,15 +228,72 @@
 
                 <vxe-column field="datasetInfo" title="Dataset ID" min-width="400" align="center">
                   <template #default="{ row }">
-                    <span v-for="(id, idx) in splitDatasetIds(row.datasetInfo)" :key="idx">
+                    <span
+                      v-for="(id, idx) in splitDatasetIds(row.datasetInfo).slice(0, row.datasetShowCount || 5)"
+                      :key="idx"
+                    >
                       <v-chip 
                         color="primary"
                         variant="outlined" 
-                        class="mr-2"
+                        class="mr-2 mb-1"
                       >
-                        <a :href="'/clinmave/browse/dataset/' + id" target="_blank" style="color: #1976d2;text-decoration: none">{{ id }}</a>
+                        <a
+                          :href="'/clinmave/browse/dataset/' + id"
+                          target="_blank"
+                          style="color: #1976d2; text-decoration: none"
+                        >
+                          {{ id }}
+                        </a>
                       </v-chip>
                     </span>
+                    <div v-if="splitDatasetIds(row.datasetInfo).length > 5" class="mt-1">
+                      <v-btn
+                        small
+                        text
+                        density="compact"
+                        color="primary"
+                        class="mr-1"
+                        @click="expandMoreDataset(row, 10)"
+                        v-if="row.datasetShowCount < splitDatasetIds(row.datasetInfo).length"
+                      >
+                        +10
+                      </v-btn>
+
+                      <v-btn
+                        small
+                        text
+                        color="primary"
+                        density="compact"
+                        class="mr-1"
+                        @click="expandAllDataset(row)"
+                        v-if="row.datasetShowCount < splitDatasetIds(row.datasetInfo).length"
+                      >
+                        All
+                      </v-btn>
+
+                      <v-btn
+                        small
+                        text
+                        density="compact"
+                        color="primary"
+                        class="mr-1"
+                        @click="collapseMoreDataset(row, 10)"
+                        v-if="row.datasetShowCount > 5"
+                      >
+                        -10
+                      </v-btn>
+
+                      <v-btn
+                        small
+                        text
+                        density="compact"
+                        color="primary"
+                        @click="collapseAllDataset(row)"
+                        v-if="row.datasetShowCount > 5"
+                      >
+                        Collapse
+                      </v-btn>
+                    </div>
                   </template>
                 </vxe-column>
               </vxe-table>
@@ -348,6 +434,50 @@ function splitDatasetIds(datasetIdStr) {
   return datasetIdStr.split(';').map(s => s.trim()).filter(Boolean);
 }
 
+function expandMore(row, increment = 10) {
+  if (!row.geneShowCount) {
+    row.geneShowCount = 10;
+  }
+  row.geneShowCount += increment;
+}
+
+function expandAll(row) {
+  row.geneShowCount = splitDatasetIds(row.geneName).length;
+}
+
+function collapseMore(row, count = 10) {
+  if (!row.geneShowCount) {
+    row.geneShowCount = 5;
+  }
+  row.geneShowCount = Math.max(5, row.geneShowCount - count);
+}
+
+function collapseAll(row) {
+  row.geneShowCount = 5;
+}
+
+function expandMoreDataset(row, count = 10) {
+  if (!row.datasetShowCount) {
+    row.datasetShowCount = 5;
+  }
+  row.datasetShowCount += count;
+}
+
+function expandAllDataset(row) {
+  row.datasetShowCount = splitDatasetIds(row.datasetInfo).length;
+}
+
+function collapseMoreDataset(row, count = 10) {
+  if (!row.datasetShowCount) {
+    row.datasetShowCount = 5;
+  }
+  row.datasetShowCount = Math.max(5, row.datasetShowCount - count);
+}
+
+function collapseAllDataset(row) {
+  row.datasetShowCount = 5;
+}
+
 // Load data function
 const loadData = async () => {
   loading.value = true;
@@ -387,7 +517,11 @@ const loadData = async () => {
     const response = await axios.get('/clinmave/api/fetch/table/studysummary', { params });
     console.log('[API Response]', response.data); // Debug API response
     // Verify response structure
-    tableData.value = response.data.data || [];
+    tableData.value = (response.data.data || []).map(row => ({
+      ...row,
+      geneShowCount: 5,
+      datasetShowCount: 5,
+    }));
     totalRecords.value = response.data.totalRows || 0;
   } catch (error) {
     console.error('[API Error]', error);
