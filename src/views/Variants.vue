@@ -49,6 +49,8 @@
                       v-model="filters.geneName"
                       v-model:search="searchGeneName"
                       :items="geneNameOptions"
+                      item-title="text"
+                      item-value="value"
                       label="Gene Name"
                       variant="outlined"
                       density="compact"
@@ -63,6 +65,8 @@
                       v-model="filters.transcriptId"
                       v-model:search="searchTranscriptId"
                       :items="transcriptIdOptions"
+                      item-title="text"
+                      item-value="value"
                       label="Transcript ID"
                       variant="outlined"
                       density="compact"
@@ -77,6 +81,8 @@
                       v-model="filters.maveTechnique"
                       v-model:search="searchMaveTechnique"
                       :items="maveTechniqueOptions"
+                      item-title="text"
+                      item-value="value"
                       label="MAVE technique"
                       variant="outlined"
                       density="compact"
@@ -91,6 +97,8 @@
                       v-model="filters.molecularConsequence"
                       v-model:search="searchMolecularConsequence"
                       :items="molecularConsequenceOptions"
+                      item-title="text"
+                      item-value="value"
                       label="Molecular consequence"
                       variant="outlined"
                       density="compact"
@@ -105,6 +113,8 @@
                       v-model="filters.consequenceClass"
                       v-model:search="searchConsequenceClass"
                       :items="consequenceClassOptions"
+                      item-title="text"
+                      item-value="value"
                       label="Consequence class"
                       variant="outlined"
                       density="compact"
@@ -316,7 +326,6 @@ const breadcrumbs = [
 
 // Reactive state for filters
 const filters = ref({
-  dbsnpId: null,
   molecularConsequence: null,
   consequenceClass: null,
   geneName: null,
@@ -326,7 +335,6 @@ const filters = ref({
 
 
 // Reactive state for autocomplete options
-const dbsnpIdOptions = ref([])
 const geneNameOptions = ref([])
 const transcriptIdOptions = ref([])
 const maveTechniqueOptions = ref([])
@@ -342,7 +350,6 @@ const searchMolecularConsequence = ref(null)
 const searchConsequenceClass = ref(null)
 
 // Loading states for autocomplete fields
-const loadingDbsnpId = ref(false)
 const loadingGeneName = ref(false)
 const loadingTranscriptId = ref(false)
 const loadingMaveTechnique = ref(false)
@@ -365,101 +372,29 @@ const sortParams = ref({
   order: ''
 })
 
-const debouncedFetchDbsnpId = debounce(fetchDbsnpIdOptions, 300)
-const debouncedFetchGeneName = debounce(fetchGeneNameOptions, 300)
-const debouncedFetchTranscriptId = debounce(fetchTranscriptIdOptions, 300)
-const debouncedFetchMolecularConsequence = debounce(fetchMolecularConsequenceOptions, 300)
-const debouncedFetchMaveTechnique = debounce(fetchMaveTechniqueOptions, 300)
-const debouncedFetchConsequenceClass = debounce(fetchConsequenceClassOptions, 300)
+// Debounced fetch functions for each autocomplete
+const debouncedFetchGeneName = debounce(() => fetchOptions('geneName', geneNameOptions, loadingGeneName), 300)
+const debouncedFetchTranscriptId = debounce(() => fetchOptions('transcriptId', transcriptIdOptions, loadingTranscriptId), 300)
+const debouncedFetchMaveTechnique = debounce(() => fetchOptions('maveTechnique', maveTechniqueOptions, loadingMaveTechnique), 300)
+const debouncedFetchMolecularConsequence = debounce(() => fetchOptions('molecularConsequence', molecularConsequenceOptions, loadingMolecularConsequence), 300)
+const debouncedFetchConsequenceClass = debounce(() => fetchOptions('consequenceClass', consequenceClassOptions, loadingConsequenceClass), 300)
 
-// Debounced fetch functions for autocomplete options
-async function fetchDbsnpIdOptions(query = '') {
+// Generic fetch function for autocomplete options
+async function fetchOptions(term, optionsRef, loadingRef, search = '') {
   try {
-    loadingDbsnpId.value = true;
-    const response = await axios.get('/clinmave/api/select/variant', {
-      params: { dbsnpId: !query ? '' : query },
-    });
-    dbsnpIdOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
+    loadingRef.value = true
+    const params = { ...filters.value, term }
+    if (search) params.search = search
+    const response = await axios.get('/clinmave/api/select/variant', { params })
+    optionsRef.value = response.data.result.map(item => ({
+      text: `${item[term]} (#Entries: ${item.count})`,
+      value: item[term]
+    }))
   } catch (error) {
-    VxeUI.message.error('Failed to load dbSNP IDs');
-    dbsnpIdOptions.value = [];
+    VxeUI.message.error(`Failed to load ${term} options`)
+    optionsRef.value = []
   } finally {
-    loadingDbsnpId.value = false;
-  }
-}
-
-async function fetchGeneNameOptions(query = '') {
-  try {
-    loadingGeneName.value = true;
-    const response = await axios.get('/clinmave/api/select/variant', {
-      params: { geneName: !query ? '' : query },
-    });
-    geneNameOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
-  } catch (error) {
-    VxeUI.message.error('Failed to load dbSNP IDs');
-    geneNameOptions.value = [];
-  } finally {
-    loadingGeneName.value = false;
-  }
-}
-
-async function fetchTranscriptIdOptions(query = '') {
-  try {
-    loadingTranscriptId.value = true;
-    const response = await axios.get('/clinmave/api/select/variant', {
-      params: { transcriptId: !query ? '' : query },
-    });
-    transcriptIdOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
-  } catch (error) {
-    VxeUI.message.error('Failed to load dbSNP IDs');
-    transcriptIdOptions.value = [];
-  } finally {
-    loadingTranscriptId.value = false;
-  }
-}
-
-async function fetchMolecularConsequenceOptions(query = '') {
-  try {
-    loadingMolecularConsequence.value = true;
-    const response = await axios.get('/clinmave/api/select/variant', {
-      params: { molecularConsequence: !query ? '' : query },
-    });
-    molecularConsequenceOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
-  } catch (error) {
-    VxeUI.message.error('Failed to load dbSNP IDs');
-    molecularConsequenceOptions.value = [];
-  } finally {
-    loadingMolecularConsequence.value = false;
-  }
-}
-
-async function fetchMaveTechniqueOptions(query = '') {
-  try {
-    loadingMaveTechnique.value = true;
-    const response = await axios.get('/clinmave/api/select/variant', {
-      params: { maveTechnique: !query ? '' : query },
-    });
-    maveTechniqueOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
-  } catch (error) {
-    VxeUI.message.error('Failed to load dbSNP IDs');
-    maveTechniqueOptions.value = [];
-  } finally {
-    loadingMaveTechnique.value = false;
-  }
-}
-
-async function fetchConsequenceClassOptions(query = '') {
-  try {
-    loadingConsequenceClass.value = true;
-    const response = await axios.get('/clinmave/api/select/variant', {
-      params: { consequenceClass: !query ? '' : query },
-    });
-    consequenceClassOptions.value = Array.isArray(response.data) ? response.data : response.data.data || [];
-  } catch (error) {
-    VxeUI.message.error('Failed to load dbSNP IDs');
-    consequenceClassOptions.value = [];
-  } finally {
-    loadingConsequenceClass.value = false;
+    loadingRef.value = false
   }
 }
 
@@ -533,7 +468,6 @@ const resetFilters = () => {
   searchConsequenceClass.value = null;
 
   filters.value = { 
-    dbsnpId: null, 
     geneName: null, 
     transcriptId: null,
     maveTechnique: null,
@@ -618,9 +552,47 @@ watch([currentPage, pageSize], () => {
   loadData()
 })
 
+// Watchers for search inputs
+watch(searchGeneName, (value) => debouncedFetchGeneName(value))
+watch(searchTranscriptId, (value) => debouncedFetchTranscriptId(value))
+watch(searchMaveTechnique, (value) => debouncedFetchMaveTechnique(value))
+watch(searchMolecularConsequence, (value) => debouncedFetchMolecularConsequence(value))
+watch(searchConsequenceClass, (value) => debouncedFetchConsequenceClass(value))
+
+// Watch individual filter fields to update other autocomplete options
+watch(() => filters.value.geneName, () => {
+  debouncedFetchTranscriptId()
+  debouncedFetchMaveTechnique()
+  debouncedFetchMolecularConsequence()
+  debouncedFetchConsequenceClass()
+})
+watch(() => filters.value.transcriptId, () => {
+  debouncedFetchGeneName()
+  debouncedFetchMaveTechnique()
+  debouncedFetchMolecularConsequence()
+  debouncedFetchConsequenceClass()
+})
+watch(() => filters.value.maveTechnique, () => {
+  debouncedFetchGeneName()
+  debouncedFetchTranscriptId()
+  debouncedFetchMolecularConsequence()
+  debouncedFetchConsequenceClass()
+})
+watch(() => filters.value.molecularConsequence, () => {
+  debouncedFetchGeneName()
+  debouncedFetchTranscriptId()
+  debouncedFetchMaveTechnique()
+  debouncedFetchConsequenceClass()
+})
+watch(() => filters.value.consequenceClass, () => {
+  debouncedFetchGeneName()
+  debouncedFetchTranscriptId()
+  debouncedFetchMaveTechnique()
+  debouncedFetchMolecularConsequence()
+})
+
 // Initialize
 onMounted(() => {
-  debouncedFetchDbsnpId();
   debouncedFetchGeneName();
   debouncedFetchTranscriptId();
   debouncedFetchMolecularConsequence();
