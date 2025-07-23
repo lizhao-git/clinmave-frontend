@@ -237,8 +237,8 @@ function drawChart() {
 
   const legend = svgSel.append("g").attr("transform", `translate(${width / 2 - 150}, ${height - 30})`);
   [
-    { label: "Functional neutral", key: "LOF", color: colorMap.LOF },
-    { label: "Functional altered", key: "GOF", color: colorMap.GOF },
+    { label: "Normal", key: "LOF", color: colorMap.LOF },
+    { label: "Abnormal", key: "GOF", color: colorMap.GOF },
   ].forEach((item, i) => {
     const lg = legend.append("g").attr("transform", `translate(${i * 150}, 0)`);
     lg.append("rect").attr("width", 14).attr("height", 14).attr("fill", item.color);
