@@ -35,9 +35,9 @@
       >
         <table style="font-family: Arial; font-size: 14px; border-collapse: collapse;">
           <tbody>
-            <tr><td>ID:</td><td>{{ tooltip.data.identifier }}</td></tr>
+            <tr><td>Identifier:</td><td>{{ tooltip.data.identifier }}</td></tr>
             <tr><td>Class:</td><td><v-chip density="compact" :color="colorMap[tooltip.data.class] || '#bcbcbc99'">{{ tooltip.data.class }}</v-chip></td></tr>
-            <tr><td>Score:</td><td>{{ tooltip.data.score }}</td></tr>
+            <tr><td>Functional score:</td><td>{{ tooltip.data.score }}</td></tr>
             <tr><td style="padding-right: 10px;">gnomAD AF:</td><td>{{ formatAf(tooltip.data.af) }}</td></tr>
           </tbody>
         </table>
@@ -159,7 +159,13 @@ function drawChart() {
     .attr('cy', d => y(d.score))
     .attr('r', 3)
     .attr('fill', d => props.colorMap[d.class] || '#999')
+    .attr('class', 'scatter-point')
     .on('mouseover', (event, d) => {
+      d3.select(event.currentTarget)
+        .attr('r', 6)
+        .attr('stroke', d => props.colorMap[d.class] || '#999')
+        .attr('stroke-width', 1)
+        .classed('hovered', true)
       tooltip.value = {
         visible: true,
         x: event.clientX + 10,
@@ -171,7 +177,11 @@ function drawChart() {
       tooltip.value.x = event.clientX + 10
       tooltip.value.y = event.clientY + 10
     })
-    .on('mouseout', () => {
+    .on('mouseout', (event) => {
+      d3.select(event.currentTarget)
+        .attr('r', 3)
+        .attr('stroke', 'none')
+        .classed('hovered', false)
       tooltip.value.visible = false
     })
 }
@@ -192,5 +202,13 @@ svg {
   padding: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   pointer-events: none;
+}
+
+.scatter-point {
+  transition: all 0.2s ease;
+}
+
+.scatter-point.hovered {
+  transform: translateY(-2px);
 }
 </style>
