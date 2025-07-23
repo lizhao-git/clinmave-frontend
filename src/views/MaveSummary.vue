@@ -118,7 +118,7 @@
               :pager-config="{ currentPage, pageSize, total: totalRecords }"
               @sort-change="handleSortChange"
             >
-              <vxe-column field="datasetId" width="140" sortable>
+              <vxe-column field="datasetId" width="140" sortable align="center">
 
                 <template #header>
                   Dataset ID

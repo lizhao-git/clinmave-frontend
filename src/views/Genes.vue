@@ -67,7 +67,7 @@
                       variant="outlined"
                       density="compact"
                       clearable
-                      :loading="loadingTranscriptId"
+                      :loading="loadingEnsemblId"
                     >
                     </v-autocomplete>
                   </v-col>
@@ -137,7 +137,7 @@
                 @sort-change="handleSortChange"
               >
 
-                <vxe-column field="geneName" width="130" sortable>
+                <vxe-column field="geneName" width="130" sortable align="center">
 
                     <template #header>
                       Gene name
@@ -167,7 +167,7 @@
                       <v-chip 
                         color="primary"
                         variant="outlined" 
-                        class="mr-2"
+                        class="mr-2 mb-1"
                       >
                         <a :href="'/clinmave/browse/dataset/' + id" target="_blank" style="color: #1976d2;text-decoration: none">{{ id }}</a>
                       </v-chip>
@@ -356,7 +356,6 @@ const loadData = async () => {
     
     // Verify response structure
     tableData.value = response.data.data || [];
-    console.log(tableData.value)
     totalRecords.value = response.data.totalRows || 0;
   } catch (error) {
     console.error('[API Error]', error);
@@ -395,7 +394,6 @@ const resetFilters = () => {
 }
 
 const handlePageChange = (event) => {
-  console.log('[Page Change]', event) // Debug event data
   currentPage.value = event.currentPage
   pageSize.value = event.pageSize
   loadData()
@@ -447,7 +445,6 @@ const getConsequenceClassColor = (consequenceClass) => {
 
 // Watch pagination parameters
 watch([currentPage, pageSize], () => {
-  console.log('[Watch] Page or size changed:', currentPage.value, pageSize.value)
   loadData()
 })
 

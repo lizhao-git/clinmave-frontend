@@ -121,7 +121,7 @@
               :pager-config="{ currentPage, pageSize, total: totalRecords }"
               @sort-change="handleSortChange"
             >
-              <vxe-column field="datasetId" width="140" sortable>
+              <vxe-column field="datasetId" width="140" sortable align="center">
 
                 <template #header>
                   Dataset ID
@@ -161,10 +161,6 @@
               <vxe-column field="phenotype" title="Phenotype" min-width="400" align="center"></vxe-column>
 
               <vxe-column field="varNum" title="#Variants" min-width="120" align="center" sortable></vxe-column>
-
-              <vxe-column field="aaNum" title="#Amino Acids" min-width="150" align="center" sortable></vxe-column>
-
-              <vxe-column field="siteNum" title="#Sites" min-width="100" align="center" sortable></vxe-column>
 
             </vxe-table>
             <!-- Pagination -->

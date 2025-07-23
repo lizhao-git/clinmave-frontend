@@ -35,7 +35,7 @@ const renderChart = () => {
   const kernel = epanechnikov(0.5)
   const density = kernelDensityEstimator(kernel, d3.range(xMin, xMax + 0.01, 0.01))(props.data)
 
-  const binWidth = 0.1
+  const binWidth = 0.2
   const bins = d3.bin()
     .domain([xMin, xMax])
     .thresholds(d3.range(xMin, xMax + binWidth, binWidth))(props.data)
@@ -145,7 +145,7 @@ const renderChart = () => {
     .append('rect')
     .attr('x', d => xScale(d.x0) + 0.5)
     .attr('y', d => yScale(d.density))
-    .attr('width', d => Math.max(0.5, xScale(d.x1) - xScale(d.x0) - 0.8))
+    .attr('width', d => Math.max(0.5, xScale(d.x1) - xScale(d.x0) - 0.2))
     .attr('height', d => height - yScale(d.density))
     .attr('fill', 'gray')
     .attr('opacity', 0.6)
@@ -231,7 +231,7 @@ watch(() => [props.data, props.selectionStrategy, props.cutoff, props.score], re
       <v-menu offset-y>
         <template #activator="{ props }">
           <v-btn v-bind="props" icon variant="text">
-            <v-icon>mdi-menu</v-icon>
+            <v-icon>mdi-download</v-icon>
           </v-btn>
         </template>
         <v-list>

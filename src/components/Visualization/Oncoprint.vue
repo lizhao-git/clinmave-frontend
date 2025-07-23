@@ -366,7 +366,9 @@ function drawTrack() {
 
   const legendY = yStart + currentOrder.length * (rectHeight + gap) + 60
   const legend = g.append('g').attr('class', 'mutation-legend').attr('transform', `translate(0, ${legendY})`)
-  Object.entries(mutationColorMap).forEach(([type, color], i) => {
+  Object.entries(mutationColorMap)
+  .filter(([type]) => type !== "null")
+  .forEach(([type, color], i) => {
     const xOffset = i * 150
     legend
       .append('rect')

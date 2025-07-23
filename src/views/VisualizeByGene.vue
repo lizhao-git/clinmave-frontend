@@ -105,7 +105,7 @@
                 :gene-info="oncoprintMap.geneInfo"
                 :domains="oncoprintMap.domains"
                 :oncoprint-data="oncoprintMap.oncoprintData"
-                height="400"
+                :height=400
               />
             </template>
 
@@ -142,7 +142,7 @@
               :pager-config="{ currentPage, pageSize, total: totalRecords }"
               @sort-change="handleSortChange"
             >
-              <vxe-column field="datasetId" width="140" sortable>
+              <vxe-column field="datasetId" width="140" sortable align="center">
                 <template #header>Dataset ID</template>
                 <template #default="{ row }">
                   <a 
@@ -178,10 +178,6 @@
               <vxe-column field="phenotype" title="Phenotype" min-width="400" align="center"></vxe-column>
 
               <vxe-column field="varNum" title="#Variants" min-width="120" align="center" sortable></vxe-column>
-
-              <vxe-column field="aaNum" title="#Amino Acids" min-width="150" align="center" sortable></vxe-column>
-
-              <vxe-column field="siteNum" title="#Sites" min-width="100" align="center" sortable></vxe-column>
 
             </vxe-table>
             <!-- Pagination -->
@@ -312,7 +308,6 @@ async function fetchGeneStructure(query = '') {
       },
     });
     oncoprintMap.value = response.data || {};
-    console.log('[Oncoprint Map]', oncoprintMap.value);
   } catch (error) {
     VxeUI.message.error('Failed to load oncoprint data');
     oncoprintMap.value = {};

@@ -46,9 +46,9 @@
                 <v-divider vertical />
 
                 <v-col cols="12" sm="12" lg="4" md="4" class="d-flex justify-center">
-                  <!-- <ConsequenceProporiton
+                  <ConsequenceProporiton
                     :data="ConsequenceProportionData"
-                  /> -->
+                  />
                 </v-col>
               </v-row>
             </v-card-text>
@@ -86,7 +86,7 @@
                 :pager-config="{ currentPage, pageSize, total: totalRecords }"
                 @sort-change="handleSortChange"
               >
-                <vxe-column field="identifier" width="450" sortable>
+                <vxe-column field="identifier" width="450" sortable align="center">
 
                   <template #header>
                     Identifier
@@ -106,7 +106,7 @@
 
                 </vxe-column>
                 
-                <vxe-column field="position" title="Position" min-width="180">
+                <vxe-column field="position" title="Position" min-width="180" align="center">
                   <template #default="{ row }">
                     <a v-if="row" :href="row.ucscHg38" target="_blank" style="text-decoration: none;">
                       {{ row.chr && row.pos ? `${row.chr}:${row.pos}` : 'N/A' }}
@@ -115,7 +115,7 @@
                   </template>
                 </vxe-column>
 
-                <vxe-column field="refalt" title="Ref/Alt" min-width="100">
+                <vxe-column field="refalt" title="Ref/Alt" min-width="100" align="center">
                   <template #default="{ row }">
                     {{ row.ref && row.alt ? `${row.ref}:${row.alt}` : 'N/A' }}
                   </template>
@@ -246,7 +246,7 @@
   import VxeUI from 'vxe-pc-ui';
   import 'vxe-pc-ui/lib/style.css';
   import 'vxe-table/lib/style.css';
-  import DensityPlot from '@/components/Visualization/DensityPlot.vue';
+  import DensityPlot from '@/components/Visualization/densityPlot.vue';
   import ConsequenceProporiton from '@/components/Visualization/ConsequenceProportion.vue'
 
   // Reactive state for variant details
@@ -333,7 +333,6 @@
       
       variantData.value = response.data; // Directly assign API response
       filters.value.datasetId = datasetId;
-      console.log('Filters Data:', filters.value);
       // Update the last breadcrumb item with the identifier
       breadcrumbs.value[3].title = variantData.value.datasetId;
 
@@ -354,7 +353,6 @@
     try {
       const datasetId = route.params.datasetId; // Get identifier from route
       const response = await axios.get(`/clinmave/api/visualize/dataset/consequenceclass/proportion?datasetId=${encodeURIComponent(datasetId)}`);
-      console.console.log("ConsequeceCLas", response.data);
       
       ConsequenceProportionData.value = response.data || {}; // Directly assign API response
       
