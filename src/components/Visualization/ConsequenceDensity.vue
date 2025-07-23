@@ -74,7 +74,7 @@ function drawChart(rawData) {
   const categoryData = categories
     .map(cat => {
       const group = rawData.find(d => d.dataset === cat)
-      return group && group.mutations?.length > 0 ? { ...group, dataset: cat } : null
+      return group && group.mutations?.length >= 5 ? { ...group, dataset: cat } : null
     })
     .filter(Boolean)
 
@@ -85,7 +85,7 @@ function drawChart(rawData) {
     .attr('width', width)
     .attr('height', height.value)
 
-  const allScores = rawData.flatMap(d => d.mutations.map(m => m.score))
+  const allScores = categoryData.flatMap(d => d.mutations.map(m => m.score))
   const x = d3.scaleLinear()
     .domain([d3.min(allScores), d3.max(allScores)])
     .range([margin.left, width - margin.right])
