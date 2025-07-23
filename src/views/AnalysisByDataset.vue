@@ -157,7 +157,7 @@
               :pager-config="{ currentPage, pageSize, total: totalRecords }"
               @sort-change="handleSortChange"
             >
-              <vxe-column field="datasetId" width="140" sortable>
+              <vxe-column field="datasetId" width="140" sortable align="center">
                 <template #header>Dataset ID</template>
                 <template #default="{ row }">
                   <a 
@@ -172,17 +172,26 @@
                 </template>
               </vxe-column>
 
-              <vxe-column field="datasetId" title="Visualize" min-width="80" align="center">
-                <template #default="{ row }">
-                  <v-btn
-                    color="primary"
-                    variant="compact"
-                    icon="mdi-eye"
-                    @click="VisualizeClicker(row.datasetId)"
-                  ></v-btn>
-                </template>
-              </vxe-column>
+              <vxe-column field="geneName" width="130" sortable align="center">
 
+                  <template #header>
+                    Gene name
+                  </template>
+                  
+                  <template #default="{ row }">
+                    <a 
+                      v-if="row.geneName" 
+                      :href="`/clinmave/browse/gene/${encodeURIComponent(row.geneName)}`" 
+                      target="_blank"
+                      style="text-decoration: none;font-style: italic"
+                    >
+                      {{ row.geneName }}
+                    </a>
+                    <span v-else>-</span>
+                  </template>
+
+              </vxe-column>
+              
               <vxe-column field="maveTechnique" title="MAVE technique" min-width="200" align="center">
                   <template #default="{ row }">
                       <a 
@@ -277,6 +286,24 @@
 
         </v-col>
       </v-row>
+
+      <v-dialog v-model="showWarningDialog" max-width="500">
+        <v-card>
+          <v-card-title class="text-h6">
+            Filter warning
+          </v-card-title>
+          <v-card-text>
+            Multiple entries found. Please refine your filter selections to return exact entry.
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" text @click="showWarningDialog = false">
+              OK
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
     </v-container>
   </v-main>
 </template>
@@ -289,10 +316,8 @@ import { debounce } from 'lodash'
 import VxeUI from 'vxe-pc-ui';
 import 'vxe-pc-ui/lib/style.css';
 
-import {VXETable} from 'vxe-table'
 import 'vxe-table/lib/style.css'
 
-import Scatter2d from '@/components/Visualization/Scatter2d.vue'
 import RocCurve from '@/components/analyze/RocCurve.vue'
 import CompareConsequenceBox from '@/components/analyze/CompareConsequenceBox.vue'
 
@@ -315,7 +340,7 @@ const breadcrumbs = [
 const filters = ref({
   geneName: 'BRAF',
   mutagenesisStrategy: null,
-  experimentModel: null,
+  experimentModel: 'E. coli',
   phenotype: null,
 })
 
@@ -335,24 +360,17 @@ const phenotypeOptions = ref([])
 const searchPhenotype = ref(null)
 const loadingPhenotype = ref(false)
 
+// Warning dialog control
+const showWarningDialog = ref(false)
+
 // 新增控制右侧结果显示的变量
 const showResults = ref(false);
 const showVisualize = ref(false);
 const highlightedRowId = ref(null)
 
-const oncoprintMap = ref({})
-const oncoprintLoading = ref(false)
-
-const scatterArray = ref([])
 const scatterLoading = ref(false)
 
-const clinVarBinLoading = ref(false)
-const ClinVarBinArray = ref([])
-
-const consequenceArray = ref([])
 const consequencecomparingboxArray = ref({})
-
-const datasetId = ref('dataset0145');
 
 const RocCurveMap = ref({})
 const RocCurveLoading = ref(false)
@@ -369,12 +387,34 @@ const sortParams = ref({
   order: ''
 })
 
-const debouncedFetchGeneName = debounce(fetchGeneNameOptions, 300)
-const debouncedFetchMutagenesisStrategy = debounce(fetchMutagenesisStrategyOptions, 300)
-const debouncedFetchExperimentModel = debounce(fetchExperimentModelOptions, 300)
-const debouncedFetchPhenotype = debounce(fetchPhenotypeOptions, 300)
+const debouncedFetchGeneName = debounce(() => fetchOptions('geneName', geneNameOptions, loadingGeneName), 300)
+const debouncedFetchMutagenesisStrategy = debounce(() => fetchOptions('mutagenesisStrategy', mutagenesisStrategyOptions, loadingMutagenesisStrategy), 300)
+const debouncedFetchExperimentModel = debounce(() => fetchOptions('experimentModel', experimentModelOptions, loadingExperimentModel), 300)
+const debouncedFetchPhenotype = debounce(() => fetchOptions('phenotype', phenotypeOptions, loadingPhenotype), 300)
+
 const debouncedFetchCompareConsequenceBox = debounce(fetchCompareConsequenceBox, 300)
 const debouncedFetchRocCurve = debounce(fetchRocCurveData, 300)
+
+// Generic fetch function for autocomplete options
+async function fetchOptions(term, optionsRef, loadingRef, search = '') {
+  try {
+    loadingRef.value = true
+    const params = { ...filters.value, term }
+    if (search) params.search = search
+    const response = await axios.get('/clinmave/api/select/dataset', { params })
+    optionsRef.value = response.data.result.map(item => ({
+      text: `${item[term]} (#Entries: ${item.count})`,
+      value: item[term]
+    }))
+  } catch (error) {
+    VxeUI.message.error(`Failed to load ${term} options`)
+    optionsRef.value = []
+  } finally {
+    loadingRef.value = false
+  }
+}
+
+const datasetId = computed(() => tableData.value[0]?.datasetId || '')
 
 const hasRocCurveData = computed(() => {
   if (!RocCurveMap.value || typeof RocCurveMap.value !== 'object') return false;
@@ -404,78 +444,6 @@ const hasCompareConsequenceBpxData = computed(() => {
   return Array.isArray(lof) && lof.length > 0 &&
          Array.isArray(gof) && gof.length > 0;
 });
-
-async function fetchGeneNameOptions(query = '') {
-  try {
-    loadingGeneName.value = true;
-    const response = await axios.get('/clinmave/api/select/dataset', {
-      params: { geneName: !query ? '' : query },
-    });
-    geneNameOptions.value = response.data.map(item => ({
-      text: `${item.geneName} (#Datasets: ${item.count})`,
-      value: item.geneName
-    }));
-  } catch (error) {
-    VxeUI.message.error('Failed to load dbSNP IDs');
-    geneNameOptions.value = [];
-  } finally {
-    loadingGeneName.value = false;
-  }
-}
-
-async function fetchMutagenesisStrategyOptions(query = '') {
-  try {
-    loadingMutagenesisStrategy.value = true;
-    const response = await axios.get('/clinmave/api/select/dataset', {
-      params: { mutagenesisStrategy: !query ? '' : query },
-    });
-    mutagenesisStrategyOptions.value = response.data.map(item => ({
-      text: `${item.mutagenesisStrategy} (#Datasets: ${item.count})`,
-      value: item.mutagenesisStrategy
-    }));
-  } catch (error) {
-    VxeUI.message.error('Failed to load dbSNP IDs');
-    mutagenesisStrategyOptions.value = [];
-  } finally {
-    loadingMutagenesisStrategy.value = false;
-  }
-}
-
-async function fetchExperimentModelOptions(query = '') {
-  try {
-    loadingExperimentModel.value = true;
-    const response = await axios.get('/clinmave/api/select/dataset', {
-      params: { experimentModel: !query ? '' : query },
-    });
-    experimentModelOptions.value = response.data.map(item => ({
-      text: `${item.experimentModel} (#Datasets: ${item.count})`,
-      value: item.experimentModel
-    }));
-  } catch (error) {
-    VxeUI.message.error('Failed to load dbSNP IDs');
-    experimentModelOptions.value = [];
-  } finally {
-    loadingExperimentModel.value = false;
-  }
-}
-
-async function fetchPhenotypeOptions(query = '') {
-  try {
-    loadingPhenotype.value = true;
-    const response = await axios.get('/clinmave/api/select/dataset', {
-      params: { phenotype: !query ? '' : query },
-    });
-    phenotypeOptions.value = response.data.map(item => ({
-      text: `${item.phenotype} (#Datasets: ${item.count})`,
-      value: item.phenotype
-    }));
-  } catch (error) {
-    VxeUI.message.error('Failed to load dbSNP IDs');
-    phenotypeOptions.value = [];
-  } finally {
-    loadingPhenotype.value = false;
-  }
-}
 
 async function fetchRocCurveData(query = '') {
   RocCurveLoading.value = true;
@@ -557,19 +525,31 @@ const loadData = async () => {
   }
 };
 
-const applyFilters = () => {
-  currentPage.value = 1;
-  loadData();
-  showResults.value = true;
-  showVisualize.value = false;
-}
+const applyFilters = async () => {
+  // Check maximum entries count from all autocomplete options
+  const allOptions = [
+    ...geneNameOptions.value,
+    ...mutagenesisStrategyOptions.value,
+    ...experimentModelOptions.value,
+    ...phenotypeOptions.value
+  ]
+  
+  const maxEntries = allOptions.reduce((max, option) => {
+    const match = option.text.match(/#Entries: (\d+)/)
+    const count = match ? parseInt(match[1], 10) : 0
+    return Math.max(max, count)
+  }, 0)
 
-const VisualizeClicker = (datasetId) => {
-  highlightedRowId.value = datasetId  // 设置高亮
-  showVisualize.value = true;
+  if (maxEntries > 1) {
+    showWarningDialog.value = true
+    return
+  }
 
-  debouncedFetchCompareConsequenceBox(datasetId);
-  debouncedFetchRocCurve(datasetId);
+  currentPage.value = 1
+  await loadData()
+  
+  showResults.value = true
+  showVisualize.value = true
 }
 
 const resetFilters = () => {
@@ -640,23 +620,45 @@ const getConsequenceClassColor = (consequenceClass) => {
   return '#2196F3'; // Default blue
 };
 
+watch(datasetId, (newDatasetId) => {
+  if (newDatasetId) {
+    console.log('[Dataset ID changed]', newDatasetId)
+    debouncedFetchCompareConsequenceBox(newDatasetId)
+    debouncedFetchRocCurve(newDatasetId)
+  }
+})
+
 watch([currentPage, pageSize], () => {
   loadData()
 })
 
-onMounted(() => {
+watch(
+  () => ({
+    ...filters.value,
+    searchGeneName: searchGeneName.value,
+    searchMutagenesisStrategy: searchMutagenesisStrategy.value,
+    searchPhenotype: searchPhenotype.value,
+    searchExperimentModel: searchExperimentModel.value,
+  }),
+  () => {
+    debouncedFetchGeneName()
+    debouncedFetchMutagenesisStrategy()
+    debouncedFetchExperimentModel()
+    debouncedFetchPhenotype()
+  },
+  { deep: true }
+)
+
+onMounted(async () => {
   debouncedFetchGeneName();
   debouncedFetchMutagenesisStrategy();
   debouncedFetchExperimentModel();
   debouncedFetchPhenotype();
 
   showResults.value = true;
-  loadData();
+  await loadData();
 
   showVisualize.value = true;
-  highlightedRowId.value = datasetId.value
-  debouncedFetchCompareConsequenceBox(datasetId.value);
-  debouncedFetchRocCurve(datasetId.value);
   // 这里不自动加载表格，表格和oncoprint初始隐藏
   const $table = tableRef.value
   const $toolbar = toolbarRef.value

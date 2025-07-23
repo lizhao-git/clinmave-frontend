@@ -515,7 +515,6 @@ const loadData = async () => {
 
     // Replace with your actual API endpoint
     const response = await axios.get('/clinmave/api/fetch/table/studysummary', { params });
-    console.log('[API Response]', response.data); // Debug API response
     // Verify response structure
     tableData.value = (response.data.data || []).map(row => ({
       ...row,
@@ -560,7 +559,6 @@ const resetFilters = () => {
 }
 
 const handlePageChange = (event) => {
-  console.log('[Page Change]', event) // Debug event data
   currentPage.value = event.currentPage
   pageSize.value = event.pageSize
   loadData()

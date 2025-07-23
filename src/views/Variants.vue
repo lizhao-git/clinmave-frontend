@@ -553,43 +553,24 @@ watch([currentPage, pageSize], () => {
 })
 
 // Watchers for search inputs
-watch(searchGeneName, (value) => debouncedFetchGeneName(value))
-watch(searchTranscriptId, (value) => debouncedFetchTranscriptId(value))
-watch(searchMaveTechnique, (value) => debouncedFetchMaveTechnique(value))
-watch(searchMolecularConsequence, (value) => debouncedFetchMolecularConsequence(value))
-watch(searchConsequenceClass, (value) => debouncedFetchConsequenceClass(value))
-
-// Watch individual filter fields to update other autocomplete options
-watch(() => filters.value.geneName, () => {
-  debouncedFetchTranscriptId()
-  debouncedFetchMaveTechnique()
-  debouncedFetchMolecularConsequence()
-  debouncedFetchConsequenceClass()
-})
-watch(() => filters.value.transcriptId, () => {
-  debouncedFetchGeneName()
-  debouncedFetchMaveTechnique()
-  debouncedFetchMolecularConsequence()
-  debouncedFetchConsequenceClass()
-})
-watch(() => filters.value.maveTechnique, () => {
-  debouncedFetchGeneName()
-  debouncedFetchTranscriptId()
-  debouncedFetchMolecularConsequence()
-  debouncedFetchConsequenceClass()
-})
-watch(() => filters.value.molecularConsequence, () => {
-  debouncedFetchGeneName()
-  debouncedFetchTranscriptId()
-  debouncedFetchMaveTechnique()
-  debouncedFetchConsequenceClass()
-})
-watch(() => filters.value.consequenceClass, () => {
-  debouncedFetchGeneName()
-  debouncedFetchTranscriptId()
-  debouncedFetchMaveTechnique()
-  debouncedFetchMolecularConsequence()
-})
+watch(
+  () => ({
+    ...filters.value,
+    searchGeneName: searchGeneName.value,
+    searchTranscriptId: searchTranscriptId.value,
+    searchMaveTechnique: searchMaveTechnique.value,
+    searchMolecularConsequence: searchMolecularConsequence.value,
+    searchConsequenceClass: searchConsequenceClass.value,
+  }),
+  () => {
+    debouncedFetchGeneName()
+    debouncedFetchTranscriptId()
+    debouncedFetchMaveTechnique()
+    debouncedFetchMolecularConsequence()
+    debouncedFetchConsequenceClass()
+  },
+  { deep: true }
+)
 
 // Initialize
 onMounted(() => {

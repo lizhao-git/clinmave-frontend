@@ -49,7 +49,6 @@
             <v-row>
               <v-col cols="12">
                 <div class="text-body-1">Filters</div>
-                <!-- 这里去掉了切换按钮，左侧筛选栏固定显示 -->
               </v-col>
             </v-row>
 
@@ -129,7 +128,7 @@
               <v-row dense>
                 <v-spacer></v-spacer>
                 <v-col cols="10" class="text-right">
-                  <v-btn size="small" dark color="#091C2B" @click="applyFilters" class="mr-2">Apply</v-btn>
+                  <v-btn size="small" dark color="#091C2B" @click="applyFilters" class="mr-2">Visualize</v-btn>
                   <v-btn size="small" dark color="#091C2B" @click="resetFilters">Reset</v-btn>
                 </v-col>
               </v-row>
@@ -137,16 +136,8 @@
           </v-sheet>
         </v-col>
         
-        <!-- Table Content 右侧内容：根据showResults显示/隐藏 -->
+        <!-- Table Content 右侧内容：itors="showResults显示/隐藏 -->
         <v-col cols="12" xl="10" lg="9" md="9" sm="12" v-if="showResults">
-          <!-- <v-banner single-line :sticky="false">
-            <div style="font-weight: bold;height: 100%;">Tips:&nbsp;</div>
-            (1) Use filters to narrow the datasets table by gene, Mutagenesis strategy, experimental model and phenotype;<br>
-            (2) Click the ‘Visualize’ button to:<br>
-            <v-icon color="black" size="12" class="dot-icon">mdi-circle</v-icon>View the distribution of MAVE functional scores grouped by molecular consequence/Clinvar classification<br>
-            <v-icon color="black" size="12" class="dot-icon">mdi-circle</v-icon>Explore the relationship between population allele frequency (gnomAD) and MAVE functional score.
-          </v-banner> -->
-
           <v-sheet class="pa-3">   
             <!-- Table -->
             <vxe-toolbar ref="toolbarRef" export custom></vxe-toolbar>
@@ -163,7 +154,7 @@
               :pager-config="{ currentPage, pageSize, total: totalRecords }"
               @sort-change="handleSortChange"
             >
-              <vxe-column field="datasetId" width="140" sortable>
+              <vxe-column field="datasetId" width="140" sortable align="center">
                 <template #header>Dataset ID</template>
                 <template #default="{ row }">
                   <a 
@@ -178,15 +169,24 @@
                 </template>
               </vxe-column>
               
-              <vxe-column field="datasetId" title="Visualize" min-width="100" align="center">
-                <template #default="{ row }">
-                  <v-btn
-                    color="primary"
-                    variant="compact"
-                    icon="mdi-eye"
-                    @click="VisualizeClicker(row.datasetId)"
-                  ></v-btn>
-                </template>
+              <vxe-column field="geneName" width="130" sortable align="center">
+
+                  <template #header>
+                    Gene name
+                  </template>
+                  
+                  <template #default="{ row }">
+                    <a 
+                      v-if="row.geneName" 
+                      :href="`/clinmave/browse/gene/${encodeURIComponent(row.geneName)}`" 
+                      target="_blank"
+                      style="text-decoration: none;font-style: italic"
+                    >
+                      {{ row.geneName }}
+                    </a>
+                    <span v-else>-</span>
+                  </template>
+
               </vxe-column>
 
               <vxe-column field="pmid" title="PMID" min-width="153" align="center">
@@ -214,7 +214,7 @@
                     </template>
                 </vxe-column>
               
-              <vxe-column field="functionalAssay" title="Function Assay" min-width="160" align="center"></vxe-column>
+              <vxe-column field="functionalAssay" title="Function Assay" min-width="240" align="center"></vxe-column>
 
               <vxe-column field="phenotype" title="Phenotype" min-width="400" align="center"></vxe-column>
 
@@ -232,11 +232,11 @@
           </v-sheet>
           <v-divider></v-divider>
 
-          <v-sheet style="min-height: 300px; position: relative; overflow: visi;" v-if="showVisualize">
+          <v-sheet style="min-height: 300px; position: relative; overflow: visible;" v-if="showVisualize">
             <v-row>
-              <v-col cols="12" md="4" sm="12">
+              <v-col cols="12" md="4" sm="12" style="position: relative;">
                 <template v-if="clinVarBinLoading">
-                  <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
                     <v-progress-circular
                       indeterminate
                       color="primary"
@@ -260,9 +260,9 @@
                 </template>
               </v-col>
 
-              <v-col cols="12" md="4" sm="12">
+              <v-col cols="12" md="4" sm="12" style="position: relative;">
                 <template v-if="scatterLoading">
-                  <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
                     <v-progress-circular
                       indeterminate
                       color="primary"
@@ -287,9 +287,9 @@
                 </template>
               </v-col>
 
-              <v-col cols="12" md="4" sm="12">
-                <template v-if="clinVarBinLoading">
-                  <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+              <v-col cols="12" md="4" sm="12" style="position: relative;">
+                <template v-if="consequenceDensityLoading">
+                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
                     <v-progress-circular
                       indeterminate
                       color="primary"
@@ -318,6 +318,24 @@
 
         </v-col>
       </v-row>
+
+      <!-- Warning Dialog -->
+      <v-dialog v-model="showWarningDialog" max-width="500">
+        <v-card>
+          <v-card-title class="text-h6">
+            Filter warning
+          </v-card-title>
+          <v-card-text>
+            Multiple entries found. Please refine your filter selections to return exact entry.
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" text @click="showWarningDialog = false">
+              OK
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-container>
   </v-main>
 </template>
@@ -329,8 +347,6 @@ import { debounce } from 'lodash'
 
 import VxeUI from 'vxe-pc-ui';
 import 'vxe-pc-ui/lib/style.css';
-
-import {VXETable} from 'vxe-table'
 import 'vxe-table/lib/style.css'
 
 import Scatter2d from '@/components/Visualization/Scatter2d.vue'
@@ -350,10 +366,10 @@ const breadcrumbs = [
   },
 ]
 
-// Filters 保持不变
+// Filters
 const filters = ref({
-  geneName: 'BRAF',
-  mutagenesisStrategy: null,
+  geneName: 'BRCA1',
+  mutagenesisStrategy: 'Mutagenic PCR',
   experimentModel: null,
   phenotype: null,
 })
@@ -374,13 +390,13 @@ const phenotypeOptions = ref([])
 const searchPhenotype = ref(null)
 const loadingPhenotype = ref(false)
 
-// 新增控制右侧结果显示的变量
-const showResults = ref(false);
-const showVisualize = ref(false);
-const highlightedRowId = ref(null)
+// Warning dialog control
+const showWarningDialog = ref(false)
 
-const oncoprintMap = ref({})
-const oncoprintLoading = ref(false)
+// Control variables for results and visualization
+const showResults = ref(false)
+const showVisualize = ref(false)
+const highlightedRowId = ref(null)
 
 const scatterArray = ref([])
 const scatterLoading = ref(false)
@@ -389,7 +405,6 @@ const clinVarBinLoading = ref(false)
 const ClinVarBinArray = ref([])
 
 const consequenceDensityLoading = ref(false)
-const consequenceDensityArray = ref([])
 const consequenceArray = ref([])
 
 const toolbarRef = ref()
@@ -404,12 +419,13 @@ const sortParams = ref({
   order: ''
 })
 
-const datasetId = ref('dataset0146');
+const datasetId = computed(() => tableData.value[0]?.datasetId || '')
 
-const debouncedFetchGeneName = debounce(fetchGeneNameOptions, 300)
-const debouncedFetchMutagenesisStrategy = debounce(fetchMutagenesisStrategyOptions, 300)
-const debouncedFetchExperimentModel = debounce(fetchExperimentModelOptions, 300)
-const debouncedFetchPhenotype = debounce(fetchPhenotypeOptions, 300)
+const debouncedFetchGeneName = debounce(() => fetchOptions('geneName', geneNameOptions, loadingGeneName), 300)
+const debouncedFetchMutagenesisStrategy = debounce(() => fetchOptions('mutagenesisStrategy', mutagenesisStrategyOptions, loadingMutagenesisStrategy), 300)
+const debouncedFetchExperimentModel = debounce(() => fetchOptions('experimentModel', experimentModelOptions, loadingExperimentModel), 300)
+const debouncedFetchPhenotype = debounce(() => fetchOptions('phenotype', phenotypeOptions, loadingPhenotype), 300)
+
 const debouncedFetchClinVarBinData = debounce(fetchClinVarBinData, 300)
 const debouncedFetchScatterData = debounce(fetchScatterData, 300)
 const debouncedFetchConsequenceDensityData = debounce(fetchConsequenceDensityData, 300)
@@ -419,139 +435,86 @@ const hasClinVarBinData = computed(() => {
           ClinVarBinArray.value.length > 0 &&
           ClinVarBinArray.value[0].clvGroupCounts &&
           typeof ClinVarBinArray.value[0].clvGroupCounts === 'object' &&
-          Object.keys(ClinVarBinArray.value[0].clvGroupCounts).length > 0;
-});
+          Object.keys(ClinVarBinArray.value[0].clvGroupCounts).length > 0
+})
 
 const hasScatterData = computed(() => {
   return scatterArray.value &&
          Array.isArray(scatterArray.value) &&
          scatterArray.value.length > 0 &&
          scatterArray.value[0].af !== undefined &&
-         scatterArray.value[0].score !== undefined;
+         scatterArray.value[0].score !== undefined
 })
 
 const hasConsequenceDensityData = computed(() => {
   return consequenceArray.value &&
          Array.isArray(consequenceArray.value) &&
-         consequenceArray.value.length > 0;
+         consequenceArray.value.length > 0
 })
 
-async function fetchGeneNameOptions(query = '') {
+// Generic fetch function for autocomplete options
+async function fetchOptions(term, optionsRef, loadingRef, search = '') {
   try {
-    loadingGeneName.value = true;
-    const response = await axios.get('/clinmave/api/select/dataset', {
-      params: { geneName: !query ? '' : query },
-    });
-    geneNameOptions.value = response.data.map(item => ({
-      text: `${item.geneName} (#Datasets: ${item.count})`,
-      value: item.geneName
-    }));
+    loadingRef.value = true
+    const params = { ...filters.value, term }
+    if (search) params.search = search
+    const response = await axios.get('/clinmave/api/select/dataset', { params })
+    optionsRef.value = response.data.result.map(item => ({
+      text: `${item[term]} (#Entries: ${item.count})`,
+      value: item[term]
+    }))
   } catch (error) {
-    VxeUI.message.error('Failed to load dbSNP IDs');
-    geneNameOptions.value = [];
+    VxeUI.message.error(`Failed to load ${term} options`)
+    optionsRef.value = []
   } finally {
-    loadingGeneName.value = false;
-  }
-}
-
-async function fetchMutagenesisStrategyOptions(query = '') {
-  try {
-    loadingMutagenesisStrategy.value = true;
-    const response = await axios.get('/clinmave/api/select/dataset', {
-      params: { mutagenesisStrategy: !query ? '' : query },
-    });
-    mutagenesisStrategyOptions.value = response.data.map(item => ({
-      text: `${item.mutagenesisStrategy} (#Datasets: ${item.count})`,
-      value: item.mutagenesisStrategy
-    }));
-  } catch (error) {
-    VxeUI.message.error('Failed to load dbSNP IDs');
-    mutagenesisStrategyOptions.value = [];
-  } finally {
-    loadingMutagenesisStrategy.value = false;
-  }
-}
-
-async function fetchExperimentModelOptions(query = '') {
-  try {
-    loadingExperimentModel.value = true;
-    const response = await axios.get('/clinmave/api/select/dataset', {
-      params: { experimentModel: !query ? '' : query },
-    });
-    experimentModelOptions.value = response.data.map(item => ({
-      text: `${item.experimentModel} (#Datasets: ${item.count})`,
-      value: item.experimentModel
-    }));
-  } catch (error) {
-    VxeUI.message.error('Failed to load dbSNP IDs');
-    experimentModelOptions.value = [];
-  } finally {
-    loadingExperimentModel.value = false;
-  }
-}
-
-async function fetchPhenotypeOptions(query = '') {
-  try {
-    loadingPhenotype.value = true;
-    const response = await axios.get('/clinmave/api/select/dataset', {
-      params: { phenotype: !query ? '' : query },
-    });
-    phenotypeOptions.value = response.data.map(item => ({
-      text: `${item.phenotype} (#Datasets: ${item.count})`,
-      value: item.phenotype
-    }));
-  } catch (error) {
-    VxeUI.message.error('Failed to load dbSNP IDs');
-    phenotypeOptions.value = [];
-  } finally {
-    loadingPhenotype.value = false;
+    loadingRef.value = false
   }
 }
 
 async function fetchScatterData(query = '') {
-  scatterLoading.value = true;
+  scatterLoading.value = true
   try {
     const response = await axios.get('/clinmave/api/visualize/bydataset/scatter', {
       params: { datasetId: !query ? '' : query },
-    });
-    scatterArray.value = response.data || [];
-    console.log('[Scatter Array]', scatterArray);
+    })
+    scatterArray.value = response.data || []
+    console.log('[Scatter Array]', scatterArray)
   } catch (error) {
-    VxeUI.message.error('Failed to load oncoprint data');
+    VxeUI.message.error('Failed to load scatter data')
     scatterArray.value = []
   } finally {
-    scatterLoading.value = false;
+    scatterLoading.value = false
   }
 }
 
 async function fetchClinVarBinData(query = '') {
-  clinVarBinLoading.value = true;
+  clinVarBinLoading.value = true
   try {
     const response = await axios.get('/clinmave/api/visualize/bydataset/clinvarbin', {
       params: { datasetId: !query ? '' : query },
-    });
-    ClinVarBinArray.value = response.data || [];
+    })
+    ClinVarBinArray.value = response.data || []
   } catch (error) {
-    VxeUI.message.error('Failed to load oncoprint data');
+    VxeUI.message.error('Failed to load ClinVar bin data')
     ClinVarBinArray.value = []
   } finally {
-    clinVarBinLoading.value = false;
+    clinVarBinLoading.value = false
   }
 }
 
 async function fetchConsequenceDensityData(query = '') {
-  consequenceDensityLoading.value = true;
+  consequenceDensityLoading.value = true
   try {
     const response = await axios.get('/clinmave/api/visualize/bydataset/consequencedensity', {
       params: { datasetId: !query ? '' : query },
-    });
-    consequenceArray.value = response.data || [];
-    console.log('[Scatter Array]', consequenceArray);
+    })
+    consequenceArray.value = response.data || []
+    console.log('[Consequence Array]', consequenceArray)
   } catch (error) {
-    VxeUI.message.error('Failed to load oncoprint data');
+    VxeUI.message.error('Failed to load consequence density data')
     consequenceArray.value = []
   } finally {
-    consequenceDensityLoading.value = false;
+    consequenceDensityLoading.value = false
   }
 }
 
@@ -563,19 +526,18 @@ const getRowClassName = ({ row }) => {
 }
 
 const loadData = async () => {
-  loading.value = true;
+  loading.value = true
   try {
-    let sort;
-
+    let sort
     if (Array.isArray(sortParams.value)) {
       sort = sortParams.value
         .filter(param => param.field && param.order)
         .map(param => `${param.field},${param.order}`)
-        .join(',');
+        .join(',')
     } else {
       sort = sortParams.value.field && sortParams.value.order
         ? `${sortParams.value.field},${sortParams.value.order}`
-        : 'id,asc';
+        : 'id,asc'
     }
 
     const params = {
@@ -583,60 +545,69 @@ const loadData = async () => {
       size: pageSize.value,
       sort: sort || undefined,
       ...filters.value
-    };
+    }
 
     Object.keys(params).forEach(key => {
       if (params[key] === undefined || params[key] === '') {
-        delete params[key];
+        delete params[key]
       }
-    });
+    })
 
-    const response = await axios.get('/clinmave/api/fetch/table/dataset', { params });
-    tableData.value = response.data.data || [];
-    totalRecords.value = response.data.totalRows || 0;
+    const response = await axios.get('/clinmave/api/fetch/table/dataset', { params })
+    tableData.value = response.data.data || []
+    totalRecords.value = response.data.totalRows || 0
   } catch (error) {
-    console.error('[API Error]', error);
-    tableData.value = [];
-    totalRecords.value = 0;
+    console.error('[API Error]', error)
+    tableData.value = []
+    totalRecords.value = 0
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
-
-const applyFilters = () => {
-  currentPage.value = 1;
-  loadData();
-  showResults.value = true;
-  showVisualize.value = false;
 }
 
-const VisualizeClicker = (datasetId) => {
-  highlightedRowId.value = datasetId  // 设置高亮
-  console.log('VisualizeClicker', datasetId)
-  showVisualize.value = true;
-  debouncedFetchClinVarBinData(datasetId);
-  debouncedFetchScatterData(datasetId);
-  debouncedFetchConsequenceDensityData(datasetId);
+const applyFilters = async () => {
+  // Check maximum entries count from all autocomplete options
+  const allOptions = [
+    ...geneNameOptions.value,
+    ...mutagenesisStrategyOptions.value,
+    ...experimentModelOptions.value,
+    ...phenotypeOptions.value
+  ]
+  
+  const maxEntries = allOptions.reduce((max, option) => {
+    const match = option.text.match(/#Entries: (\d+)/)
+    const count = match ? parseInt(match[1], 10) : 0
+    return Math.max(max, count)
+  }, 0)
+
+  if (maxEntries > 1) {
+    showWarningDialog.value = true
+    return
+  }
+
+  currentPage.value = 1
+  await loadData()
+  
+  showResults.value = true
+  showVisualize.value = true
 }
 
 const resetFilters = () => {
-  showVisualize.value = false;
-  showResults.value = false; // 隐藏右侧表格和oncoprint
-  searchDatasetId.value = null;
-  searchGeneName.value = null;
-  searchMutagenesisStrategy.value = null;
-  searchExperimentModel.value = null;
-  searchPhenotype.value = null;
+  showVisualize.value = false
+  showResults.value = false
+  searchGeneName.value = null
+  searchMutagenesisStrategy.value = null
+  searchExperimentModel.value = null
+  searchPhenotype.value = null
   
-  const filters = ref({
+  filters.value = {
     geneName: null,
     mutagenesisStrategy: null,
     experimentModel: null,
     phenotype: null,
-  })
+  }
   
-  currentPage.value = 1;
-
+  currentPage.value = 1
 }
 
 const handlePageChange = (event) => {
@@ -649,23 +620,23 @@ const handleSortChange = ({ field, order, sortList }) => {
   if (sortList && sortList.length > 0) {
     const validSorts = sortList
       .filter(sort => sort.field && sort.order && sort.field !== 'null')
-      .map(sort => ({ field: sort.field, order: sort.order }));
+      .map(sort => ({ field: sort.field, order: sort.order }))
     
     if (validSorts.length > 0) {
-      sortParams.value = validSorts;
+      sortParams.value = validSorts
     } else {
-      sortParams.value = { field: 'id', order: 'asc' };
+      sortParams.value = { field: 'id', order: 'asc' }
     }
   } else {
     sortParams.value = {
       field: field && field !== 'null' ? field : 'id',
       order: order || 'asc'
-    };
+    }
   }
   
-  currentPage.value = 1;
-  loadData();
-};
+  currentPage.value = 1
+  loadData()
+}
 
 const getConsequenceClassColor = (consequenceClass) => {
   const colorMap = {
@@ -674,38 +645,56 @@ const getConsequenceClassColor = (consequenceClass) => {
     'Gain-of-function': '#4CAF50', 
     'Dominant negative': '#FF9800',
     'Unknown': '#9C27B0',
-  };
+  }
   
-  const normalized = consequenceClass.toLowerCase();
-
+  const normalized = consequenceClass.toLowerCase()
   for (const [key, value] of Object.entries(colorMap)) {
     if (normalized.includes(key.toLowerCase())) {
-      return value;
+      return value
     }
   }
   
-  return '#2196F3'; // Default blue
-};
+  return '#2196F3' // Default blue
+}
+
+watch(datasetId, (newDatasetId) => {
+  if (newDatasetId) {
+    debouncedFetchClinVarBinData(newDatasetId)
+    debouncedFetchScatterData(newDatasetId)
+    debouncedFetchConsequenceDensityData(newDatasetId)
+  }
+})
 
 watch([currentPage, pageSize], () => {
   loadData()
 })
 
-onMounted(() => {
-  
-  debouncedFetchGeneName();
-  debouncedFetchMutagenesisStrategy();
-  debouncedFetchExperimentModel();
-  debouncedFetchPhenotype();
-  showResults.value = true;
-  showVisualize.value = true;
-  loadData()
-  console.log('onMounted', datasetId.value)
-  highlightedRowId.value = datasetId.value
-  debouncedFetchClinVarBinData(datasetId.value);
-  debouncedFetchScatterData(datasetId.value);
-  debouncedFetchConsequenceDensityData(datasetId.value);
-  // 这里不自动加载表格，表格和oncoprint初始隐藏
+watch(
+  () => ({
+    ...filters.value,
+    searchGeneName: searchGeneName.value,
+    searchMutagenesisStrategy: searchMutagenesisStrategy.value,
+    searchPhenotype: searchPhenotype.value,
+    searchExperimentModel: searchExperimentModel.value,
+  }),
+  () => {
+    debouncedFetchGeneName()
+    debouncedFetchMutagenesisStrategy()
+    debouncedFetchExperimentModel()
+    debouncedFetchPhenotype()
+  },
+  { deep: true }
+)
+
+onMounted(async () => {
+  debouncedFetchGeneName()
+  debouncedFetchMutagenesisStrategy()
+  debouncedFetchExperimentModel()
+  debouncedFetchPhenotype()
+  showResults.value = true
+  showVisualize.value = true
+  await loadData()
+
   const $table = tableRef.value
   const $toolbar = toolbarRef.value
   if ($table && $toolbar) {
@@ -716,16 +705,15 @@ onMounted(() => {
 
 <style scoped>
 .banner-tips {
-  align-items: flex-start; /* 保持内容顶部对齐 */
+  align-items: flex-start
 }
 .dot-icon {
-  vertical-align: middle; /* 图标垂直居中 */
+  vertical-align: middle
 }
 </style>
 
 <style>
-/* 全局样式，覆盖 vxe-table 的行 class */
 .highlighted-row {
-  background-color: #E3F2FD !important;
+  background-color: #E3F2FD !important
 }
 </style>

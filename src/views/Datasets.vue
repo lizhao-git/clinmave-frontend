@@ -173,7 +173,7 @@
                 :pager-config="{ currentPage, pageSize, total: totalRecords }"
                 @sort-change="handleSortChange"
               >
-                <vxe-column field="datasetId" width="140" sortable>
+                <vxe-column field="datasetId" width="140" sortable align="center">
 
                   <template #header>
                     Dataset ID
@@ -274,7 +274,6 @@ import { debounce } from 'lodash'
 import VxeUI from 'vxe-pc-ui';
 import 'vxe-pc-ui/lib/style.css';
 
-import {VXETable} from 'vxe-table'
 import 'vxe-table/lib/style.css'
 
 const breadcrumbs = [
@@ -338,99 +337,28 @@ const sortParams = ref({
 })
 
 // Computed properties for table columns
-const debouncedFetchDatasetId = debounce(fetchDatasetIdOptions, 300)
-const debouncedFetchGeneName = debounce(fetchGeneNameOptions, 300)
-const debouncedFetchEnsemblId = debounce(fetchEnsemblIdOptions, 300)
-const debouncedFetchFunctionalAssay = debounce(fetchFunctionalAssayOptions, 300)
-const debouncedFetchMaveTechnique = debounce(fetchMaveTechniqueOptions, 300)
+const debouncedFetchDatasetId = debounce(() => fetchOptions('datasetId', datasetIdOptions, loadingDatasetId), 300)
+const debouncedFetchGeneName = debounce(() => fetchOptions('geneName', geneNameOptions, loadingGeneName), 300)
+const debouncedFetchEnsemblId = debounce(() => fetchOptions('ensemblId', ensemblIdOptions, loadingEnsemblId), 300)
+const debouncedFetchFunctionalAssay = debounce(() => fetchOptions('functionalAssay', functionalAssayOptions, loadingFunctionalAssay), 300)
+const debouncedFetchMaveTechnique = debounce(() => fetchOptions('maveTechnique', maveTechniqueOptions, loadingMaveTechnique), 300)
 
-async function fetchDatasetIdOptions(query = '') {
+// Generic fetch function for autocomplete options
+async function fetchOptions(term, optionsRef, loadingRef, search = '') {
   try {
-    loadingDatasetId.value = true;
-    const response = await axios.get('/clinmave/api/select/dataset', {
-      params: { datasetId: !query ? '' : query },
-    });
-    datasetIdOptions.value = response.data.map(item => ({
-      text: `${item.datasetId}`,
-      value: item.datasetId
-    }));
+    loadingRef.value = true
+    const params = { ...filters.value, term }
+    if (search) params.search = search
+    const response = await axios.get('/clinmave/api/select/dataset', { params })
+    optionsRef.value = response.data.result.map(item => ({
+      text: `${item[term]} (#Entries: ${item.count})`,
+      value: item[term]
+    }))
   } catch (error) {
-    VxeUI.message.error('Failed to load dataset IDs');
-    datasetIdOptions.value = [];
+    VxeUI.message.error(`Failed to load ${term} options`)
+    optionsRef.value = []
   } finally {
-    loadingDatasetId.value = false;
-  }
-}
-
-async function fetchGeneNameOptions(query = '') {
-  try {
-    loadingGeneName.value = true;
-    const response = await axios.get('/clinmave/api/select/dataset', {
-      params: { geneName: !query ? '' : query },
-    });
-    geneNameOptions.value = response.data.map(item => ({
-      text: `${item.geneName} (#Datasets: ${item.count})`,
-      value: item.geneName
-    }));
-  } catch (error) {
-    VxeUI.message.error('Failed to load dbSNP IDs');
-    geneNameOptions.value = [];
-  } finally {
-    loadingGeneName.value = false;
-  }
-}
-
-async function fetchEnsemblIdOptions(query = '') {
-  try {
-    loadingEnsemblId.value = true;
-    const response = await axios.get('/clinmave/api/select/dataset', {
-      params: { ensemblId: !query ? '' : query },
-    });
-    ensemblIdOptions.value = response.data.map(item => ({
-      text: `${item.ensemblId}`,
-      value: item.ensemblId
-    }));
-  } catch (error) {
-    VxeUI.message.error('Failed to load Ensembl IDs');
-    ensemblIdOptions.value = [];
-  } finally {
-    loadingEnsemblId.value = false;
-  }
-}
-
-async function fetchFunctionalAssayOptions(query = '') {
-  try {
-    loadingFunctionalAssay.value = true;
-    const response = await axios.get('/clinmave/api/select/dataset', {
-      params: { functionalAssay: !query ? '' : query },
-    });
-    functionalAssayOptions.value = response.data.map(item => ({
-      text: `${item.functionalAssay} (#Datasets: ${item.count})`,
-      value: item.functionalAssay
-    }));
-  } catch (error) {
-    VxeUI.message.error('Failed to load function assay IDs');
-    functionalAssayOptions.value = [];
-  } finally {
-    loadingFunctionalAssay.value = false;
-  }
-}
-
-async function fetchMaveTechniqueOptions(query = '') {
-  try {
-    loadingMaveTechnique.value = true;
-    const response = await axios.get('/clinmave/api/select/dataset', {
-      params: { maveTechnique: !query ? '' : query },
-    });
-    maveTechniqueOptions.value = response.data.map(item => ({
-      text: `${item.maveTechnique} (#Datasets: ${item.count})`,
-      value: item.maveTechnique
-    }));
-  } catch (error) {
-    VxeUI.message.error('Failed to load dbSNP IDs');
-    maveTechniqueOptions.value = [];
-  } finally {
-    loadingMaveTechnique.value = false;
+    loadingRef.value = false
   }
 }
 
@@ -516,7 +444,6 @@ const resetFilters = () => {
 }
 
 const handlePageChange = (event) => {
-  console.log('[Page Change]', event) // Debug event data
   currentPage.value = event.currentPage
   pageSize.value = event.pageSize
   loadData()
@@ -568,9 +495,27 @@ const getConsequenceClassColor = (consequenceClass) => {
 
 // Watch pagination parameters
 watch([currentPage, pageSize], () => {
-  console.log('[Watch] Page or size changed:', currentPage.value, pageSize.value)
   loadData()
 })
+
+watch(
+  () => ({
+    ...filters.value,
+    searchGeneName: searchGeneName.value,
+    searchEnsemblId: searchEnsemblId.value,
+    searchDatasetId: searchDatasetId.value,
+    searchFunctionalAssay: searchFunctionalAssay.value,
+    searchMaveTechnique: searchMaveTechnique.value,
+  }),
+  () => {
+    debouncedFetchGeneName()
+    debouncedFetchEnsemblId()
+    debouncedFetchDatasetId()
+    debouncedFetchFunctionalAssay()
+    debouncedFetchMaveTechnique()
+  },
+  { deep: true }
+)
 
 // Initialize
 onMounted(() => {

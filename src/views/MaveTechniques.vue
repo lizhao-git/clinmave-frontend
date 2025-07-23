@@ -49,42 +49,14 @@
                   
                   <v-col cols="12">
                     <v-autocomplete
-                      v-model="filters.geneName"
-                      v-model:search="searchGeneName"
-                      :items="geneNameOptions"
-                      label="Gene Name"
+                      v-model="filters.maveTechnique"
+                      v-model:search="searchMaveTechnique"
+                      :items="maveTechniqueOptions"
+                      label="MAVE technique"
                       variant="outlined"
                       density="compact"
                       clearable
-                      :loading="loadingGeneName"
-                    >
-                    </v-autocomplete>
-                  </v-col>
-
-                  <v-col cols="12">
-                    <v-autocomplete
-                      v-model="filters.ensemblId"
-                      v-model:search="searchEnsemblId"
-                      :items="ensemblIdOptions"
-                      label="Ensembl ID"
-                      variant="outlined"
-                      density="compact"
-                      clearable
-                      :loading="loadingTranscriptId"
-                    >
-                    </v-autocomplete>
-                  </v-col>
-
-                  <v-col cols="12">
-                    <v-autocomplete
-                      v-model="filters.datasetId"
-                      v-model:search="searchDatasetId"
-                      :items="datasetIdOptions"
-                      label="Dataset ID"
-                      variant="outlined"
-                      density="compact"
-                      clearable
-                      :loading="loadingDatasetId"
+                      :loading="loadingMaveTechnique"
                     >
                     </v-autocomplete>
                   </v-col>
@@ -128,6 +100,7 @@
                 :layouts="['Home', 'PrevPage', 'JumpNumber', 'NextPage', 'End', 'Sizes', 'Total']"
                 @page-change="handlePageChange"
               ></vxe-pager>
+
               <vxe-table
                 ref="tableRef"
                 :export-config="{}"
@@ -139,8 +112,6 @@
                 :pager-config="{ currentPage, pageSize, total: totalRecords }"
                 @sort-change="handleSortChange"
               >
-
-
                 <vxe-column field="maveTechnique" title="MAVE technique" min-width="200" align="center">
                   <template #default="{ row }">
                       <a 
@@ -154,7 +125,6 @@
                       <span v-else>-</span>
                     </template>
                 </vxe-column>
-
 
                 <!-- <vxe-column field="geneName" width="130" sortable>
 
@@ -243,7 +213,6 @@ const breadcrumbs = [
 // Reactive state for filters
 const filters = ref({
   geneName: null,
-  ensemblId: null,
   datasetId: null,
 })
 
