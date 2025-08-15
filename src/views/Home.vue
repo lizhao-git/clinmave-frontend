@@ -245,8 +245,8 @@ const HomeStatMap = ref({})
 
 // On item select, navigate to appropriate route
 function onSelectItem(item) {
-  if (!item || !item.category || !item.text) return
-  const encoded = encodeURIComponent(item.text)
+  if (!item || !item.category || !item.value) return
+  const encoded = encodeURIComponent(item.value)
   if (item.category === 'Gene Name') {
     router.push(`/browse/gene/${encoded}`)
   } else if (item.category === 'Dataset ID') {
@@ -255,8 +255,8 @@ function onSelectItem(item) {
     router.push(`/browse/variant/${encoded}`)
   } else if (item.category === 'Study') {
     router.push(`/browse/study/${encoded}`)
-  } else if (item.category === 'Ensembl ID') {
-    router.push(`/browse/ensembl/${encoded}`)
+  } else if (item.category === 'Gene ID') {
+    router.push(`/browse/gene/${encoded}`)
   }
 }
 
@@ -272,7 +272,7 @@ async function fetchDatasetIdOptions(query = '') {
     })
     datasetIdOptions.value = response.data.map(item => ({
       text: item.text,
-      value: item.text,
+      value: item.target,
       category: item.category,
     }))
   } catch (error) {

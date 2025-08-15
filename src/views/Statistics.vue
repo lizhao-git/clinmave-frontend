@@ -1,12 +1,10 @@
 <template>
   <v-main>
     <v-container fluid class="mt-4">
-
+      <!-- Breadcrumbs -->
       <v-row>
         <v-col cols="12">
-          <v-card 
-            flat
-          >
+          <v-card flat>
             <v-breadcrumbs :items="breadcrumbs">
               <template v-slot:item="{ item }">
                 <v-breadcrumbs-item
@@ -18,234 +16,285 @@
                 </v-breadcrumbs-item>
               </template>
             </v-breadcrumbs>
-        </v-card>
-        </v-col>
-      </v-row>
-      
-      <v-row class="mt-2" align="stretch">
-        <v-col cols="12" md="12">
-          <v-card 
-            flat
-            height="100%"
-          >
-
-            <v-card-text>
-              <v-row>
-                
-                <v-col cols="12" md="6" sm="12">
-                  <AcmgGeneDatasets />
-                </v-col>
-                <v-col cols="12" md="6" sm="12">
-                  <AcmgRecommendedGeneVariants />
-                </v-col>
-
-              </v-row>
-              <v-row>
-                <v-col col="12" md="6" sm="12">
-                  <NoneAcmgAndVusMorethen1000Datasets />
-                </v-col>
-
-                <v-col col="12" md="6" sm="12">
-                  <NoneAcmgAndVusMorethen1000Variants />
-                </v-col>
-                
-              </v-row>
-
-              <v-row class="my-10">
-
-                <v-col col="12" md="4" sm="12">
-                  <MolecularConsequencePercentageStatistics />
-                </v-col>
-                
-                <v-col col="12" md="4" sm="12">
-                  <MaveTechniquePS />
-                </v-col>
-                <v-col col="12" md="4" sm="12">
-                  <MutagenesisStrategyPS />
-                </v-col>
-                
-              </v-row>
-
-              <v-row class="my-6"></v-row>
-
-              <v-row class="my-10">
-                <v-col col="12" md="4" sm="12">
-                  <ExperimentModelDS />
-                </v-col>
-
-                <v-col col="12" md="4" sm="12">
-                  <FunctionalAssayPS />
-                </v-col>
-
-              </v-row>
-            </v-card-text>
           </v-card>
         </v-col>
       </v-row>
 
+      <v-row>
+        <!-- Sidebar Column -->
+        <v-col cols="12" md="2" class="sidebar-col">
+          <v-list nav>
+            <template v-for="(item, index) in sidebarItems" :key="index">
+              <v-list-item
+                :title="item.title"
+                :value="item.value"
+                :active="activeSection === item.value"
+                @click="scrollToSection(item.value)"
+              ></v-list-item>
+              <v-divider v-if="index < sidebarItems.length - 1" class="my-1"></v-divider>
+            </template>
+          </v-list>
+        </v-col>
+
+        <!-- Main Content Column -->
+        <v-col cols="12" md="10">
+          <v-alert
+            v-for="(section, index) in sections"
+            :key="index"
+            border="end"
+            variant="outlined"
+            :border-color="section.borderColor"
+            class="mb-6"
+            :id="section.id"
+          >
+            <h1 class="mt-4 mb-2">{{ section.title }}</h1>
+            <v-row class="chart-row">
+              <v-col
+                v-for="(chart, subIndex) in section.charts"
+                :key="subIndex"
+                :cols="chart.cols"
+                :md="chart.md"
+                :sm="chart.sm || 12"
+                :id="chart.id"
+                class="chart-container"
+              >
+                <h3 class="text-h6 mb-2">{{ chart.title }}</h3>
+                <v-progress-circular
+                  v-if="chart.loading"
+                  indeterminate
+                  color="primary"
+                  class="ma-4"
+                ></v-progress-circular>
+                <component
+                  v-else
+                  :is="chart.component"
+                  v-bind="chart.props"
+                  class="chart-content"
+                ></component>
+              </v-col>
+            </v-row>
+          </v-alert>
+        </v-col>
+      </v-row>
     </v-container>
   </v-main>
 </template>
 
-<style scoped>
-  /* 自定义表格样式：无边框，仅行间分隔线 */
-  .v-table.no-border {
-    border: none !important;
-    background: transparent;
-  }
-  .v-table.no-border tbody tr {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-  }
-  .v-table.no-border tbody tr:last-child {
-    border-bottom: none;
-  }
-  .table-row {
-    transition: background-color 0.2s ease;
-  }
-  .table-row:hover {
-    background-color: rgba(0, 0, 0, 0.04);
-  }
-
-  /* 字体和颜色 */
-  .text-h6 {
-    color: #1a3c5e;
-  }
-  .text-subtitle-1 {
-    color: #1a3c5e;
-  }
-  .text-body-1 {
-    color: #2e4b6b;
-  }
-
-  /* 表格单元格内边距 */
-  td {
-    padding: 16px 20px;
-  }
-
-  /* 扩展面板标题和背景 */
-
-  .v-expansion-panel-title {
-    color: #1a3c5e;
-    border-radius: 8px;
-    transition: background-color 0.2s ease;
-  }
-  .v-expansion-panel-title:hover {
-    background-color: rgba(0, 0, 0, 0.04);
-  }
-</style>
-
 <script setup>
-  import { ref, onMounted, watch, computed} from 'vue';
-  import { VxeTable, VxeColumn } from 'vxe-table';
-  import { useRoute } from 'vue-router';
-  import axios from 'axios';
-  import * as d3 from 'd3'
+import { ref, onMounted, computed } from 'vue'
+import axios from 'axios'
+import Sanky from '@/components/stat/Sanky.vue'
+import Sunburst from '@/components/stat/Sunburst.vue'
+import ScatterAccumulative from '@/components/stat/ScatterAccumulative.vue'
+import ConsequenceProporiton from '@/components/Visualization/ConsequenceProportion.vue'
+import GeneAccumulative from '@/components/stat/GeneAccumulative.vue'
+import IntensityProportion from '@/components/stat/IntensityProportion.vue'
+import Venn from '@/components/stat/Venn.vue'
+import DoubleAxisBar from '@/components/stat/DoubleAxisBar.vue'
 
-  import { debounce } from 'lodash'
+// Breadcrumbs
+const breadcrumbs = ref([
+  { title: 'Home', href: '/' },
+  { title: 'Statistics' }
+])
 
-  import VxeUI from 'vxe-pc-ui';
-  import 'vxe-pc-ui/lib/style.css';
-  import 'vxe-table/lib/style.css';
-  import MutagenesisProportion from '@/components/stat/MutagenesisProportion.vue';
-  import AcmgGeneDatasets from '@/components/stat/AcmgGeneDatasets.vue';
-  import AcmgRecommendedGeneVariants from '@/components/stat/AcmgRecommendedGeneVariants.vue'
-  import NoneAcmgAndVusMorethen1000Datasets from '@/components/stat/NoneAcmgAndVusMorethen1000Datasets.vue'
-  import NoneAcmgAndVusMorethen1000Variants from '@/components/stat/NoneAcmgAndVusMorethen1000Variants.vue'
-  import MolecularConsequencePercentageStatistics from '@/components/stat/MolecularConsequencePercentageStatistics.vue'
-  import MaveTechniquePS from '@/components/stat/MaveTechniquePS.vue'
-  import MutagenesisStrategyPS from '@/components/stat/MutagenesisStrategyPS.vue'
-  import FunctionalAssayPS from '@/components/stat/FunctionalAssayPS.vue'
-  import ExperimentModelDS from '@/components/stat/ExperimentModelDS.vue'
-  // Reactive state for variant details
-  const variantData = ref({
-    datasetId: null,
-    pmid: null,
-    mutagenesisStrategy: null,
-    functionAssay: null,
-    experimentModel: null,
-    phenotype: null,
-    varNum: null,
-    aaNum: null,
-    siteNum: null,
-    geneName: null,
-    clinvarNum: null,
-  });
-  
-  const breadcrumbs = ref([
-      {
-        title: 'Home',
-        href: '/',
-      },
-      {
-        title: 'Statistics',
-      },
-    ])
-  
-  const items = [
-      { label: 'Variant Name', value: 'HGNC' },
-      { label: 'Gene', value: 'Example Gene' },
-      { label: 'Type', value: 'Missense Mutation' },
+// Sidebar state
+const activeSection = ref('data-flow')
+const sidebarItems = ref([
+  { title: 'Overall summary', value: 'data-flow' },
+  { title: 'Variant Analysis', value: 'variant-analysis' },
+  { title: 'Gene and Intensity', value: 'gene-intensity' },
+  { title: 'Assay Comparison', value: 'assay-comparison' }
+])
+
+// Chart data and loading states
+const sankeyData = ref([])
+const sankeyLoading = ref(true)
+const sunburstLoading = ref(true)
+const datasetAccumulationData = ref([])
+const datasetAccumulationLoading = ref(true)
+const consequenceProportionData = ref({})
+const consequenceProportionLoading = ref(true)
+const geneAccumulativeData = ref([])
+const geneAccumulativeLoading = ref(true)
+const intensityProportionData = ref({})
+const intensityProportionLoading = ref(true)
+const vennData = ref({})
+const vennLoading = ref(true)
+const assayProportionData = ref({})
+const assayProportionLoading = ref(true)
+const geneIntensityDistData = ref({})
+const geneIntensityDistLoading = ref(true)
+
+// Sections for main content with explicit cols/md
+const sections = computed(() => [
+  {
+    id: 'data-flow',
+    title: 'Overall summary',
+    borderColor: 'error',
+    charts: [
+      { id: 'sankey', title: 'Sankey Diagram', component: Sanky, props: { rawData: sankeyData.value }, loading: sankeyLoading.value, cols: 6, md: 6 },
+      { id: 'sunburst', title: 'Sunburst Chart', component: Sunburst, props: {}, loading: sunburstLoading.value, cols: 6, md: 6 }
     ]
+  },
+  {
+    id: 'variant-analysis',
+    title: 'Variant Analysis',
+    borderColor: 'success',
+    charts: [
+      { id: 'consequence-proportion', title: 'Consequence Proportion', component: ConsequenceProporiton, props: { data: consequenceProportionData.value }, loading: consequenceProportionLoading.value, cols: 6, md: 6 },
+      { id: 'dataset-accumulation', title: 'Dataset Accumulation', component: ScatterAccumulative, props: { data: datasetAccumulationData.value }, loading: datasetAccumulationLoading.value, cols: 6, md: 6 }
+    ]
+  },
+  {
+    id: 'gene-intensity',
+    title: 'Gene and Intensity',
+    borderColor: 'primary',
+    charts: [
+      { id: 'gene-accumulation', title: 'Gene Accumulation', component: GeneAccumulative, props: { data: geneAccumulativeData.value }, loading: geneAccumulativeLoading.value, cols: 6, md: 6 },
+      { id: 'intensity-proportion', title: 'Intensity Proportion', component: IntensityProportion, props: { data: intensityProportionData.value }, loading: intensityProportionLoading.value, cols: 6, md: 6 },
+      { id: 'gene-intensity-dist', title: 'Gene Intensity Distribution', component: DoubleAxisBar, props: { data: geneIntensityDistData.value }, loading: geneIntensityDistLoading.value, cols: 12, md: 12 }
+    ]
+  },
+  {
+    id: 'assay-comparison',
+    title: 'Assay Comparison',
+    borderColor: 'warning',
+    charts: [
+      { id: 'venn', title: 'Venn Diagram', component: Venn, props: { data: vennData.value }, loading: vennLoading.value, cols: 6, md: 6 },
+      { id: 'assay-proportion', title: 'Assay Proportion', component: IntensityProportion, props: { data: assayProportionData.value, colors: { 'shared': '#fb9a99', 'single assay': '#a6cee3' } }, loading: assayProportionLoading.value, cols: 6, md: 6 }
+    ]
+  }
+])
 
-  // Get the route to extract the identifier
-  const route = useRoute();
-  
-  // Function to fetch variant data
-  const fetchVariantData = async () => {
-    try {
-      const datasetId = route.params.datasetId; // Get identifier from route
-      const response = await axios.get(`/clinmave/api/summary/dataset?datasetId=${encodeURIComponent(datasetId)}`);
-      console.log(response.data)
-      variantData.value = response.data; // Directly assign API response
+// Sidebar interaction
+function scrollToSection(value) {
+  activeSection.value = value
+  const element = document.getElementById(value)
+  if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 
-      // Update the last breadcrumb item with the identifier
-      breadcrumbs.value[3].title = variantData.value.datasetId;
+// Fetch data asynchronously
+onMounted(async () => {
+  try {
+    const [
+      sankeyRes,
+      datasetAccumulationRes,
+      consequenceProportionRes,
+      geneAccumulativeRes,
+      intensityProportionRes,
+      vennRes,
+      assayProportionRes,
+      geneIntensityDistRes
+    ] = await Promise.all([
+      axios.get('/clinmave/api/stat/sanky').finally(() => { sankeyLoading.value = false }),
+      axios.get('/clinmave/api/stat/dataset/accumulation').finally(() => { datasetAccumulationLoading.value = false }),
+      axios.get('/clinmave/api/stat/variant/consequence').finally(() => { consequenceProportionLoading.value = false }),
+      axios.get('/clinmave/api/stat/dataset/oddspath').finally(() => { geneAccumulativeLoading.value = false }),
+      axios.get('/clinmave/api/stat/dataset/intensity').finally(() => { intensityProportionLoading.value = false }),
+      axios.get('/clinmave/api/stat/mave/venn').finally(() => { vennLoading.value = false }),
+      axios.get('/clinmave/api/stat/assay/proportion').finally(() => { assayProportionLoading.value = false }),
+      axios.get('/clinmave/api/stat/gene/barplot').finally(() => { geneIntensityDistLoading.value = false })
+    ])
 
-      // Update items for the second expansion panel
-      items.value = [
-        { label: 'Variant Name', value: variantData.value.transcriptId || 'HGNC' },
-        { label: 'Gene', value: variantData.value.geneName || 'Example Gene' },
-        { label: 'Type', value: variantData.value.consequenceClass || 'Missense Mutation' },
-      ];
-    } catch (error) {
-      console.error('Error fetching variant data:', error);
-    }
-  };
-
-  const parsedData = computed(() => {
-    // Guard clause to handle null or non-string clinvarNum
-    if (!variantData.value.clinvarNum || typeof variantData.value.clinvarNum !== 'string') {
-      return [];
-    }
-
-    const items = variantData.value.clinvarNum
-      .split('|')
-      .filter(item => item.includes(':')) // Ensure each item has the expected format
-      .map(item => {
-        const [category, value] = item.split(':');
-        return {
-          category: category.trim(),
-          value: isNaN(parseInt(value, 10)) ? 0 : parseInt(value, 10),
-        };
-      });
-
-    const total = items.reduce((sum, item) => sum + item.value, 0);
-
-    return items.map((item, index) => ({
-      ...item,
-      percentage: total > 0 ? (item.value / total) * 100 : 0,
-      color: getColor(index),
-    }));
-  });
-
-  const getColor = (index) => {
-    const colors = ['pink', 'yellow', 'teal', 'green', 'brown'];
-    return colors[index % colors.length];
-  };
-
-
-  // Fetch data when component is mounted
-  onMounted(() => {
-    fetchVariantData();
-  })
+    sankeyData.value = sankeyRes.data || []
+    datasetAccumulationData.value = datasetAccumulationRes.data || []
+    consequenceProportionData.value = consequenceProportionRes.data || {}
+    geneAccumulativeData.value = geneAccumulativeRes.data || []
+    intensityProportionData.value = intensityProportionRes.data || {}
+    vennData.value = vennRes.data || {}
+    assayProportionData.value = assayProportionRes.data || {}
+    geneIntensityDistData.value = geneIntensityDistRes.data || {}
+  } catch (error) {
+    console.error('Failed to fetch data:', error)
+  } finally {
+    setTimeout(() => { sunburstLoading.value = false }, 500)
+  }
+})
 </script>
+
+<style scoped>
+/* Sidebar styling */
+.sidebar-col {
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+  background-color: #fafafa;
+  border-right: 1px solid #e0e0e0;
+}
+
+.v-list {
+  background-color: transparent;
+}
+
+.v-list-item--active {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.v-list-item {
+  transition: background-color 0.2s ease;
+}
+
+.v-divider {
+  border-color: #e0e0e0;
+  border-width: 2px;
+}
+
+/* Alert styling */
+.v-alert {
+  border-radius: 8px;
+  padding: 16px;
+}
+
+/* Chart row and container styling */
+.chart-row {
+  display: flex;
+  align-items: stretch;
+  min-height: 320px;
+}
+
+.chart-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.chart-content {
+  flex: none;
+  width: auto;
+  min-height: 280px;
+}
+
+/* Chart title styling */
+.text-h6 {
+  color: #1a3c5e;
+  font-weight: 500;
+}
+
+/* Center loading indicator */
+.v-progress-circular {
+  display: block;
+  margin: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 960px) {
+  .sidebar-col {
+    position: static;
+    height: auto;
+    max-height: 300px;
+  }
+  .chart-row {
+    flex-direction: column;
+    min-height: auto;
+  }
+  .chart-container {
+    min-height: 300px;
+    margin-bottom: 16px;
+  }
+}
+</style>

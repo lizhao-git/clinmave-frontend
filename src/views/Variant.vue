@@ -225,26 +225,26 @@
                   class="no-border"
                   :data="variantData.gadSummary"
                 >
-                  <!-- <vxe-column field="gadClassification" title="gnomAD classification" width="200">
-                    <template #default="{ row }">
-                      <span class="text-subtitle-1 font-weight-medium">
-                        {{ row.gadClassification === 'NA' || !row.gadClassification ? '——' : row.gadClassification }}
-                      </span>
-                    </template>
-                  </vxe-column> -->
-                  
-                  <vxe-column field="gadFrequency" title="gnomAD frequency" width="200">
+                  <vxe-column title="Mean allele frequency" width="200">
                     <template #default="{ row }">
                       <span class="text-body-1">
-                        {{ row.gadFrequency === 'NA' || !row.gadFrequency ? '——' : row.gadFrequency }}
+                        {{ row.gadFrequencyInfo === 'NA' || !row.gadFrequencyInfo ? '——' : row.gadFrequencyInfo }}
                       </span>
                     </template>
                   </vxe-column>
                   
-                  <vxe-column field="gadDescription" title="gnomAD description" min-width="200">
+                  <vxe-column title="#Homozygote" min-width="100">
                     <template #default="{ row }">
                       <span class="text-body-1">
-                        {{ row.gadDescription === 'NA' || !row.gadDescription ? '——' : row.gadDescription }}
+                        {{ row.gadNhomalt === 'NA' ? '——' : row.gadNhomalt }}
+                      </span>
+                    </template>
+                  </vxe-column>
+
+                  <vxe-column title="Highest population allele frequency" min-width="200">
+                    <template #default="{ row }">
+                      <span class="text-body-1">
+                        {{ row.gadPopmax === 'NA' ? '——' : row.gadPopmax }}
                       </span>
                     </template>
                   </vxe-column>
@@ -275,7 +275,10 @@
             </span>
           </v-card-title>
           <v-card-text>
-            <v-row>
+
+            <div class="bordered-container mb-4 mt-10">
+              <span class="border-label">Variant cross-assay summary</span>
+              <v-row>
               <v-col cols="12">
                 <vxe-table
                   ref="tableRef"
@@ -288,7 +291,7 @@
                   :pager-config="{ currentPage, pageSize, total: totalRecords }"
                   @sort-change="handleSortChange"
                 >
-                 <vxe-column field="datasetId" title="" min-width="80" align="center">
+                 <vxe-column field="datasetId" title="" min-width="50" align="center">
                     <template #default="{ row }">
                       <v-btn
                         :color="row.consequenceClass ? 'primary' : 'grey'"
@@ -314,7 +317,7 @@
                     </template>
                   </vxe-column>
 
-                  <vxe-column field="pmid" title="Publication" min-width="153" align="center">
+                  <vxe-column field="pmid" title="Publication" min-width="120" align="center">
                     <template #default="{ row }">
                       <div v-if="row">
                         <a :href="`https://pubmed.ncbi.nlm.nih.gov/${row.pmid}`" target="_blank" style="text-decoration: none;">
@@ -325,7 +328,7 @@
                     </template>
                   </vxe-column>
 
-                  <vxe-column field="geneName" title="Gene name" min-width="100" align="center">
+                  <vxe-column field="geneName" title="Gene name" min-width="120" align="center">
                     <template #default="{ row }">
                         <a 
                           v-if="row.geneName" 
@@ -355,54 +358,77 @@
                     </template>
                   </vxe-column>
 
-                  <vxe-column field="maveTechnique" title="Mave technique" min-width="250" align="center"></vxe-column>
+                  <vxe-column field="maveTechnique" title="Mave technique" min-width="240" align="center"></vxe-column>
                   
-                  <vxe-column field="functionalAssay" title="Functional assay" min-width="140" align="center"></vxe-column>
+                  <vxe-column field="phenotype" title="Phenotype" min-width="260" align="center"></vxe-column>
 
                 </vxe-table>
               </v-col>
-            </v-row>
+              </v-row>
+            </div>
+            
 
-            <v-row>
-              
-              <v-col cols="12" sm="6">
-                <h4 class="text-center">Density plot of functional scores for {{ highlightedRowId }}</h4>
-                <DensityPlot :size="200" :data="scoreData"
-                  :selection-strategy="VariantDensityData.selectionStrategy"
-                  :cutoff="VariantDensityData.cutoff" 
-                  :score="VariantDensityData.pointScore"
-                />
-              </v-col>
+            <div class="bordered-container mb-4 mt-10">
+              <span class="border-label">Functional description in {{ highlightedRowId }}</span>
 
-              <v-col cols="12" sm="6">
-                <h4 class="text-center">Functional description in {{ highlightedRowId }}</h4>
-                <v-alert border="start" border-color="deep-purple accent-4" variant="outlined" class="mt-4 mb-3"><span>Score: {{ VariantDensityData.pointScore }}</span></v-alert>
-                <v-alert border="start" border-color="deep-purple accent-4" variant="outlined" class="mb-3">
-                  <span>Functional classification: </span>
-                  <v-chip 
-                    small
-                    dark
-                    :color="getConsequenceClassColor(VariantDensityData.consequenceClass)"
+              <v-row align="center">
+
+                <v-col cols="12" sm="6">
+                  
+                  <DensityPlot 
+                    :size="200" 
+                    :data="scoreData"
+                    :selection-strategy="VariantDensityData.selectionStrategy"
+                    :cutoff="VariantDensityData.cutoff" 
+                    :score="VariantDensityData.pointScore"
+                  />
+                </v-col>
+
+                <v-col cols="12" sm="6">
+                  <v-alert 
+                    border="start" 
+                    border-color="deep-purple accent-4" 
+                    variant="outlined" 
+                    class="mt-4 mb-3"
                   >
-                    {{ VariantDensityData.consequenceClass }}
-                  </v-chip>
-                </v-alert>
-                <v-alert border="start" border-color="deep-purple accent-4" variant="outlined" class="mb-3"><span>Description: {{ VariantDensityData.functionalDescription }}</span></v-alert>
-
-                <v-alert 
-                  border="start" 
-                  border-color="deep-yellow accent-4" 
-                  variant="outlined"
-                >
-                  <span>Functional validation: 
-                    {{ VariantDensityData.validationHits != null ? VariantDensityData.validationHits : '——' }}
-                  </span>
-                </v-alert>
-
-              </v-col>
-            </v-row>
-
-            <v-divider class="mx-6"/>
+                    <span>Score: {{ VariantDensityData.pointScore }}</span>
+                  </v-alert>
+                  <v-alert 
+                    border="start" 
+                    border-color="deep-purple accent-4" 
+                    variant="outlined" 
+                    class="mb-3"
+                  >
+                    <span>Functional classification: </span>
+                    <v-chip 
+                      small
+                      dark
+                      :color="getConsequenceClassColor(VariantDensityData.consequenceClass)"
+                    >
+                      {{ VariantDensityData.consequenceClass }}
+                    </v-chip>
+                  </v-alert>
+                  <v-alert 
+                    border="start" 
+                    border-color="deep-purple accent-4" 
+                    variant="outlined" 
+                    class="mb-3"
+                  >
+                    <span>Description: {{ VariantDensityData.functionalDescription }}</span>
+                  </v-alert>
+                  <v-alert 
+                    class="mt-10 custom-alert"
+                    border="start" 
+                    border-color="red lighten-1" 
+                    variant="outlined"
+                  >
+                    <span>Functional validation: 
+                      {{ VariantDensityData.validationHits != null ? VariantDensityData.validationHits : '——' }}
+                    </span>
+                  </v-alert>
+                </v-col>
+              </v-row>
+            </div>
 
             <v-card-title>
               <v-icon icon="mdi-transit-detour" class="mr-2" color="blue"></v-icon>
@@ -421,104 +447,107 @@
               </span>
             </v-card-title>
             
-            <v-row>
+            <div class="bordered-container">
+              <span class="border-label">Odds of Pathogenicity (OddsPath) Statistics</span>
 
-              <v-col cols="12" sm="6">
-                <vxe-table 
-                  border="inner"
-                  show-header
-                  auto-resize
-                  size="medium"
-                  class="no-border"
-                  :data="calibrationData"
-                >
-                  <vxe-column field="oddsPath" width="100">
-                    <!-- 自定义表头 -->
-                    <template #header>
-                      <v-tooltip>
-                        <template v-slot:activator="{ props }">
-                          <span v-bind="props" class="title-hover" style="cursor: pointer; display: inline-flex; align-items: center">
-                            Oddspath
-                            <v-icon style="font-size: 16px; margin-left: 4px">mdi-help-circle-outline</v-icon>
+              <v-row align="center">
+
+                <v-col cols="12" sm="6">
+                  <vxe-table 
+                    border="inner"
+                    show-header
+                    auto-resize
+                    size="medium"
+                    class="no-border"
+                    :data="calibrationData"
+                  >
+                    <vxe-column field="oddsPath" width="120" align="center">
+                      <template #header>
+                        <v-tooltip>
+                          <template v-slot:activator="{ props }">
+                            <span v-bind="props" class="title-hover" style="cursor: pointer; display: inline-flex; align-items: center">
+                              OddsPath
+                              <v-icon style="font-size: 16px; margin-left: 4px">mdi-help-circle-outline</v-icon>
+                            </span>
+                          </template>
+                          <span class="tooltip-text">
+                            A quantifiable metric that maps the strength of functional evidence according to the recommendations of the ClinGen Sequence Variant Interpretation (SVI) Working Group. See documentation for further details on calculation.
                           </span>
-                        </template>
-                        <span class="tooltip-text">
-                          A quantifiable metric that maps the strength of functional evidence according to the recommendations of the ClinGen Sequence Variant Interpretation (SVI) Working Group. See documentation for further details on calculation.
-                        </span>
-                      </v-tooltip>
-                    </template>
+                        </v-tooltip>
+                      </template>
+
+                      <template #default="{ row }">
+                        <span class="text-body-1">{{ row.oddsPath ?? '-' }}</span>
+                      </template>
+                    </vxe-column>
                     
-                    <!-- 保留原有的单元格内容 -->
-                    <template #default="{ row }">
-                      <span class="text-body-1">{{ row.oddsPath }}</span>
-                    </template>
-                  </vxe-column>
-                  
-                  <vxe-column field="tpCount" width="200">
-                    <template #header>
-                      <v-tooltip>
-                        <template v-slot:activator="{ props }">
-                          <span v-bind="props" class="title-hover" style="cursor: pointer; display: inline-flex; align-items: center">
-                            #(Likely-) pathogenicity
-                            <v-icon style="font-size: 16px; margin-left: 4px">mdi-help-circle-outline</v-icon>
+                    <vxe-column field="tpCount" width="200" align="center">
+                      <template #header>
+                        <v-tooltip>
+                          <template v-slot:activator="{ props }">
+                            <span v-bind="props" class="title-hover" style="cursor: pointer; display: inline-flex; align-items: center">
+                              #(Likely-) pathogenicity
+                              <v-icon style="font-size: 16px; margin-left: 4px">mdi-help-circle-outline</v-icon>
+                            </span>
+                          </template>
+                          <span class="tooltip-text">
+                            Number of variants classified as Pathogenic/Likely pathogenic (P/LP) in ClinVar.
                           </span>
-                        </template>
-                        <span class="tooltip-text">
-                          Number of variants classified as Pathogenic/Likely pathogenic (P/LP) in ClinVar.
-                        </span>
-                      </v-tooltip>
-                    </template>
+                        </v-tooltip>
+                      </template>
 
-                    <template #default="{ row }">
-                      <span class="text-body-1">
-                        {{ row.tpCount }}
-                      </span>
-                    </template>
-                  </vxe-column>
-                  
-                  <vxe-column field="tnCount" min-width="100">
-                    <template #header>
-                      <v-tooltip>
-                        <template v-slot:activator="{ props }">
-                          <span v-bind="props" class="title-hover" style="cursor: pointer; display: inline-flex; align-items: center">
-                            #(Likely-) benign
-                            <v-icon style="font-size: 16px; margin-left: 4px">mdi-help-circle-outline</v-icon>
+                      <template #default="{ row }">
+                        <span class="text-body-1">
+                          {{ row.tpCount }}
+                        </span>
+                      </template>
+                    </vxe-column>
+                    
+                    <vxe-column field="tnCount" min-width="100" align="center">
+                      <template #header>
+                        <v-tooltip>
+                          <template v-slot:activator="{ props }">
+                            <span v-bind="props" class="title-hover" style="cursor: pointer; display: inline-flex; align-items: center">
+                              #(Likely-) benign
+                              <v-icon style="font-size: 16px; margin-left: 4px">mdi-help-circle-outline</v-icon>
+                            </span>
+                          </template>
+                          <span class="tooltip-text">
+                            Number of variants classified as Benign/Likely benign (B/LB) in ClinVar.
                           </span>
-                        </template>
-                        <span class="tooltip-text">
-                          Number of variants classified as Benign/Likely benign (B/LB) in ClinVar.
+                        </v-tooltip>
+                      </template>
+
+                      <template #default="{ row }">
+                        <span class="text-body-1">
+                          {{ row.tnCount }}
                         </span>
-                      </v-tooltip>
-                    </template>
+                      </template>
+                    </vxe-column>
+                  </vxe-table>
+                </v-col>
+                
+                <v-col cols="12" sm="6" class="mt-3 flex-col d-flex justify-center">
 
-                    <template #default="{ row }">
-                      <span class="text-body-1">
-                        {{ row.tnCount }}
-                      </span>
-                    </template>
-                  </vxe-column>
-                </vxe-table>
-              </v-col>
-              
-              <v-col cols="12" sm="6" class="mt-3 flex-col d-flex justify-center">
+                  <EffectBar
+                    :strength="VariantDensityData.intensityLevel || 'Unclassified'"
+                    :bar-height="12"
+                    :labels="['Unclassified', 'Weak', 'Moderate', 'Strong']"
+                    :colors="{
+                      blue: '#1E88E5',
+                      purple: '#7B1FA2',
+                      text: '#212121',
+                      cardBorder: '#B0BEC5',
+                      cardBg: '#F5F5F5',
+                      strongText: '#D32F2F'
+                    }"
+                  />
 
-                <EffectBar
-                  :strength="VariantDensityData.intensityLevel || 'No effects'"
-                  :bar-height="12"
-                  :labels="['No effects', 'Weak', 'Moderate', 'Strong']"
-                  :colors="{
-                    blue: '#1E88E5',
-                    purple: '#7B1FA2',
-                    text: '#212121',
-                    cardBorder: '#B0BEC5',
-                    cardBg: '#F5F5F5',
-                    strongText: '#D32F2F'
-                  }"
-                />
-
-              </v-col>
+                </v-col>
                             
-            </v-row>
+              </v-row>
+            </div>
+            
           </v-card-text>
         </v-card>
       </v-col>
@@ -528,7 +557,7 @@
 </v-main>
 </template>
 
-<style scoped>
+<style>
   /* 自定义表格样式：无边框，仅行间分隔线 */
   .v-table.no-border {
     border: none !important;
@@ -537,6 +566,7 @@
   .v-table.no-border tbody tr {
     border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   }
+
   .v-table.no-border tbody tr:last-child {
     border-bottom: none;
   }
@@ -558,13 +588,7 @@
     color: #2e4b6b;
   }
 
-  /* 表格单元格内边距 */
-  td {
-    padding: 16px 20px;
-  }
-
   /* 扩展面板标题和背景 */
-
   .v-expansion-panel-title {
     color: #1a3c5e;
     border-radius: 8px;
@@ -574,9 +598,38 @@
     background-color: rgba(0, 0, 0, 0.04);
   }
 
-  :deep(.highlighted-row) {
+  .highlighted-row {
     background-color: #E3F2FD !important;
   }
+
+  .custom-alert .v-alert__border {
+    opacity: 1 !important; /* 仅对此 v-alert 设置边框透明度为 1 */
+  }
+
+  .vxe-table--render-default.border--inner .vxe-table--border-line {
+    display: none !important;
+  }
+
+  .bordered-container {
+    position: relative;
+    border: 1px solid black; /* 匹配 red lighten-1 */
+    border-radius: 4px;
+    padding: 16px;
+    margin-top: 20px; /* 避免文字与外部元素重叠 */
+  }
+
+  .border-label {
+    position: absolute;
+    top: -13px; /* 文字位于边框上方 */
+    left: 50%;
+    transform: translateX(-50%);
+    background: white; /* 背景覆盖边框，形成缺口 */
+    padding: 0 8px;
+    font-size: 16px;
+    font-weight: 500;
+    color: black; /* 匹配边框颜色 */
+  }
+
 </style>
 
 <script setup>
@@ -617,6 +670,7 @@
     clvReviewstatus: null,
     clvClinicalsignificance: null,
     clvStar: null,
+    
   });
 
   // Table state
@@ -762,7 +816,7 @@
 
   const getConsequenceClassColor = (consequenceClass) => {
     const colorMap = {
-      'Gain-of-function': '#D55E00', 
+      'Gain-of-function': '#CC0000', 
       'Loss-of-function': '#0072B2',
       'Functional neutral': '#AAAAAA',
     };
@@ -803,11 +857,6 @@
       software: 'AlphaMissense',
       score: variantData.value.alphamissense,
       classification: variantData.value.alphamissenseClass
-    },
-    {
-      software: 'EVE',
-      score: variantData.value.eve,
-      classification: variantData.value.eveClass
     },
     {
       software: 'Polyphen2',
@@ -891,21 +940,21 @@
   });
 
   const handleEyeClick = (datasetId) => {
-    
+    // If the clicked row is already selected and highlighted, do nothing
     if (clickedRows.value[datasetId]) {
-      clickedRows.value = { ...clickedRows.value, [datasetId]: false };
-    } else {
-      // Close all other eyes and open the clicked one
-      const newClickedRows = {};
-      newClickedRows[datasetId] = true;
-      clickedRows.value = newClickedRows;
-      VisualizeClicker(datasetId);
+      return;
     }
     
+    // Close all other eyes, open the clicked one, and highlight the row
+    const newClickedRows = {};
+    newClickedRows[datasetId] = true;
+    clickedRows.value = newClickedRows;
+    highlightedRowId.value = datasetId; // Set the highlighted row
+    VisualizeClicker(datasetId);
   }
 
   const VisualizeClicker = (datasetId) => {
-    highlightedRowId.value = datasetId  // 设置高亮
+    highlightedRowId.value = datasetId; // Ensure the row is highlighted
     fetchVariantDensityData(route.params.identifier, datasetId);
   }
 
@@ -920,14 +969,26 @@
   );
   
   // Fetch data when component is mounted
-  onMounted(() => {
-    fetchVariantData();
-    loadData();
-    const $table = tableRef.value
-    const $toolbar = toolbarRef.value
+  onMounted(async () => {
+    await fetchVariantData();
+    await loadData();
+    const $table = tableRef.value;
+    const $toolbar = toolbarRef.value;
     if ($table && $toolbar) {
-      $table.connect($toolbar)
+      $table.connect($toolbar);
     }
-    handleEyeClick(route.query.datasetId ? route.query.datasetId : variantData.value.datasetId);
+    // Check if tableData has data and select the first row
+    if (tableData.value && tableData.value.length > 0) {
+      const firstRowDatasetId = tableData.value[0].datasetId;
+      if (firstRowDatasetId) {
+        handleEyeClick(firstRowDatasetId); // Open and highlight the first row
+      }
+    } else {
+      // Fallback to route query or variantData.datasetId if tableData is empty
+      const defaultDatasetId = route.query.datasetId || variantData.value.datasetId;
+      if (defaultDatasetId) {
+        handleEyeClick(defaultDatasetId);
+      }
+    }
   });
 </script>

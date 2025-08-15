@@ -124,6 +124,19 @@
                     </v-autocomplete>
                   </v-col>
 
+                  <v-col cols="12">
+                    <v-number-input 
+                      v-model="filters.crossAssayHitsMin"
+                      controlVariant="default"
+                      variant="outlined"
+                      density="compact"
+                      label="Minimum cross-assay hits"
+                      :min="1"
+                      @update:modelValue="applyFilters"
+                      @click:control="applyFilters"
+                    >
+                    </v-number-input>
+                  </v-col>
 
                 </v-row>
                 <v-row dense>
@@ -222,6 +235,8 @@
                     </template>
                 </vxe-column>
                 
+                <vxe-column field="crossAssayHits" title="Cross-assay hits" min-width="160" align="center" sortable></vxe-column>
+
                 <vxe-column field="molecularConsequence" title="Molecular consequence" min-width="220" align="center" sortable>
                   <template #default="{ row }">
                     <v-chip 
@@ -254,6 +269,18 @@
                   </template>
                 </vxe-column>
                 
+                <vxe-column field="dataset" title="Dataset ID" min-width="200" align="center">
+                  <template #default="{ row }">
+                    <v-chip 
+                      color="primary"
+                      variant="outlined" 
+                      class="mr-2 mb-1"
+                    >
+                      <a :href="'/clinmave/browse/dataset/' + row.datasetId" target="_blank" style="color: #1976d2;text-decoration: none">{{ row.datasetId }}</a>
+                    </v-chip>
+                  </template>
+                </vxe-column>
+
                 <vxe-column field="maveTechnique" title="MAVE technique" min-width="250" align="center">
                   <template #default="{ row }">
                       <a 
@@ -297,7 +324,6 @@
 </template>
 
 <style scoped>
-
 </style>
 
 <script setup>
@@ -331,8 +357,8 @@ const filters = ref({
   geneName: null,
   transcriptId: null,
   maveTechnique: null,
+  crossAssayHitsMin: 1,
 })
-
 
 // Reactive state for autocomplete options
 const geneNameOptions = ref([])
@@ -450,6 +476,12 @@ const loadData = async () => {
 };
 
 // Methods
+
+function splitDatasetIds(datasetIdStr) {
+  if (!datasetIdStr) return [];
+  return datasetIdStr.split(';').map(s => s.trim()).filter(Boolean);
+}
+
 const toggleFilters = () => {
   showFilters.value = !showFilters.value;
 }
@@ -472,7 +504,8 @@ const resetFilters = () => {
     transcriptId: null,
     maveTechnique: null,
     molecularConsequence: null,
-    consequenceClass: null
+    consequenceClass: null,
+    crossAssayHitsMin: null
   };
   
   currentPage.value = 1;

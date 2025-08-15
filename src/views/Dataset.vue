@@ -34,8 +34,13 @@
             <v-card-text>
               <v-row class="d-flex justify-center">
                 <v-col cols="12" sm="12" lg="4" md="4">
+
+                  <h4 class="text-center">
+                    Functional score distribution
+                  </h4>
+
                   <DensityPlot
-                    :size="200"
+                    :size="240"
                     :data="scoreData"
                     :selection-strategy="VariantDensityData.selectionStrategy"
                     :cutoff="VariantDensityData.cutoff"
@@ -45,7 +50,12 @@
 
                 <v-divider vertical />
 
-                <v-col cols="12" sm="12" lg="4" md="4" class="d-flex justify-center">
+                <v-col cols="12" sm="12" lg="4" md="4">
+
+                  <h4 class="text-center">
+                    Functional classification statistics
+                  </h4>
+
                   <ConsequenceProporiton
                     :data="ConsequenceProportionData"
                   />
@@ -108,10 +118,7 @@
                 
                 <vxe-column field="position" title="Position" min-width="180" align="center">
                   <template #default="{ row }">
-                    <a v-if="row" :href="row.ucscHg38" target="_blank" style="text-decoration: none;">
                       {{ row.chr && row.pos ? `${row.chr}:${row.pos}` : 'N/A' }}
-                      <v-icon small color="blue">mdi-share</v-icon>
-                    </a>
                   </template>
                 </vxe-column>
 
