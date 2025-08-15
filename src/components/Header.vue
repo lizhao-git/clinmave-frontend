@@ -69,7 +69,7 @@
             <template v-slot:activator="{ props }">
               <v-tab v-bind="props">
                 <v-icon icon="mdi-gauge-full" size="small"></v-icon>
-                <span class="ml-1">Visualize</span>
+                <span class="ml-1">Visualization</span>
                 <v-icon icon="mdi-menu-down" size="small"></v-icon>
               </v-tab>
             </template>
@@ -86,12 +86,17 @@
 
           <v-tab to="/analysis/dataset">
             <v-icon icon="mdi-cloud-minus-outline" size="small"></v-icon>
-            <span class="ml-1">Analyze</span>
+            <span class="ml-1">Analysis</span>
           </v-tab>
 
           <v-tab to="/statistics">
             <v-icon icon="mdi-chart-bar" size="small"></v-icon>
             <span class="ml-1">Statistics</span>
+          </v-tab>
+
+          <v-tab to="/download">
+            <v-icon icon="mdi-download" size="small"></v-icon>
+            <span class="ml-1">Download</span>
           </v-tab>
 
           <v-tab to="/document">
