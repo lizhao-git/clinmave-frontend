@@ -43,13 +43,12 @@
         </v-col>
       </v-row>
       <v-row>
-        <!-- Filter Panel 左侧筛选栏，始终显示 -->
+        <!-- Filter Panel -->
         <v-col cols="12" xl="2" lg="3" md="3" sm="12">
           <v-sheet class="py-6 px-3">
             <v-row>
               <v-col cols="12">
                 <div class="text-body-1">Filters</div>
-                <!-- 这里去掉了切换按钮，左侧筛选栏固定显示 -->
               </v-col>
             </v-row>
 
@@ -137,15 +136,11 @@
           </v-sheet>
         </v-col>
         
-        <!-- Table Content 右侧内容：根据showResults显示/隐藏 -->
+        <!-- Table and Visualization Content -->
         <v-col cols="12" xl="10" lg="9" md="9" sm="12" v-if="showResults">
-          
           <v-sheet class="pa-3">
-
             <!-- Table -->
             <vxe-toolbar ref="toolbarRef" export custom></vxe-toolbar>
-            <!-- Pagination -->
-
             <vxe-table
               ref="tableRef"
               :export-config="{}"
@@ -173,45 +168,39 @@
               </vxe-column>
 
               <vxe-column field="geneName" width="130" sortable align="center">
-
-                  <template #header>
-                    Gene name
-                  </template>
-                  
-                  <template #default="{ row }">
-                    <a 
-                      v-if="row.geneName" 
-                      :href="`/clinmave/browse/gene/${encodeURIComponent(row.geneName)}`" 
-                      target="_blank"
-                      style="text-decoration: none;font-style: italic"
-                    >
-                      {{ row.geneName }}
-                    </a>
-                    <span v-else>-</span>
-                  </template>
-
+                <template #header>Gene name</template>
+                <template #default="{ row }">
+                  <a 
+                    v-if="row.geneName" 
+                    :href="`/clinmave/browse/gene/${encodeURIComponent(row.geneName)}`" 
+                    target="_blank"
+                    style="text-decoration: none;font-style: italic"
+                  >
+                    {{ row.geneName }}
+                  </a>
+                  <span v-else>-</span>
+                </template>
               </vxe-column>
               
               <vxe-column field="maveTechnique" title="MAVE technique" min-width="200" align="center">
-                  <template #default="{ row }">
-                      <a 
-                        v-if="row.maveTechnique" 
-                        :href="`/clinmave/browse/mave_techniques/${encodeURIComponent(row.maveTechnique)}`" 
-                        target="_blank"
-                        style="text-decoration: none;"
-                      >
-                        {{ row.maveTechnique }}
-                      </a>
-                      <span v-else>-</span>
-                    </template>
-                </vxe-column>
+                <template #default="{ row }">
+                  <a 
+                    v-if="row.maveTechnique" 
+                    :href="`/clinmave/browse/mave_techniques/${encodeURIComponent(row.maveTechnique)}`" 
+                    target="_blank"
+                    style="text-decoration: none;"
+                  >
+                    {{ row.maveTechnique }}
+                  </a>
+                  <span v-else>-</span>
+                </template>
+              </vxe-column>
               
               <vxe-column field="functionalAssay" title="Function Assay" min-width="160" align="center"></vxe-column>
 
               <vxe-column field="phenotype" title="Phenotype" min-width="400" align="center"></vxe-column>
 
               <vxe-column field="varNum" title="#Variants" min-width="120" align="center" sortable></vxe-column>
-
             </vxe-table>
             <!-- Pagination -->
             <vxe-pager
@@ -224,66 +213,113 @@
           </v-sheet>
           <v-divider></v-divider>
 
-          <v-sheet style="min-height: 300px; position: relative;" v-if="showVisualize">
-            <v-row>
+          <!-- Tabs and Visualizations -->
+          <v-sheet bg-color="white" class="visualization-wrapper" v-if="showVisualize">
+            <v-tabs
+              v-model="activeTab"
+              bg-color="white"
+              color="primary"
+              density="compact"
+              align-tabs="start"
+            >
+              <v-tab value="compareConsequence">Compare Consequence</v-tab>
+              <v-tab value="rocCurve">RocCurve Plot</v-tab>
+            </v-tabs>
 
-              <v-col cols="12" md="4" sm="12">
-                <template v-if="RocCurveLoading">
-                  <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
-                    <v-progress-circular
-                      indeterminate
-                      color="primary"
-                      size="48"
-                    ></v-progress-circular>
-                    <div style="margin-top: 8px; color: #666;">Loading Oncoprint data...</div>
-                  </div>
-                </template>
+            <v-tabs-window v-model="activeTab">
+              <!-- RocCurve Plot -->
+              <v-tabs-window-item value="rocCurve">
+                <v-sheet style="min-height: 300px; position: relative; overflow: visible;">
+                  <v-row justify="center">
+                    <v-col cols="12" md="4" sm="12">
+                      <template v-if="RocCurveLoading">
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+                          <v-progress-circular
+                            indeterminate
+                            color="primary"
+                            size="48"
+                          ></v-progress-circular>
+                          <div style="margin-top: 8px; color: #666;">Loading RocCurve data...</div>
+                        </div>
+                      </template>
+                      <template v-else-if="hasRocCurveData">
+                        <v-card-text class="d-flex flex-column">
+                          <div ref="rocChartWrapper" style="position: relative; width: 100%; min-height: 400px;">
+                            <RocCurve
+                              :scores="RocCurveMap.score"
+                              :tags="RocCurveMap.clvGroup"
+                              :titleFlag="true"
+                              ref="rocCurveComponent"
+                            />
+                            <!-- Download Button -->
+                            <div class="download-wrapper" style="position: absolute; top: 5px; right: 5px;">
+                              <v-btn class="download-btn" variant="text" size="small">
+                                <v-icon>mdi-download</v-icon>
+                              </v-btn>
+                              <v-menu activator="parent">
+                                <v-list>
+                                  <v-list-item @click="downloadRocCurveSVG">
+                                    <v-list-item-title>Download SVG</v-list-item-title>
+                                  </v-list-item>
 
-                <template v-else-if="hasRocCurveData">
-                  <RocCurve
-                    :scores="RocCurveMap.score"
-                    :tags="RocCurveMap.clvGroup"
-                    :titleFlag="true"
-                  />
-                </template>
+                                  <v-list-item @click="downloadRocCurvePDF">
+                                    <v-list-item-title>Download PDF</v-list-item-title>
+                                  </v-list-item>
+                                </v-list>
+                              </v-menu>
+                            </div>
+                          </div>
+                        </v-card-text>
+                      </template>
+                      <template v-else>
+                        <div class="text-center" style="margin-top: 100px; color: #999;">
+                          No RocCurve data available.
+                        </div>
+                      </template>
+                    </v-col>
+                  </v-row>
+                </v-sheet>
+              </v-tabs-window-item>
 
-                <template v-else>
-                  <div class="text-center" style="margin-top: 100px; color: #999;">
-                    No RocCurve data available.
-                  </div>
-                </template>
-              </v-col>
-
-              <v-col cols="12" md="8" sm="12">
-                <template v-if="scatterLoading">
-                  <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
-                    <v-progress-circular
-                      indeterminate
-                      color="primary"
-                      size="48"
-                    ></v-progress-circular>
-                    <div style="margin-top: 8px; color: #666;">Loading Scatter data...</div>
-                  </div>
-                </template>
-
-                <template v-else-if="hasCompareConsequenceBpxData">
-                  <CompareConsequenceBox
-                    :data="consequencecomparingboxArray"
-                    :titleFlag="true"
-                  />
-                </template>
-
-                <template v-else>
-                  <div class="text-center" style="margin-top: 100px; color: #999;">
-                    No Scatter2d data available.
-                  </div>
-                </template>
-              </v-col>
-
-            </v-row>
-            
+              <!-- CompareConsequenceBox -->
+              <v-tabs-window-item value="compareConsequence">
+                <v-sheet style="min-height: 300px; position: relative; overflow: visible;">
+                  <v-row justify="center">
+                    <v-col cols="12" md="8" sm="12">
+                      <template v-if="scatterLoading">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                          <v-progress-circular
+                            indeterminate
+                            color="primary"
+                            size="48"
+                          ></v-progress-circular>
+                          <div style="margin-top: 8px; color: #666;">Loading compare consequence data...</div>
+                        </div>
+                      </template>
+                      <template v-else-if="hasCompareConsequenceBpxData">
+                        <CompareConsequenceBox
+                          :data="consequencecomparingboxArray"
+                          :titleFlag="true"
+                          :yAxisTitleMap="{ 
+                            'cadd': 'CADD', 
+                            'metasvm': 'MetaSVM', 
+                            'alphamissense': 'AlphaMissense',
+                            'polyphen2': 'Polyphen2', 
+                            'revel': 'REVEL'
+                          }"
+                        />
+                      </template>
+                      <template v-else>
+                        <div class="text-center" style="margin-top: 100px; color: #999;">
+                          No Compare Consequence data available.
+                        </div>
+                      </template>
+                    </v-col>
+                  </v-row>
+                </v-sheet>
+              </v-tabs-window-item>
+            </v-tabs-window>
           </v-sheet>
-
         </v-col>
       </v-row>
 
@@ -303,7 +339,6 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
-
     </v-container>
   </v-main>
 </template>
@@ -312,10 +347,11 @@
 import { onMounted, ref, computed, watch } from 'vue'
 import axios from 'axios'
 import { debounce } from 'lodash'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 
-import VxeUI from 'vxe-pc-ui';
-import 'vxe-pc-ui/lib/style.css';
-
+import VxeUI from 'vxe-pc-ui'
+import 'vxe-pc-ui/lib/style.css'
 import 'vxe-table/lib/style.css'
 
 import RocCurve from '@/components/analyze/RocCurve.vue'
@@ -327,7 +363,7 @@ const breadcrumbs = [
     href: '/',
   },
   {
-    title: 'Analyze',
+    title: 'Analysis',
     disabled: false,
   },
   {
@@ -336,7 +372,7 @@ const breadcrumbs = [
   },
 ]
 
-// Filters 保持不变
+// Filters
 const filters = ref({
   geneName: 'BRAF',
   mutagenesisStrategy: null,
@@ -350,7 +386,7 @@ const loadingGeneName = ref(false)
 
 const mutagenesisStrategyOptions = ref([])
 const searchMutagenesisStrategy = ref(null)
-const loadingMutagenesisStrategy= ref(false)
+const loadingMutagenesisStrategy = ref(false)
 
 const experimentModelOptions = ref([])
 const searchExperimentModel = ref(null)
@@ -363,15 +399,14 @@ const loadingPhenotype = ref(false)
 // Warning dialog control
 const showWarningDialog = ref(false)
 
-// 新增控制右侧结果显示的变量
-const showResults = ref(false);
-const showVisualize = ref(false);
+// Control variables
+const showResults = ref(false)
+const showVisualize = ref(false)
 const highlightedRowId = ref(null)
+const activeTab = ref('compareConsequence')
 
 const scatterLoading = ref(false)
-
 const consequencecomparingboxArray = ref({})
-
 const RocCurveMap = ref({})
 const RocCurveLoading = ref(false)
 
@@ -387,15 +422,42 @@ const sortParams = ref({
   order: ''
 })
 
+const rocChartWrapper = ref(null)
+const rocCurveComponent = ref(null)
+
+const datasetId = computed(() => tableData.value[0]?.datasetId || '')
+
 const debouncedFetchGeneName = debounce(() => fetchOptions('geneName', geneNameOptions, loadingGeneName), 300)
 const debouncedFetchMutagenesisStrategy = debounce(() => fetchOptions('mutagenesisStrategy', mutagenesisStrategyOptions, loadingMutagenesisStrategy), 300)
 const debouncedFetchExperimentModel = debounce(() => fetchOptions('experimentModel', experimentModelOptions, loadingExperimentModel), 300)
 const debouncedFetchPhenotype = debounce(() => fetchOptions('phenotype', phenotypeOptions, loadingPhenotype), 300)
-
 const debouncedFetchCompareConsequenceBox = debounce(fetchCompareConsequenceBox, 300)
 const debouncedFetchRocCurve = debounce(fetchRocCurveData, 300)
 
-// Generic fetch function for autocomplete options
+const hasRocCurveData = computed(() => {
+  if (!RocCurveMap.value || typeof RocCurveMap.value !== 'object') return false
+  const score = RocCurveMap.value.score
+  const clvGroup = RocCurveMap.value.clvGroup
+  if (!Array.isArray(score) || !Array.isArray(clvGroup)) return false
+  if (score.length === 0 || clvGroup.length === 0) return false
+  if (score.length !== clvGroup.length) return false
+  const allScoresAreNumbers = score.every(item => typeof item === 'number')
+  const allGroupsAreValid = clvGroup.every(item => item === 0 || item === 1)
+  return allScoresAreNumbers && allGroupsAreValid
+})
+
+const hasCompareConsequenceBpxData = computed(() => {
+  if (!consequencecomparingboxArray.value) return false;
+  const d = consequencecomparingboxArray.value;
+  if (!d || typeof d !== 'object') return false;
+  return Object.keys(d).some(key => {
+    const functionalAltered = d[key]?.["Functional altered"];
+    const functionallyNormal = d[key]?.["Functionally normal"];
+    return Array.isArray(functionalAltered) && functionalAltered.length > 0 && 
+           Array.isArray(functionallyNormal) && functionallyNormal.length > 0;
+  });
+});
+
 async function fetchOptions(term, optionsRef, loadingRef, search = '') {
   try {
     loadingRef.value = true
@@ -414,66 +476,35 @@ async function fetchOptions(term, optionsRef, loadingRef, search = '') {
   }
 }
 
-const datasetId = computed(() => tableData.value[0]?.datasetId || '')
-
-const hasRocCurveData = computed(() => {
-  if (!RocCurveMap.value || typeof RocCurveMap.value !== 'object') return false;
-
-  const score = RocCurveMap.value.score;
-  const clvGroup = RocCurveMap.value.clvGroup;
-
-  if (!Array.isArray(score) || !Array.isArray(clvGroup)) return false;
-  if (score.length === 0 || clvGroup.length === 0) return false;
-  if (score.length !== clvGroup.length) return false;
-
-  const allScoresAreNumbers = score.every(item => typeof item === 'number');
-  const allGroupsAreValid = clvGroup.every(item => item === 0 || item === 1);
-
-  return allScoresAreNumbers && allGroupsAreValid;
-});
-
-const hasCompareConsequenceBpxData = computed(() => {
-  if (!consequencecomparingboxArray.value) return false;
-  const d = consequencecomparingboxArray.value; // 你的数据对象，比如响应式对象
-  if (!d || typeof d !== 'object') return false;
-
-  // 判断cadd下LOF和GOF数组是否存在且非空
-  const lof = d.cadd?.LOF;
-  const gof = d.cadd?.GOF;
-
-  return Array.isArray(lof) && lof.length > 0 &&
-         Array.isArray(gof) && gof.length > 0;
-});
-
 async function fetchRocCurveData(query = '') {
-  RocCurveLoading.value = true;
+  RocCurveLoading.value = true
   try {
     const response = await axios.get('/clinmave/api/analyze/clinvarauc', {
       params: { datasetId: query || '' },
-    });
-    RocCurveMap.value = response.data || {};
-    console.log('[CompareConsequence Array]', RocCurveMap.value);
+    })
+    RocCurveMap.value = response.data || {}
+    console.log('[RocCurveMap]', RocCurveMap.value)
   } catch (error) {
-    VxeUI.message.error('Failed to load oncoprint data');
+    VxeUI.message.error('Failed to load RocCurve data')
     RocCurveMap.value = {}
   } finally {
-    RocCurveLoading.value = false;
+    RocCurveLoading.value = false
   }
 }
 
 async function fetchCompareConsequenceBox(query = '') {
-  scatterLoading.value = true;
+  scatterLoading.value = true
   try {
     const response = await axios.get('/clinmave/api/analyze/consequencecomparingbox', {
       params: { datasetId: query || '' },
-    });
-    consequencecomparingboxArray.value = response.data || {};
-    console.log('[CompareConsequence Array]', consequencecomparingboxArray.value);
+    })
+    consequencecomparingboxArray.value = response.data || {}
+    console.log('[CompareConsequenceBox Array]', consequencecomparingboxArray.value)
   } catch (error) {
-    VxeUI.message.error('Failed to load oncoprint data');
+    VxeUI.message.error('Failed to load CompareConsequenceBox data')
     consequencecomparingboxArray.value = {}
   } finally {
-    scatterLoading.value = false;
+    scatterLoading.value = false
   }
 }
 
@@ -485,19 +516,18 @@ const getRowClassName = ({ row }) => {
 }
 
 const loadData = async () => {
-  loading.value = true;
+  loading.value = true
   try {
-    let sort;
-
+    let sort
     if (Array.isArray(sortParams.value)) {
       sort = sortParams.value
         .filter(param => param.field && param.order)
         .map(param => `${param.field},${param.order}`)
-        .join(',');
+        .join(',')
     } else {
       sort = sortParams.value.field && sortParams.value.order
         ? `${sortParams.value.field},${sortParams.value.order}`
-        : 'id,asc';
+        : 'id,asc'
     }
 
     const params = {
@@ -505,28 +535,27 @@ const loadData = async () => {
       size: pageSize.value,
       sort: sort || undefined,
       ...filters.value
-    };
+    }
 
     Object.keys(params).forEach(key => {
       if (params[key] === undefined || params[key] === '') {
-        delete params[key];
+        delete params[key]
       }
-    });
+    })
 
-    const response = await axios.get('/clinmave/api/fetch/table/dataset', { params });
-    tableData.value = response.data.data || [];
-    totalRecords.value = response.data.totalRows || 0;
+    const response = await axios.get('/clinmave/api/fetch/table/dataset', { params })
+    tableData.value = response.data.data || []
+    totalRecords.value = response.data.totalRows || 0
   } catch (error) {
-    console.error('[API Error]', error);
-    tableData.value = [];
-    totalRecords.value = 0;
+    console.error('[API Error]', error)
+    tableData.value = []
+    totalRecords.value = 0
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 const applyFilters = async () => {
-  // Check maximum entries count from all autocomplete options
   const allOptions = [
     ...geneNameOptions.value,
     ...mutagenesisStrategyOptions.value,
@@ -546,6 +575,7 @@ const applyFilters = async () => {
   }
 
   currentPage.value = 1
+  activeTab.value = 'compareConsequence'
   await loadData()
   
   showResults.value = true
@@ -553,23 +583,22 @@ const applyFilters = async () => {
 }
 
 const resetFilters = () => {
-  showVisualize.value = false;
-  searchGeneName.value = null;
-  searchMutagenesisStrategy.value = null;
-  searchExperimentModel.value = null;
-  searchPhenotype.value = null;
+  showVisualize.value = false
+  showResults.value = false
+  activeTab.value = 'compareConsequence'
+  searchGeneName.value = null
+  searchMutagenesisStrategy.value = null
+  searchExperimentModel.value = null
+  searchPhenotype.value = null
 
   filters.value = { 
     geneName: null,
     mutagenesisStrategy: null,
     experimentModel: null,
     phenotype: null,
-  };
+  }
   
-  currentPage.value = 1;
-
-  loadData();
-  showResults.value = false; // 隐藏右侧表格和oncoprint
+  currentPage.value = 1
 }
 
 const handlePageChange = (event) => {
@@ -582,23 +611,23 @@ const handleSortChange = ({ field, order, sortList }) => {
   if (sortList && sortList.length > 0) {
     const validSorts = sortList
       .filter(sort => sort.field && sort.order && sort.field !== 'null')
-      .map(sort => ({ field: sort.field, order: sort.order }));
+      .map(sort => ({ field: sort.field, order: sort.order }))
     
     if (validSorts.length > 0) {
-      sortParams.value = validSorts;
+      sortParams.value = validSorts
     } else {
-      sortParams.value = { field: 'id', order: 'asc' };
+      sortParams.value = { field: 'id', order: 'asc' }
     }
   } else {
     sortParams.value = {
       field: field && field !== 'null' ? field : 'id',
       order: order || 'asc'
-    };
+    }
   }
   
-  currentPage.value = 1;
-  loadData();
-};
+  currentPage.value = 1
+  loadData()
+}
 
 const getConsequenceClassColor = (consequenceClass) => {
   const colorMap = {
@@ -607,18 +636,62 @@ const getConsequenceClassColor = (consequenceClass) => {
     'Gain-of-function': '#4CAF50', 
     'Dominant negative': '#FF9800',
     'Unknown': '#9C27B0',
-  };
+  }
   
-  const normalized = consequenceClass.toLowerCase();
-
+  const normalized = consequenceClass.toLowerCase()
   for (const [key, value] of Object.entries(colorMap)) {
     if (normalized.includes(key.toLowerCase())) {
-      return value;
+      return value
     }
   }
   
-  return '#2196F3'; // Default blue
-};
+  return '#2196F3'
+}
+
+// Download SVG for RocCurve
+const downloadRocCurveSVG = () => {
+  const svgEl = rocCurveComponent.value.$el.querySelector('svg')
+  if (!svgEl) {
+    VxeUI.message.error('No SVG element found for download')
+    return
+  }
+  const serializer = new XMLSerializer()
+  const svgString = serializer.serializeToString(svgEl)
+  const blob = new Blob([svgString], { type: 'image/svg+xml' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'roc-curve.svg'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+// Download PDF for RocCurve
+const downloadRocCurvePDF = async () => {
+  try {
+    const container = rocChartWrapper.value
+    if (!container) {
+      VxeUI.message.error('Chart container not found')
+      return
+    }
+    const downloadWrapper = container.querySelector('.download-wrapper')
+    downloadWrapper.style.display = 'none'
+    const { clientWidth: width, clientHeight: height } = container
+    const canvas = await html2canvas(container, { scale: 2 })
+    downloadWrapper.style.display = ''
+    const imgData = canvas.toDataURL('image/png')
+    const doc = new jsPDF({
+      orientation: width > height ? 'landscape' : 'portrait',
+      unit: 'px',
+      format: [width, height]
+    })
+    doc.addImage(imgData, 'PNG', 0, 0, width, height)
+    doc.save('roc-curve.pdf')
+  } catch (error) {
+    console.error('PDF download failed:', error)
+    VxeUI.message.error('Failed to generate PDF')
+  }
+}
 
 watch(datasetId, (newDatasetId) => {
   if (newDatasetId) {
@@ -650,16 +723,13 @@ watch(
 )
 
 onMounted(async () => {
-  debouncedFetchGeneName();
-  debouncedFetchMutagenesisStrategy();
-  debouncedFetchExperimentModel();
-  debouncedFetchPhenotype();
-
-  showResults.value = true;
-  await loadData();
-
-  showVisualize.value = true;
-  // 这里不自动加载表格，表格和oncoprint初始隐藏
+  debouncedFetchGeneName()
+  debouncedFetchMutagenesisStrategy()
+  debouncedFetchExperimentModel()
+  debouncedFetchPhenotype()
+  showResults.value = true
+  await loadData()
+  showVisualize.value = true
   const $table = tableRef.value
   const $toolbar = toolbarRef.value
   if ($table && $toolbar) {
@@ -669,11 +739,34 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-
+.visualization-wrapper {
+  padding: 0;
+}
+.v-tabs {
+  background-color: #FFFFFF;
+}
+.v-tab {
+  font-size: 14px;
+  text-transform: none;
+  color: #bcbcbc;
+}
+.v-tab--active {
+  color: var(--v-theme-primary) !important;
+}
+.download-wrapper {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 10;
+}
+.download-btn {
+  font-size: 12px;
+  text-transform: none;
+  color: #333333;
+}
 </style>
 
 <style>
-/* 全局样式，覆盖 vxe-table 的行 class */
 .highlighted-row {
   background-color: #E3F2FD !important;
 }
