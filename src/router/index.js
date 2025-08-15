@@ -9,7 +9,8 @@ import studies from '@/views/Studies.vue'
 import gene from '@/views/Gene.vue'
 import VisualizeByGene from '@/views/VisualizeByGene.vue' 
 import Statistics from '@/views/Statistics.vue'
-import DocumentationHtm from '@/views/Documentation.vue'
+import Download from '@/views/Download.vue'
+import Documentation from '@/views/Documentation.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -127,11 +128,19 @@ const router = createRouter({
       }
     },
     {
-      path: '/document',
-      name: 'Documentation-htm',
-      component: DocumentationHtm,
+      path: '/download',
+      name: 'download',
+      component: Download,
       meta: {
-        title: 'ClinMAVE-Document'
+        title: 'ClinMAVE-Download'
+      }
+    },
+    {
+      path: '/document',
+      name: 'Documentation',
+      component: Documentation,
+      meta: {
+        title: 'ClinMAVE-Documentation'
       }
     }
   ],
