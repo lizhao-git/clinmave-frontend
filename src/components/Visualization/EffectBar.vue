@@ -10,6 +10,20 @@
         </template>
         <span>Distance-based scoring method to measure strength tier of functional effect within specific assay. See documentation for further details.</span>
       </v-tooltip>
+      <v-btn class="download-btn" variant="text" size="small">
+        <v-icon>mdi-download</v-icon>
+      </v-btn>
+      <v-menu activator="parent">
+        <v-list>
+          <v-list-item @click="downloadSVG">
+            <v-list-item-title>Download SVG</v-list-item-title>
+          </v-list-item>
+
+          <v-list-item @click="downloadPDF">
+            <v-list-item-title>Download PDF</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </div>
     <svg ref="svg"></svg>
   </div>
@@ -18,14 +32,9 @@
 <script setup>
 import * as d3 from 'd3'
 import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 
-/**
- * A reusable Vue component for rendering a scientific bar chart with a dynamic card.
- * Displays a gradient bar with labeled ticks and a compact card showing classification strength.
- * @component
- * @example
- * <EffectBar :strength="'Strong'" :bar-height="8" :labels="['No effects', 'Weak', 'Moderate', 'Strong']" />
- */
 const props = defineProps({
   strength: {
     type: String,
@@ -37,15 +46,15 @@ const props = defineProps({
   },
   labels: {
     type: Array,
-    default: () => ['No effects', 'Weak', 'Moderate', 'Strong'],
+    default: () => ['Unclassified', 'Weak', 'Moderate', 'Strong'],
     validator: (labels) => labels.length === 4
   },
   colors: {
     type: Object,
     default: () => ({
-      start: '#4C78A8', // Light blue, Nature style start color
-      mid: '#F8E08E',   // Light yellow, Nature style mid color
-      end: '#E06259',   // Coral red, Nature style end color
+      start: '#4C78A8', // Light blue
+      mid: '#F8E08E',   // Light yellow
+      end: '#E06259',   // Coral red
       text: '#333333',
       cardBorder: '#e8ecef',
       cardBg: '#ffffff',
@@ -54,10 +63,8 @@ const props = defineProps({
   }
 })
 
-// Define title text
 const titleText = 'Per-variant functional strength'
 
-// Validate strength against labels
 const isValidStrength = computed(() => props.labels.includes(props.strength))
 
 const container = ref(null)
@@ -66,9 +73,9 @@ const svg = ref(null)
 const config = {
   padding: {
     top: 80,
-    right: 20,
+    right: 10,
     bottom: 35,
-    left: 20
+    left: 40
   },
   fontSize: 10,
   fontFamily: 'Arial',
@@ -98,20 +105,17 @@ const drawScientificBar = () => {
   }
 
   const { clientWidth: totalWidth } = container.value
-  const { padding, fontSize, fontFamily, card: cardConfig } = config
+  const { padding, fontSize, fontFamily, card } = config
 
-  // Calculate core dimensions
   const chartWidth = totalWidth - padding.left - padding.right
   const chartHeight = props.barHeight + padding.top + padding.bottom + 30
 
-  // Initialize SVG container
   const svgEl = d3.select(svg.value)
   svgEl.selectAll('*').remove()
   svgEl
     .attr('viewBox', `0 0 ${totalWidth} ${chartHeight}`)
     .attr('preserveAspectRatio', 'xMidYMid meet')
 
-  // Create color gradient
   const gradientId = 'sciGradient'
   const gradient = svgEl.append('defs')
     .append('linearGradient')
@@ -131,7 +135,6 @@ const drawScientificBar = () => {
   gradient.append('stop').attr('offset', '50%').attr('stop-color', safeColors.mid)
   gradient.append('stop').attr('offset', '100%').attr('stop-color', safeColors.end)
 
-  // Draw gradient bar
   svgEl.append('rect')
     .attr('x', padding.left)
     .attr('y', padding.top)
@@ -141,13 +144,12 @@ const drawScientificBar = () => {
     .style('fill', `url(#${gradientId})`)
     .style('shape-rendering', 'geometricPrecision')
 
-  // Create scale and axis
   const xScale = d3.scaleLinear()
     .domain([0, 100])
     .range([0, chartWidth])
 
   const labelColors = props.labels.map((_, i) => {
-    const position = [20, 40, 60, 80][i] / 100
+    const position = [0, 25, 50, 75][i] / 100
     if (position <= 0.5) {
       return d3.interpolateRgb(safeColors.start, safeColors.mid)(position / 0.5)
     } else {
@@ -156,9 +158,9 @@ const drawScientificBar = () => {
   })
 
   const axis = d3.axisBottom(xScale)
-    .tickValues([20, 40, 60, 80])
+    .tickValues([0, 25, 50, 75])
     .tickSize(5)
-    .tickPadding(6)
+    .tickPadding(8)
     .tickFormat((d, i) => props.labels[i])
 
   const axisGroup = svgEl.append('g')
@@ -168,6 +170,8 @@ const drawScientificBar = () => {
     .call(axis)
 
   axisGroup.selectAll('.tick text')
+    .attr('text-anchor', 'middle')
+    .attr('dy', '1em')
     .style('fill', (d, i) => labelColors[i])
 
   axisGroup.select('.domain')
@@ -178,14 +182,17 @@ const drawScientificBar = () => {
     .attr('stroke-width', 0.6)
     .attr('opacity', 0.8)
 
-  // Map strength to tick values
-  const strengthMap = props.labels.reduce((map, label, i) => {
-    map[label] = [20, 40, 60, 80][i]
-    return map
-  }, {})
+  const strengthMap = {
+    'Unclassified': 0,
+    'Weak': 25,
+    'Moderate': 50,
+    'Strong': 75
+  }
   const markPos = xScale(strengthMap[props.strength]) + padding.left
 
-  // Create modern card
+  console.log('Tick positions:', [0, 25, 50, 75])
+  console.log('Strength:', props.strength, 'MarkPos:', markPos)
+
   const createModernCard = (textLines) => {
     const textMeasurer = svgEl.append('text')
       .style('font-family', fontFamily)
@@ -201,7 +208,7 @@ const drawScientificBar = () => {
       const bbox = textMeasurer.node().getBBox()
       return {
         width: bbox.width,
-        height: bbox.height * cardConfig.lineHeight
+        height: bbox.height * config.card.lineHeight
       }
     })
     textMeasurer.remove()
@@ -209,20 +216,20 @@ const drawScientificBar = () => {
     const contentWidth = d3.max(measurements, d => d.width)
     const contentHeight = measurements.reduce((acc, curr) => acc + curr.height, 0)
     const cardWidth = Math.min(
-      cardConfig.maxWidth,
+      config.card.maxWidth,
       Math.max(
-        cardConfig.minWidth,
-        contentWidth + cardConfig.padding.x * 2
+        config.card.minWidth,
+        contentWidth + config.card.padding.x * 2
       )
     )
-    const cardHeight = contentHeight + cardConfig.padding.y * 2
+    const cardHeight = contentHeight + config.card.padding.y * 2
 
     const labelIndex = props.labels.indexOf(props.strength)
     let tailX
     if (labelIndex === 0) {
-      tailX = cardConfig.padding.x
+      tailX = config.card.padding.x
     } else if (labelIndex === props.labels.length - 1) {
-      tailX = cardWidth - cardConfig.padding.x
+      tailX = cardWidth - config.card.padding.x
     } else {
       tailX = cardWidth / 2
     }
@@ -235,26 +242,28 @@ const drawScientificBar = () => {
       )
     )
 
+    console.log('LabelIndex:', labelIndex, 'CardX:', cardX, 'TailX:', tailX)
+
     const cardGroup = svgEl.append('g')
       .attr('transform', `translate(${cardX}, ${padding.top - cardHeight - 15})`)
 
     cardGroup.append('rect')
       .attr('width', cardWidth)
       .attr('height', cardHeight)
-      .attr('rx', cardConfig.radius)
+      .attr('rx', config.card.radius)
       .style('fill', props.colors.cardBg)
-      .style('filter', `drop-shadow(0 ${cardConfig.elevation}px ${cardConfig.elevation*1.5}px rgba(0,0,0,0.15))`)
+      .style('filter', `drop-shadow(0 ${config.card.elevation}px ${config.card.elevation*1.5}px rgba(0,0,0,0.15))`)
 
     cardGroup.append('rect')
       .attr('width', cardWidth)
       .attr('height', cardHeight)
-      .attr('rx', cardConfig.radius)
+      .attr('rx', config.card.radius)
       .style('fill', 'none')
       .style('stroke', props.colors.cardBorder)
-      .style('stroke-width', cardConfig.strokeWidth)
+      .style('stroke-width', config.card.strokeWidth)
 
     const contentGroup = cardGroup.append('g')
-      .attr('transform', `translate(${cardWidth / 2}, ${cardConfig.padding.y + contentHeight / 2})`)
+      .attr('transform', `translate(${cardWidth / 2}, ${config.card.padding.y + contentHeight / 2})`)
 
     let yPos = -contentHeight / 2
     textLines.forEach((text, i) => {
@@ -276,17 +285,48 @@ const drawScientificBar = () => {
       .attr('x2', tailX)
       .attr('y2', props.barHeight + padding.top + 8)
       .attr('stroke', safeColors.end)
-      .attr('stroke-width', cardConfig.strokeWidth)
+      .attr('stroke-width', config.card.strokeWidth)
       .attr('stroke-dasharray', '2,2')
 
     cardGroup.append('path')
       .attr('d', `M${tailX - 5} ${cardHeight} l6 6 l6 -6`)
       .style('fill', props.colors.cardBg)
       .style('stroke', props.colors.cardBorder)
-      .style('stroke-width', cardConfig.strokeWidth)
+      .style('stroke-width', config.card.strokeWidth)
   }
 
   createModernCard(['Suggested classification', props.strength])
+}
+
+const downloadSVG = () => {
+  const svgEl = svg.value
+  const serializer = new XMLSerializer()
+  const svgString = serializer.serializeToString(svgEl)
+  const blob = new Blob([svgString], { type: 'image/svg+xml' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'effect-bar.svg'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+const downloadPDF = async () => {
+  try {
+    const svgEl = svg.value
+    const { clientWidth: width, clientHeight: height } = container.value
+    const canvas = await html2canvas(svgEl, { scale: 2 })
+    const imgData = canvas.toDataURL('image/png')
+    const doc = new jsPDF({
+      orientation: width > height ? 'landscape' : 'portrait',
+      unit: 'px',
+      format: [width, height]
+    })
+    doc.addImage(imgData, 'PNG', 0, 0, width, height)
+    doc.save('effect-bar.pdf')
+  } catch (error) {
+    console.error('PDF download failed:', error)
+  }
 }
 
 onMounted(() => {
@@ -329,17 +369,10 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 
-.question-icon {
-  width: 16px;
-  height: 16px;
-  background: #ccc;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.download-btn {
   font-size: 12px;
-  color: white;
-  cursor: pointer;
+  text-transform: none;
+  color: #333333;
 }
 
 svg {

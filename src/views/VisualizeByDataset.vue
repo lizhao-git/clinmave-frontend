@@ -5,16 +5,16 @@
         <v-col cols="12">
           <v-card flat>
             <v-breadcrumbs :items="breadcrumbs">
-                <template v-slot:item="{ item }">
-                  <v-breadcrumbs-item
-                    :to="item.href"
-                    :class="{ 'text-primary': item.href }"
-                    link
-                  >
-                    <span>{{ item.title }}</span>
-                  </v-breadcrumbs-item>
-                </template>
-              </v-breadcrumbs>
+              <template v-slot:item="{ item }">
+                <v-breadcrumbs-item
+                  :to="item.href"
+                  :class="{ 'text-primary': item.href }"
+                  link
+                >
+                  <span>{{ item.title }}</span>
+                </v-breadcrumbs-item>
+              </template>
+            </v-breadcrumbs>
           </v-card>
         </v-col>
       </v-row>
@@ -42,8 +42,9 @@
           </v-alert>
         </v-col>
       </v-row>
+
       <v-row>
-        <!-- Filter Panel 左侧筛选栏，始终显示 -->
+        <!-- Filter Panel -->
         <v-col cols="12" xl="2" lg="3" md="3" sm="12">
           <v-sheet class="py-6 px-3">
             <v-row>
@@ -128,7 +129,7 @@
               <v-row dense>
                 <v-spacer></v-spacer>
                 <v-col cols="10" class="text-right">
-                  <v-btn size="small" dark color="#091C2B" @click="applyFilters" class="mr-2">Visualize</v-btn>
+                  <v-btn size="small" dark color="#091C2B" @click="applyFilters" class="mr-2">Apply</v-btn>
                   <v-btn size="small" dark color="#091C2B" @click="resetFilters">Reset</v-btn>
                 </v-col>
               </v-row>
@@ -136,13 +137,11 @@
           </v-sheet>
         </v-col>
         
-        <!-- Table Content 右侧内容：itors="showResults显示/隐藏 -->
-        <v-col cols="12" xl="10" lg="9" md="9" sm="12" v-if="showResults">
+        <!-- Table and Visualization Content -->
+        <v-col cols="12" xl="10" lg="9" md="7" sm="12" v-if="showResults">
           <v-sheet class="pa-3">   
             <!-- Table -->
             <vxe-toolbar ref="toolbarRef" export custom></vxe-toolbar>
-            <!-- Pagination -->
-
             <vxe-table
               ref="tableRef"
               :export-config="{}"
@@ -170,23 +169,18 @@
               </vxe-column>
               
               <vxe-column field="geneName" width="130" sortable align="center">
-
-                  <template #header>
-                    Gene name
-                  </template>
-                  
-                  <template #default="{ row }">
-                    <a 
-                      v-if="row.geneName" 
-                      :href="`/clinmave/browse/gene/${encodeURIComponent(row.geneName)}`" 
-                      target="_blank"
-                      style="text-decoration: none;font-style: italic"
-                    >
-                      {{ row.geneName }}
-                    </a>
-                    <span v-else>-</span>
-                  </template>
-
+                <template #header>Gene name</template>
+                <template #default="{ row }">
+                  <a 
+                    v-if="row.geneName" 
+                    :href="`/clinmave/browse/gene/${encodeURIComponent(row.geneName)}`" 
+                    target="_blank"
+                    style="text-decoration: none;font-style: italic"
+                  >
+                    {{ row.geneName }}
+                  </a>
+                  <span v-else>-</span>
+                </template>
               </vxe-column>
 
               <vxe-column field="pmid" title="PMID" min-width="153" align="center">
@@ -201,25 +195,24 @@
               </vxe-column>
 
               <vxe-column field="maveTechnique" title="MAVE technique" min-width="230" align="center">
-                  <template #default="{ row }">
-                      <a 
-                        v-if="row.maveTechnique" 
-                        :href="`/clinmave/browse/mave_techniques/${encodeURIComponent(row.maveTechnique)}`" 
-                        target="_blank"
-                        style="text-decoration: none;"
-                      >
-                        {{ row.maveTechnique }}
-                      </a>
-                      <span v-else>-</span>
-                    </template>
-                </vxe-column>
+                <template #default="{ row }">
+                  <a 
+                    v-if="row.maveTechnique" 
+                    :href="`/clinmave/browse/mave_techniques/${encodeURIComponent(row.maveTechnique)}`" 
+                    target="_blank"
+                    style="text-decoration: none;"
+                  >
+                    {{ row.maveTechnique }}
+                  </a>
+                  <span v-else>-</span>
+                </template>
+              </vxe-column>
               
               <vxe-column field="functionalAssay" title="Function Assay" min-width="240" align="center"></vxe-column>
 
               <vxe-column field="phenotype" title="Phenotype" min-width="400" align="center"></vxe-column>
 
               <vxe-column field="varNum" title="#Variants" min-width="120" align="center" sortable></vxe-column>
-
             </vxe-table>
             <!-- Pagination -->
             <vxe-pager
@@ -230,92 +223,111 @@
               @page-change="handlePageChange"
             ></vxe-pager>
           </v-sheet>
-          <v-divider></v-divider>
 
-          <v-sheet style="min-height: 300px; position: relative; overflow: visible;" v-if="showVisualize">
-            <v-row>
-              <v-col cols="12" md="4" sm="12" style="position: relative;">
-                <template v-if="clinVarBinLoading">
-                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
-                    <v-progress-circular
-                      indeterminate
-                      color="primary"
-                      size="48"
-                    ></v-progress-circular>
-                    <div style="margin-top: 8px; color: #666;">Loading Oncoprint data...</div>
-                  </div>
-                </template>
+          <!-- Tabs and Visualizations -->
+          <v-sheet bg-color="white" class="visualization-wrapper mt-5">
+            <v-tabs
+              v-model="activeTab"
+              bg-color="white"
+              color="primary"
+              density="compact"
+              align-tabs="start"
+            >
+              <v-tab value="lollipop">Lollipop Plot</v-tab>
+              <v-tab value="population">Population & Consequence</v-tab>
+            </v-tabs>
 
-                <template v-else-if="hasClinVarBinData">
-                  <ClinVarBin
-                    :inputData="ClinVarBinArray"
-                    :titleFlag="true"
-                  />
-                </template>
+            <v-tabs-window v-model="activeTab">
+              <!-- Lollipop Plot -->
+              <v-tabs-window-item value="lollipop">
+                <v-sheet style="min-height: 500px; position: relative; overflow: visible;">
+                  <v-row justify="center">
+                    <v-col cols="12">
+                      <template v-if="lollipopLoading">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                          <v-progress-circular
+                            indeterminate
+                            color="primary"
+                            size="48"
+                          ></v-progress-circular>
+                          <div style="margin-top: 8px; color: #666;">Loading lollipop data...</div>
+                        </div>
+                      </template>
+                      <template v-else-if="hasLollipopData">
+                        <Lollipop
+                          :gene-info="oncoprintMap.geneInfo"
+                          :domains="oncoprintMap.domains"
+                          :mutations="oncoprintMap.mutations"
+                          :height="400"
+                        />
+                      </template>
+                      <template v-else>
+                        <div class="text-center" style="margin-top: 100px; color: #999;">
+                          No Lollipop data available.
+                        </div>
+                      </template>
+                    </v-col>
+                  </v-row>
+                </v-sheet>
+              </v-tabs-window-item>
 
-                <template v-else>
-                  <div class="text-center" style="margin-top: 100px; color: #999;">
-                    No ClinVar data available.
-                  </div>
-                </template>
-              </v-col>
+              <!-- Scatter2d and ConsequenceDensity -->
+              <v-tabs-window-item value="population">
+                <v-sheet style="min-height: 300px; position: relative; overflow: visible;">
+                  <v-row justify="center">
+                    <v-col cols="12" md="5" sm="12" style="position: relative;">
+                      <template v-if="scatterLoading">
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+                          <v-progress-circular
+                            indeterminate
+                            color="primary"
+                            size="48"
+                          ></v-progress-circular>
+                          <div style="margin-top: 8px; color: #666;">Loading Scatter data...</div>
+                        </div>
+                      </template>
+                      <template v-else-if="hasScatterData">
+                        <Scatter2d
+                          :scatterData="scatterArray"
+                          :size="300"
+                          :titleFlag="true"
+                        />
+                      </template>
+                      <template v-else>
+                        <div class="text-center" style="margin-top: 100px; color: #999;">
+                          No Scatter2d data available.
+                        </div>
+                      </template>
+                    </v-col>
 
-              <v-col cols="12" md="4" sm="12" style="position: relative;">
-                <template v-if="scatterLoading">
-                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
-                    <v-progress-circular
-                      indeterminate
-                      color="primary"
-                      size="48"
-                    ></v-progress-circular>
-                    <div style="margin-top: 8px; color: #666;">Loading Scatter data...</div>
-                  </div>
-                </template>
-
-                <template v-else-if="hasScatterData">
-                  <Scatter2d
-                    :scatterData="scatterArray"
-                    :size="300"
-                    :titleFlag="true"
-                  />
-                </template>
-
-                <template v-else>
-                  <div class="text-center" style="margin-top: 100px; color: #999;">
-                    No Scatter2d data available.
-                  </div>
-                </template>
-              </v-col>
-
-              <v-col cols="12" md="4" sm="12" style="position: relative;">
-                <template v-if="consequenceDensityLoading">
-                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
-                    <v-progress-circular
-                      indeterminate
-                      color="primary"
-                      size="48"
-                    ></v-progress-circular>
-                    <div style="margin-top: 8px; color: #666;">Loading Oncoprint data...</div>
-                  </div>
-                </template>
-
-                <template v-else-if="hasConsequenceDensityData">
-                  <ConsequenceDensity
-                    :data="consequenceArray" 
-                    :titleFlag="true"
-                  />
-                </template>
-
-                <template v-else>
-                  <div class="text-center" style="margin-top: 100px; color: #999;">
-                    No ClinVar data available.
-                  </div>
-                </template>
-              </v-col>
-            </v-row>
-            
+                    <v-col cols="12" md="6" sm="12" style="position: relative;">
+                      <template v-if="consequenceDensityLoading">
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+                          <v-progress-circular
+                            indeterminate
+                            color="primary"
+                            size="48"
+                          ></v-progress-circular>
+                          <div style="margin-top: 8px; color: #666;">Loading Consequence Density data...</div>
+                        </div>
+                      </template>
+                      <template v-else-if="hasConsequenceDensityData">
+                        <ConsequenceDensity
+                          :data="consequenceArray"
+                          :titleFlag="true"
+                        />
+                      </template>
+                      <template v-else>
+                        <div class="text-center" style="margin-top: 100px; color: #999;">
+                          No Consequence Density data available.
+                        </div>
+                      </template>
+                    </v-col>
+                  </v-row>
+                </v-sheet>
+              </v-tabs-window-item>
+            </v-tabs-window>
           </v-sheet>
-
         </v-col>
       </v-row>
 
@@ -350,8 +362,8 @@ import 'vxe-pc-ui/lib/style.css';
 import 'vxe-table/lib/style.css'
 
 import Scatter2d from '@/components/Visualization/Scatter2d.vue'
-import ClinVarBin from '@/components/Visualization/ClinVarBin.vue'
 import ConsequenceDensity from '@/components/Visualization/ConsequenceDensity.vue'
+import Lollipop from '@/components/Visualization/Lollipop.vue';
 
 const breadcrumbs = [
   {
@@ -359,7 +371,7 @@ const breadcrumbs = [
     href: '/',
   },
   {
-    title: 'Visualize',
+    title: 'Visualization',
   },
   {
     title: 'Dataset',
@@ -368,8 +380,8 @@ const breadcrumbs = [
 
 // Filters
 const filters = ref({
-  geneName: 'BRCA1',
-  mutagenesisStrategy: 'Mutagenic PCR',
+  geneName: 'BAP1',
+  mutagenesisStrategy: null,
   experimentModel: null,
   phenotype: null,
 })
@@ -380,7 +392,7 @@ const loadingGeneName = ref(false)
 
 const mutagenesisStrategyOptions = ref([])
 const searchMutagenesisStrategy = ref(null)
-const loadingMutagenesisStrategy= ref(false)
+const loadingMutagenesisStrategy = ref(false)
 
 const experimentModelOptions = ref([])
 const searchExperimentModel = ref(null)
@@ -393,17 +405,16 @@ const loadingPhenotype = ref(false)
 // Warning dialog control
 const showWarningDialog = ref(false)
 
-// Control variables for results and visualization
+const oncoprintMap = ref({})
+
+// Control variables
 const showResults = ref(false)
-const showVisualize = ref(false)
+const activeTab = ref('lollipop')
 const highlightedRowId = ref(null)
 
+const lollipopLoading = ref(false)
 const scatterArray = ref([])
 const scatterLoading = ref(false)
-
-const clinVarBinLoading = ref(false)
-const ClinVarBinArray = ref([])
-
 const consequenceDensityLoading = ref(false)
 const consequenceArray = ref([])
 
@@ -419,23 +430,24 @@ const sortParams = ref({
   order: ''
 })
 
+const computedWidth = ref(600) // Fixed SVG width to 600 pixels
+
 const datasetId = computed(() => tableData.value[0]?.datasetId || '')
 
 const debouncedFetchGeneName = debounce(() => fetchOptions('geneName', geneNameOptions, loadingGeneName), 300)
 const debouncedFetchMutagenesisStrategy = debounce(() => fetchOptions('mutagenesisStrategy', mutagenesisStrategyOptions, loadingMutagenesisStrategy), 300)
 const debouncedFetchExperimentModel = debounce(() => fetchOptions('experimentModel', experimentModelOptions, loadingExperimentModel), 300)
 const debouncedFetchPhenotype = debounce(() => fetchOptions('phenotype', phenotypeOptions, loadingPhenotype), 300)
-
-const debouncedFetchClinVarBinData = debounce(fetchClinVarBinData, 300)
 const debouncedFetchScatterData = debounce(fetchScatterData, 300)
 const debouncedFetchConsequenceDensityData = debounce(fetchConsequenceDensityData, 300)
+const debouncedFetchGeneStructure = debounce(fetchGeneStructure, 300)
 
-const hasClinVarBinData = computed(() => {
-  return Array.isArray(ClinVarBinArray.value) &&
-          ClinVarBinArray.value.length > 0 &&
-          ClinVarBinArray.value[0].clvGroupCounts &&
-          typeof ClinVarBinArray.value[0].clvGroupCounts === 'object' &&
-          Object.keys(ClinVarBinArray.value[0].clvGroupCounts).length > 0
+const hasLollipopData = computed(() => {
+  return oncoprintMap.value &&
+         typeof oncoprintMap.value === 'object' &&
+         oncoprintMap.value.geneInfo &&
+         Array.isArray(oncoprintMap.value.domains) &&
+         Array.isArray(oncoprintMap.value.mutations)
 })
 
 const hasScatterData = computed(() => {
@@ -471,6 +483,22 @@ async function fetchOptions(term, optionsRef, loadingRef, search = '') {
   }
 }
 
+async function fetchGeneStructure(query = '') {
+  lollipopLoading.value = true
+  try {
+    const response = await axios.get('/clinmave/api/visualize/bydataset/lollipop', {
+      params: { datasetId: !query ? '' : query },
+    });
+    console.log('[Oncoprint Map]', response.data);
+    oncoprintMap.value = response.data || {};
+  } catch (error) {
+    VxeUI.message.error('Failed to load oncoprint data');
+    oncoprintMap.value = {};
+  } finally {
+    lollipopLoading.value = false
+  }
+}
+
 async function fetchScatterData(query = '') {
   scatterLoading.value = true
   try {
@@ -484,21 +512,6 @@ async function fetchScatterData(query = '') {
     scatterArray.value = []
   } finally {
     scatterLoading.value = false
-  }
-}
-
-async function fetchClinVarBinData(query = '') {
-  clinVarBinLoading.value = true
-  try {
-    const response = await axios.get('/clinmave/api/visualize/bydataset/clinvarbin', {
-      params: { datasetId: !query ? '' : query },
-    })
-    ClinVarBinArray.value = response.data || []
-  } catch (error) {
-    VxeUI.message.error('Failed to load ClinVar bin data')
-    ClinVarBinArray.value = []
-  } finally {
-    clinVarBinLoading.value = false
   }
 }
 
@@ -536,7 +549,7 @@ const loadData = async () => {
         .join(',')
     } else {
       sort = sortParams.value.field && sortParams.value.order
-        ? `${sortParams.value.field},${sortParams.value.order}`
+        ? `${param.field},${param.order}`
         : 'id,asc'
     }
 
@@ -566,7 +579,6 @@ const loadData = async () => {
 }
 
 const applyFilters = async () => {
-  // Check maximum entries count from all autocomplete options
   const allOptions = [
     ...geneNameOptions.value,
     ...mutagenesisStrategyOptions.value,
@@ -586,15 +598,15 @@ const applyFilters = async () => {
   }
 
   currentPage.value = 1
+  activeTab.value = 'lollipop'
   await loadData()
   
   showResults.value = true
-  showVisualize.value = true
 }
 
 const resetFilters = () => {
-  showVisualize.value = false
   showResults.value = false
+  activeTab.value = 'lollipop'
   searchGeneName.value = null
   searchMutagenesisStrategy.value = null
   searchExperimentModel.value = null
@@ -654,14 +666,14 @@ const getConsequenceClassColor = (consequenceClass) => {
     }
   }
   
-  return '#2196F3' // Default blue
+  return '#2196F3'
 }
 
 watch(datasetId, (newDatasetId) => {
   if (newDatasetId) {
-    debouncedFetchClinVarBinData(newDatasetId)
     debouncedFetchScatterData(newDatasetId)
     debouncedFetchConsequenceDensityData(newDatasetId)
+    debouncedFetchGeneStructure(newDatasetId)
   }
 })
 
@@ -691,8 +703,9 @@ onMounted(async () => {
   debouncedFetchMutagenesisStrategy()
   debouncedFetchExperimentModel()
   debouncedFetchPhenotype()
+  debouncedFetchGeneStructure()
   showResults.value = true
-  showVisualize.value = true
+  activeTab.value = 'lollipop'
   await loadData()
 
   const $table = tableRef.value
@@ -709,6 +722,20 @@ onMounted(async () => {
 }
 .dot-icon {
   vertical-align: middle
+}
+.visualization-wrapper {
+  padding: 0;
+}
+.v-tabs {
+  background-color: #FFFFFF;
+}
+.v-tab {
+  font-size: 14px;
+  text-transform: none;
+  color: #bcbcbc;
+}
+.v-tab--active {
+  color: var(--v-theme-primary) !important;
 }
 </style>
 

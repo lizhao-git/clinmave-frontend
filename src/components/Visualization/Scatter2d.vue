@@ -2,14 +2,40 @@
   <v-container class="d-flex justify-center">
     <v-card flat :style="{ width: size + 'px' }">
       <v-card-text class="d-flex flex-column align-center" style="overflow: visible; position: relative;">
-        <!-- Chart title -->
-        <h4 v-if="titleFlag" class="text-center">
-          Scatter plot between gnomAD frequency and functional score
-        </h4>
+        <!-- Title and Help Icon -->
+        <div class="title-wrapper">
+          <h4 v-if="titleFlag" class="chart-title">
+            Scatter plot between gnomAD frequency and functional score
+          </h4>
+          <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+              <div v-bind="props">
+                <v-icon style="font-size: 16px;">mdi-help-circle-outline</v-icon>
+              </div>
+            </template>
+            <span>Distance-based scoring method to measure strength tier of functional effect within specific assay. See documentation for further details.</span>
+          </v-tooltip>
+        </div>
 
         <!-- Chart container -->
-        <div ref="chartContainer" :style="{ width: size + 'px', position: 'relative' }">
+        <div ref="chartContainer" :style="{ width: size + 'px', position: 'relative', 'margin-top': '10px' }">
           <svg ref="svg" :width="size" :height="size" style="overflow: visible;"></svg>
+          <!-- Download Button -->
+          <div class="download-wrapper" style="position: absolute; top: 5px; right: 5px;">
+            <v-btn class="download-btn" variant="text" size="small">
+              <v-icon>mdi-download</v-icon>
+            </v-btn>
+            <v-menu activator="parent">
+              <v-list>
+                <v-list-item @click="downloadSVG">
+                  <v-list-item-title>Download SVG</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="downloadPDF">
+                  <v-list-item-title>Download PDF</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </div>
         </div>
 
         <!-- Legend -->
@@ -36,9 +62,9 @@
         <table style="font-family: Arial; font-size: 14px; border-collapse: collapse;">
           <tbody>
             <tr><td>Identifier:</td><td>{{ tooltip.data.identifier }}</td></tr>
-            <tr><td>Class:</td><td><v-chip density="compact" :color="colorMap[tooltip.data.class] || '#bcbcbc99'">{{ tooltip.data.class }}</v-chip></td></tr>
+            <tr><td>Classification:</td><td><v-chip density="compact" :color="colorMap[tooltip.data.class] || '#bcbcbc99'">{{ tooltip.data.class }}</v-chip></td></tr>
             <tr><td>Functional score:</td><td>{{ tooltip.data.score }}</td></tr>
-            <tr><td style="padding-right: 10px;">gnomAD AF:</td><td>{{ formatAf(tooltip.data.af) }}</td></tr>
+            <tr><td style="padding-right: 12px;">gnomAD AF:</td><td>{{ formatAf(tooltip.data.af) }}</td></tr>
           </tbody>
         </table>
       </div>
@@ -49,6 +75,8 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import * as d3 from 'd3'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 
 const props = defineProps({
   scatterData: {
@@ -64,7 +92,7 @@ const props = defineProps({
     default: () => ({
       'Gain-of-function': '#CC0000',
       'Loss-of-function': '#0072B2',
-      'Functional neutral': '#bcbcbc',
+      'Functional neutral': '#bcbcbc'
     })
   },
   titleFlag: {
@@ -74,6 +102,7 @@ const props = defineProps({
 })
 
 const svg = ref(null)
+const chartContainer = ref(null)
 
 const tooltip = ref({
   visible: false,
@@ -82,20 +111,12 @@ const tooltip = ref({
   data: {}
 })
 
-// Superscript formatter
-const superscript = {
-  '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
-  '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '-': '⁻'
-}
-function toSuperscript(n) {
-  return String(n).split('').map(c => superscript[c] || c).join('')
-}
 function formatAf(af) {
   return af.toExponential(3)
 }
 
 function drawChart() {
-  const margin = { top: 20, right: 0, bottom: 50, left: 60 }
+  const margin = { top: 20, right: 20, bottom: 50, left: 60 }
   const width = props.size - margin.left - margin.right
   const height = props.size - margin.top - margin.bottom
 
@@ -106,30 +127,26 @@ function drawChart() {
 
   const validData = props.scatterData.filter(d => d.af > 0 && !isNaN(d.af) && !isNaN(d.score))
   const afValues = validData.map(d => d.af)
-  const minAf = d3.min(afValues) / 1.5
-  const maxAf = d3.max(afValues) * 1.5
-  const xDomain = [Math.max(1e-10, minAf), Math.min(1, maxAf)]
+  const minAf = d3.min(afValues) / 1.5 || 1e-10
+  const maxAf = d3.max(afValues) * 1.5 || 1
+  console.log('X-axis range:', [minAf, maxAf], 'AF values:', afValues)
 
-  const x = d3.scaleLog().domain(xDomain).range([0, width])
-  const y = d3.scaleLinear()
-    .domain([
-      d3.min(validData, d => d.score) * 1.1 || -1,
-      d3.max(validData, d => d.score) * 1.1 || 1
-    ])
-    .range([height, 0])
+  // X-axis: Logarithmic scale with major ticks
+  const x = d3.scaleLog()
+    .domain([minAf, maxAf])
+    .range([0, width])
 
+  const xTickValues = [1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1].filter(d => d >= minAf && d <= maxAf)
   const xAxis = d3.axisBottom(x)
-    .ticks(10)
-    .tickFormat(d => {
-      const log = Math.log10(d)
-      return Number.isInteger(log) ? (d === 1 ? '1' : `10${toSuperscript(log)}`) : ''
-    })
+    .tickValues(xTickValues)
+    .tickFormat(d => `e${Math.log10(d)}`)
 
   const xAxisG = chart.append('g')
     .attr('transform', `translate(0,${height})`)
     .call(xAxis)
-
-  xAxisG.selectAll('.tick line').attr('y2', d => Number.isInteger(Math.log10(d)) ? 10 : 5)
+    .call(g => g.selectAll('.tick line').attr('y2', 6).attr('stroke', 'currentColor'))
+    .call(g => g.selectAll('.tick text').style('font-size', '12px').style('font-family', 'Arial'))
+    .call(g => g.select('.domain').attr('stroke', '#333'))
   xAxisG.append('text')
     .attr('x', width / 2)
     .attr('y', 40)
@@ -137,11 +154,40 @@ function drawChart() {
     .attr('text-anchor', 'middle')
     .style('font-family', 'Arial')
     .style('font-size', '14px')
-    .text('gnomAD genome Allele Frequency')
+    .text('gnomAD (V4.1) Allele Frequency')
 
-  chart.append('g')
-    .call(d3.axisLeft(y))
-    .append('text')
+  // Y-axis: Linear scale with ticks every 0.1
+  const yMin = d3.min(validData, d => d.score) * 1.1 || -1
+  const yMax = d3.max(validData, d => d.score) * 1.1 || 1
+  const y = d3.scaleLinear()
+    .domain([yMin, yMax])
+    .range([height, 0])
+    .nice()
+
+  const yTickStep = 0.1
+  const yTicks = d3.range(
+    Math.floor(yMin / yTickStep) * yTickStep,
+    yMax + yTickStep,
+    yTickStep
+  ).map(d => Number(d.toFixed(2)))
+    .filter(d => d >= yMin && d <= yMax)
+
+  console.log('Y-axis ticks:', yTicks)
+
+  // Ticks with labels, outward ticks only
+  const yAxis = d3.axisLeft(y)
+    .tickValues(yTicks)
+    .tickFormat(d3.format(".1f"))
+    .tickSizeInner(0) // No inward grid lines
+    .tickSize(6) // Outward ticks (x2="-6" in SVG)
+    .tickPadding(4) // Reduced padding to bring labels closer to ticks
+
+  const yAxisG = chart.append('g')
+    .call(yAxis)
+    .call(g => g.selectAll('.tick line').attr('stroke', 'currentColor').attr('stroke-opacity', 0.8))
+    .call(g => g.selectAll('.tick text').style('font-size', '12px').style('font-family', 'Arial'))
+    .call(g => g.select('.domain').attr('stroke', '#333'))
+  yAxisG.append('text')
     .attr('transform', 'rotate(-90)')
     .attr('x', -height / 2)
     .attr('y', -40)
@@ -151,6 +197,7 @@ function drawChart() {
     .style('font-size', '14px')
     .text('Functional score')
 
+  // Scatter points
   chart.selectAll('circle')
     .data(validData)
     .enter()
@@ -186,6 +233,37 @@ function drawChart() {
     })
 }
 
+const downloadSVG = () => {
+  const svgEl = svg.value
+  const serializer = new XMLSerializer()
+  const svgString = serializer.serializeToString(svgEl)
+  const blob = new Blob([svgString], { type: 'image/svg+xml' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'scatter-plot.svg'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+const downloadPDF = async () => {
+  try {
+    const container = chartContainer.value
+    const { clientWidth: width, clientHeight: height } = container
+    const canvas = await html2canvas(container, { scale: 2 })
+    const imgData = canvas.toDataURL('image/png')
+    const doc = new jsPDF({
+      orientation: width > height ? 'landscape' : 'portrait',
+      unit: 'px',
+      format: [width, height]
+    })
+    doc.addImage(imgData, 'PNG', 0, 0, width, height)
+    doc.save('scatter-plot.pdf')
+  } catch (error) {
+    console.error('PDF download failed:', error)
+  }
+}
+
 onMounted(drawChart)
 watch(() => props.scatterData, drawChart)
 </script>
@@ -199,8 +277,8 @@ svg {
   position: fixed;
   z-index: 99999;
   background-color: white;
-  padding: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
   pointer-events: none;
 }
 
@@ -210,5 +288,32 @@ svg {
 
 .scatter-point.hovered {
   transform: translateY(-2px);
+}
+
+.title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
+.download-wrapper {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 10;
+}
+
+.chart-title {
+  font-size: 14px;
+  color: #333333;
+  text-align: center;
+}
+
+.download-btn {
+  font-size: 12px;
+  text-transform: none;
+  color: #333333;
 }
 </style>

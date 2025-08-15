@@ -105,7 +105,7 @@
                 :gene-info="oncoprintMap.geneInfo"
                 :domains="oncoprintMap.domains"
                 :oncoprint-data="oncoprintMap.oncoprintData"
-                :height=400
+                :height=500
               />
             </template>
 
@@ -216,7 +216,7 @@ const breadcrumbs = [
     href: '/',
   },
   {
-    title: 'Visualize',
+    title: 'Visualization',
   },
   {
     title: 'Gene',
@@ -225,7 +225,7 @@ const breadcrumbs = [
 
 // Filters 保持不变
 const filters = ref({
-  geneName: 'VHL',
+  geneName: 'BAP1',
   consequenceClass: null,
 })
 

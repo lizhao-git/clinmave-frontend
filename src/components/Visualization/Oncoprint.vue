@@ -1,18 +1,81 @@
 <template>
   <div
     ref="container"
-    style="position: relative; user-select: none; display: flex; justify-content: center;"
+    style="position: relative; user-select: none; display: flex; justify-content: center; padding-bottom: 50px;"
   >
     <svg ref="svg" :width="computedWidth" :height="height"></svg>
-    <div
-      id="oncoprintTooltip"
-      style="position: absolute; pointer-events: none; background: #222; color: #eee; padding: 5px 8px; border-radius: 4px; font-size: 14px; display: none; z-index: 10;"
-    ></div>
+    <!-- Tooltip rendered at body level -->
+    <teleport to="body">
+      <div
+        v-if="tooltipVisible"
+        class="custom-tooltip"
+        :style="{ left: tooltipPosition.x + 'px', top: tooltipPosition.y + 'px' }"
+      >
+        <!-- Key-value table for Ref, Position, Type, or domain/proportion bar data -->
+        <table style="font-family: Arial; font-size: 14px; border-collapse: collapse; margin-bottom: 10px;">
+          <tbody>
+            <tr v-for="(item, index) in tooltipContent.data" :key="index">
+              <td style="padding-right: 10px;">{{ item.key }}:</td>
+              <td>
+                <v-chip
+                  v-if="item.key === 'Type'"
+                  density="compact"
+                  :color="mutationColorMap[item.value] || '#bcbcbc99'"
+                >
+                  {{ item.value }}
+                </v-chip>
+                <span v-else>{{ item.value }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- Three-column table for infoData when mutation -->
+        <table
+          v-if="tooltipContent.isMutationWithInfo && tooltipContent.infoData.length > 0"
+          style="font-family: Arial; font-size: 14px; border-collapse: collapse;"
+        >
+          <thead>
+            <tr>
+              <th style="font-weight: bold; text-align: center; padding: 5px; border-bottom: 1px solid #ccc;">HGVS.p</th>
+              <th style="font-weight: bold; text-align: center; padding: 5px; border-bottom: 1px solid #ccc;">Score</th>
+              <th style="font-weight: bold; text-align: center; padding: 5px; border-bottom: 1px solid #ccc;">Classification</th>
+              <th style="font-weight: bold; text-align: center; padding: 5px; border-bottom: 1px solid #ccc;">Consequence</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(info, index) in tooltipContent.infoData"
+              :key="index"
+              :style="index > 0 ? 'border-top: 1px solid #ccc;' : ''"
+            >
+              <td style="padding: 5px; text-align: center;">{{ info.ref2alt || '' }}</td>
+              <td style="padding: 5px; text-align: center;">{{ info.score || '' }}</td>
+              <td style="padding: 5px; text-align: center;">
+                <v-chip
+                  density="compact"
+                  :color="mutationColorMap[info.type] || '#bcbcbc99'"
+                >
+                  {{ info.type }}
+                </v-chip>
+              </td>
+              <td style="padding: 5px; text-align: center;">
+                <v-chip
+                  density="compact"
+                  :color="consequenceColorMap[info.consequence] || '#bcbcbc99'"
+                >
+                  {{ info.consequence }}
+                </v-chip>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </teleport>
 
     <!-- Download buttons at bottom center -->
     <div
       class="d-flex justify-center"
-      style="position: absolute; bottom: 10px; width: 100%; z-index: 20; gap: 6px;"
+      style="position: absolute; bottom: 100px; width: 100%; z-index: 0; gap: 6px;"
     >
       <v-btn icon class="ma-1" color="white" elevation="1" @click="zoomOut" title="Zoom Out">
         <v-icon>mdi-magnify-minus</v-icon>
@@ -44,8 +107,9 @@
           @mouseenter="showDownloadDropdown"
           @mouseleave="hideDownloadDropdown"
         >
-          <div class="dropdown-item" @click="downloadPDF">PDF</div>
           <div class="dropdown-item" @click="downloadSVG">SVG</div>
+          <div class="dropdown-item" @click="downloadPDF">PDF</div>
+
         </div>
       </div>
     </div>
@@ -118,6 +182,14 @@ const activeSampleId = ref(null)
 const currentOrder = ref([...props.oncoprintData])
 const positionMap = ref(new Map())
 const mousePosition = ref({ x: 0, y: 0 })
+const tooltipVisible = ref(false)
+const tooltipPosition = ref({ x: 0, y: 0 })
+const tooltipContent = ref({
+  data: [],
+  isMutationWithInfo: false,
+  infoData: [],
+  mutationType: '',
+})
 let hideDropdownTimer = null
 
 function showDownloadDropdown() {
@@ -221,9 +293,24 @@ const pfamColorMap = ref({})
 const mutationColorMap = {
   'Gain-of-function': '#CC0000',
   'Loss-of-function': '#0072B2',
-  'Functional neutral': '#bcbcbc',
+  'Functionally normal': '#bcbcbc',
   null: 'white',
 }
+
+const consequenceColorMap = {
+  'Missense': '#E69F00',
+  'Nonsense': '#D55E00',
+  'Synonymous': '#009E73',
+  'Splice site': '#CC79A7',
+  'Stop_lost': '#882255',
+  'Intron': '#999999',
+  'UTR': '#56B4E9',
+  'Frameshift': '#CC0000',
+  'ncRNA': '#F0E442',
+  'Upstream': '#0072B2',
+  'Intergenic': '#AAAAAA',
+}
+
 const colorPalette = ['#ffd92f', '#a6cee3', '#b2df8a', '#fb9a99', '#fdbf6f']
 
 const sampleTextPositions = ref({})
@@ -241,7 +328,7 @@ function getSampleDropdownStyle(sampleId) {
     position: 'absolute',
     left: `${margin.left - dropdownWidth}px`,
     top: `${pos.y + margin.top - 10}px`,
-    zIndex: 20,
+    zIndex: 10, // Above buttons (z-index: 0)
   }
 }
 
@@ -269,7 +356,7 @@ function getMutationCounts(sample) {
   const counts = {
     'Gain-of-function': 0,
     'Loss-of-function': 0,
-    'Functional neutral': 0,
+    'Functionally normal': 0,
   }
   sample.mutations.forEach(m => {
     if (m.type in counts) {
@@ -282,14 +369,73 @@ function getMutationCounts(sample) {
     percentages: total > 0 ? {
       'Gain-of-function': (counts['Gain-of-function'] / total) * 100,
       'Loss-of-function': (counts['Loss-of-function'] / total) * 100,
-      'Functional neutral': (counts['Functional neutral'] / total) * 100,
+      'Functionally normal': (counts['Functionally normal'] / total) * 100,
     } : {
-      'Gain-of-function': 0,
-      'Loss-of-function': 0,
-      'Functional neutral': 0,
+      'Gain-of-function': 33.33,
+      'Loss-of-function': 33.33,
+      'Functionally normal': 33.34,
     },
     total
   }
+}
+
+function manageTooltip({ event, content, show, isMutationWithInfo = false, infoData = [], mutationType = '' }) {
+  if (!show) {
+    tooltipVisible.value = false
+    return
+  }
+
+  // Position tooltip near mouse cursor
+  const offsetX = 10 // Pixels to the right of cursor
+  const offsetY = 10 // Pixels below cursor
+  const tooltipEl = container.value?.querySelector('.custom-tooltip')
+  const tooltipRect = tooltipEl ? tooltipEl.getBoundingClientRect() : { width: 200, height: 100 } // Fallback dimensions
+
+  let tooltipX = event.clientX + offsetX
+  let tooltipY = event.clientY + offsetY
+
+  // Adjust if tooltip would extend beyond viewport
+  const viewportWidth = window.innerWidth
+  const viewportHeight = window.innerHeight
+  if (tooltipX + tooltipRect.width > viewportWidth) {
+    tooltipX = event.clientX - tooltipRect.width - offsetX // Position to the left
+  }
+  if (tooltipY + tooltipRect.height > viewportHeight) {
+    tooltipY = event.clientY - tooltipRect.height - offsetY // Position above
+  }
+
+  // Ensure tooltip stays within viewport
+  tooltipX = Math.max(0, Math.min(tooltipX, viewportWidth - tooltipRect.width))
+  tooltipY = Math.max(0, Math.min(tooltipY, viewportHeight - tooltipRect.height))
+
+  tooltipPosition.value = {
+    x: tooltipX,
+    y: tooltipY
+  }
+
+  // Generate tooltip content for key-value table
+  const lines = content.split('<br>')
+  const data = lines.map(line => {
+    const [key, value = ''] = line.split(':').map(s => s.trim())
+    return { key, value }
+  })
+
+  // Format infoData for three-column table with mutationType
+  const formattedInfoData = infoData.map(info => ({
+    ref2alt: info.ref2alt || '',
+    score: info.score || '',
+    type: info.type || '',
+    consequence: info.consequence || ''
+  }))
+
+  tooltipContent.value = {
+    data,
+    isMutationWithInfo,
+    infoData: formattedInfoData,
+    mutationType,
+  }
+
+  tooltipVisible.value = true
 }
 
 function drawTrack() {
@@ -297,7 +443,7 @@ function drawTrack() {
   const svgEl = d3.select(svg.value)
   svgEl.selectAll('*').remove()
 
-  const margin = { top: 50, right: 200, bottom: 30, left: 150 }
+  const margin = { top: 100, right: 100, bottom: 60, left: 100 }
   const innerWidth = computedWidth.value - margin.left - margin.right
   const g = svgEl.append('g').attr('transform', `translate(${margin.left},${margin.top})`)
 
@@ -332,7 +478,7 @@ function drawTrack() {
     .attr('stroke', 'black')
     .attr('stroke-width', scaledStrokeWidth)
 
-  const leftTextX = -margin.left + 100
+  const leftTextX = -margin.left + 45
   g.append('text')
     .text(props.geneInfo.geneName)
     .attr('x', leftTextX)
@@ -374,10 +520,11 @@ function drawTrack() {
         .style('cursor', 'pointer')
         .attr('stroke-width', scaledStrokeWidth * 3)
         .attr('stroke', darkerColor)
-      showTooltip(
+      manageTooltip({
         event,
-        `Pfam: ${d.pfamId}<br>${d.pfamName}<br>${d.pfamDescription}`
-      )
+        content: `Pfam: ${d.pfamId}<br>Name: ${d.pfamName}<br>Description: ${d.pfamDescription}`,
+        show: true,
+      })
     })
     .on('mouseout', function () {
       d3.select(this)
@@ -385,7 +532,7 @@ function drawTrack() {
         .duration(150)
         .attr('stroke-width', scaledStrokeWidth)
         .attr('stroke', 'black')
-      hideTooltip()
+      manageTooltip({ show: false })
     })
 
   domainGroup
@@ -404,10 +551,10 @@ function drawTrack() {
   const yStart = yGene + geneRectHeight + 40
 
   const layerGroup = g.append('g').attr('class', 'oncoprint-layers')
-  const barHeight = 15
+  const barHeight = 13.5
   const barGap = 2
-  const maxBarWidth = 75
-  const mutationTypes = ['Gain-of-function', 'Loss-of-function', 'Functional neutral']
+  const maxBarWidth = 50
+  const mutationTypes = ['Gain-of-function', 'Loss-of-function', 'Functionally normal']
   const barScale = d3.scaleLinear()
     .domain([0, 100])
     .range([0, maxBarWidth])
@@ -419,48 +566,6 @@ function drawTrack() {
       .attr('class', 'sample-row')
       .attr('data-id', sample.sample)
       .attr('transform', `translate(0, ${y})`)
-      .call(
-        d3
-          .drag()
-          .on('start', function () {
-            d3.select(this).raise().classed('dragging', true)
-            clearTimeout(hideDropdownTimer)
-            hideSampleDropdown()
-          })
-          .on('drag', function (event) {
-            d3.select(this).attr('transform', `translate(0, ${event.y})`)
-          })
-          .on('end', function (event) {
-            d3.select(this).classed('dragging', false)
-            const draggedId = d3.select(this).attr('data-id')
-            const draggedY = event.y
-
-            let closestId = null
-            let minDist = Infinity
-            positionMap.value.forEach((yPos, id) => {
-              if (id === draggedId) return
-              const dist = Math.abs(yPos - draggedY)
-              if (dist < minDist) {
-                minDist = dist
-                closestId = id
-              }
-            })
-
-            if (closestId) {
-              const draggedIdx = currentOrder.value.findIndex(
-                s => s.sample === draggedId
-              )
-              const targetIdx = currentOrder.value.findIndex(
-                s => s.sample === closestId
-              )
-              const draggedSample = currentOrder.value.splice(draggedIdx, 1)[0]
-              currentOrder.value.splice(targetIdx, 0, draggedSample)
-              updateRowPositions(true)
-            } else {
-              updateRowPositions(true)
-            }
-          })
-      )
 
     sampleGroup
       .append('text')
@@ -507,24 +612,39 @@ function drawTrack() {
       .attr('stroke-width', scaledStrokeWidth)
       .attr('opacity', 1)
       .on('mouseover', function (event, d) {
-        d3.select(this)
-          .transition()
-          .duration(150)
-          .style('cursor', 'pointer')
-          .attr('stroke-width', scaledStrokeWidth * 3)
-          .attr('stroke', '#1e90ff')
-        showTooltip(
-          event,
-          `Ref: ${d.ref || ''}<br>${d.type}<br>Position: ${d.start}`
-        )
+        if (d.type !== null) {
+          d3.select(this)
+            .transition()
+            .duration(150)
+            .style('cursor', 'pointer')
+            .attr('stroke-width', scaledStrokeWidth * 3)
+            .attr('stroke', '#1e90ff')
+          const content = `Ref: ${d.ref || ''}<br>Position: ${d.start}<br>Classification: ${d.type}`
+          const infoData = (d.info && typeof d.info === 'string')
+            ? d.info.split('|').map(entry => {
+                const [ref2alt = '', score = '', type = '', consequence = ''] = entry.split(';').map(s => s.trim())
+                return { ref2alt, score, type, consequence }
+              })
+            : []
+          manageTooltip({
+            event,
+            content,
+            show: true,
+            isMutationWithInfo: true,
+            infoData,
+            mutationType: d.type,
+          })
+        }
       })
-      .on('mouseout', function () {
-        d3.select(this)
-          .transition()
-          .duration(150)
-          .attr('stroke-width', scaledStrokeWidth)
-          .attr('stroke', 'white')
-        hideTooltip()
+      .on('mouseout', function (event, d) {
+        if (d.type !== null) {
+          d3.select(this)
+            .transition()
+            .duration(150)
+            .attr('stroke-width', scaledStrokeWidth)
+            .attr('stroke', 'white')
+          manageTooltip({ show: false })
+        }
       })
 
     const { counts, percentages, total } = getMutationCounts(sample)
@@ -532,31 +652,41 @@ function drawTrack() {
       .attr('transform', `translate(${innerWidth + 20}, 0)`)
     
     let currentX = 0
-    mutationTypes.forEach((type, index) => {
+    const activeTypes = mutationTypes.filter(type => total > 0 ? percentages[type] > 0 : true)
+    const totalGaps = activeTypes.length > 1 ? (activeTypes.length - 1) * barGap : 0
+    const totalBarWidth = maxBarWidth - totalGaps
+    const typeWidth = total > 0 ? null : totalBarWidth / activeTypes.length
+
+    activeTypes.forEach((type, index) => {
       const percentage = percentages[type]
       const count = counts[type]
-      if (percentage > 0) {
-        barGroup.append('rect')
-          .attr('x', currentX)
-          .attr('y', 0)
-          .attr('width', barScale(percentage))
-          .attr('height', barHeight)
-          .attr('fill', mutationColorMap[type])
-          .on('mouseover', function(event) {
-            d3.select(this)
-              .transition()
-              .duration(150)
-              .style('cursor', 'pointer')
-            showTooltip(event, `${type}: ${count} (${percentage.toFixed(1)}%)`)
+      const barWidth = total > 0 ? (percentage / 100) * totalBarWidth : typeWidth
+      barGroup.append('rect')
+        .attr('x', currentX)
+        .attr('y', 0)
+        .attr('width', barWidth)
+        .attr('height', barHeight)
+        .attr('fill', mutationColorMap[type])
+        .attr('stroke', 'black')
+        .attr('stroke-width', scaledStrokeWidth)
+        .on('mouseover', function(event) {
+          d3.select(this)
+            .transition()
+            .duration(150)
+            .style('cursor', 'pointer')
+          manageTooltip({
+            event,
+            content: `Type: ${type}<br>Count: ${count}<br>Percentage: ${percentage.toFixed(1)}%`,
+            show: true,
           })
-          .on('mouseout', function() {
-            d3.select(this)
-              .transition()
-              .duration(150)
-            hideTooltip()
-          })
-        currentX += barScale(percentage) + barGap
-      }
+        })
+        .on('mouseout', function() {
+          d3.select(this)
+            .transition()
+            .duration(150)
+          manageTooltip({ show: false })
+        })
+      currentX += barWidth + (index < activeTypes.length - 1 ? barGap : 0)
     })
 
     sampleTextPositions.value[sample.sample] = {
@@ -574,7 +704,7 @@ function drawTrack() {
   axisGroup.selectAll('text')
     .style('font-size', '14px')
 
-  const legendY = yStart + currentOrder.value.length * (rectHeight + gap) + 20
+  const legendY = yStart + currentOrder.value.length * (rectHeight + gap) + 30
   const legend = g.append('g').attr('class', 'mutation-legend').attr('transform', `translate(0, ${legendY})`)
   Object.entries(mutationColorMap)
     .filter(([type]) => type !== "null")
@@ -596,19 +726,6 @@ function drawTrack() {
         .attr('font-size', 14)
         .text(type)
     })
-}
-
-function showTooltip(event, htmlContent) {
-  const tooltip = container.value.querySelector('#oncoprintTooltip')
-  const rect = container.value.getBoundingClientRect()
-  tooltip.innerHTML = htmlContent
-  tooltip.style.left = `${event.clientX - rect.left + 10}px`
-  tooltip.style.top = `${event.clientY - rect.top + 10}px`
-  tooltip.style.display = 'inline-block'
-}
-function hideTooltip() {
-  const tooltip = container.value.querySelector('#oncoprintTooltip')
-  tooltip.style.display = 'none'
 }
 
 const DPI_SCALE = 2
@@ -701,17 +818,6 @@ watch(
 </script>
 
 <style scoped>
-#oncoprintTooltip {
-  pointer-events: none;
-  background: #222;
-  color: #eee;
-  padding: 5px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-  display: none;
-  z-index: 10;
-}
-
 .sample-row.dragging {
   opacity: 0.7;
   cursor: grabbing;
@@ -726,28 +832,24 @@ watch(
   position: absolute;
   top: 100%;
   right: 0;
-  background-color: #fff;
+  background-color: #ffffff;
   min-width: 80px;
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-  z-index: 20;
-  border-radius: 4px;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
   overflow: hidden;
+  z-index: 10;
 }
 
 .dropdown-item {
-  color: #000000;
-  padding: 8px 12px;
-  text-decoration: none;
-  text-align: center;
-  display: block;
+  color: #1f2937;
+  padding: 8px 16px;
   font-size: 14px;
   cursor: pointer;
-  border-radius: 12px;
-  margin: 2px;
+  transition: background-color 0.15s ease-in-out;
 }
 
 .dropdown-item:hover {
-  background-color: #f1f1f1;
+  background-color: #f3f4f6;
 }
 
 .sample-dropdown {
@@ -755,41 +857,60 @@ watch(
 }
 
 .sample-dropdown-content {
-  background-color: #fff;
+  background-color: #ffffff;
   min-width: 140px;
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-  z-index: 20;
-  border-radius: 4px;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   pointer-events: auto;
   position: relative;
+  z-index: 10;
 }
 
 .sample-dropdown-content::before {
   content: '';
   position: absolute;
-  right: -10px; /* Adjusted to account for larger triangle */
-  top: 10px; /* Align with vertical center of datasetId text */
+  right: -10px;
+  top: 10px;
   width: 0;
   height: 0;
-  border-left: 10px solid #fff; /* Increased from 8px to 10px */
-  border-top: 10px solid transparent; /* Increased from 8px to 10px */
-  border-bottom: 10px solid transparent; /* Increased from 8px to 10px */
-  z-index: 21;
+  border-left: 10px solid #ffffff;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  z-index: 11;
+}
+
+.sample-dropdown-content::after {
+  content: '';
+  position: absolute;
+  right: -11px;
+  top: 10px;
+  width: 0;
+  height: 0;
+  border-left: 11px solid #d1d5db;
+  border-top: 11px solid transparent;
+  border-bottom: 11px solid transparent;
+  z-index: 9;
 }
 
 .sample-dropdown-item {
-  color: #000000;
-  padding: 8px 12px;
-  text-decoration: none;
-  display: block;
+  color: #1f2937;
+  padding: 8px 16px;
   font-size: 14px;
   cursor: pointer;
-  border-radius: 12px;
-  margin: 2px;
+  transition: background-color 0.15s ease-in-out;
 }
 
 .sample-dropdown-item:hover {
-  background-color: #f1f1f1;
+  background-color: #f3f4f6;
+}
+
+.custom-tooltip {
+  position: fixed;
+  z-index: 99999;
+  background-color: white;
+  padding: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
 }
 </style>

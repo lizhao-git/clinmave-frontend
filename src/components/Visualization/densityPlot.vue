@@ -18,6 +18,13 @@ const totalHeight = computed(() => props.size)
 const svgRef = ref(null)
 
 const renderChart = () => {
+  console.log('Rendering chart with props:', {
+    dataLength: props.data.length,
+    selectionStrategy: props.selectionStrategy,
+    cutoff: props.cutoff,
+    score: props.score
+  })
+
   const svg = d3.select(svgRef.value)
   svg.selectAll('*').remove()
 
@@ -71,7 +78,7 @@ const renderChart = () => {
       .attr('cx', scoreX)
       .attr('cy', yScale(scoreDensity))
       .attr('r', 4)
-      .attr('fill', '#ff5722')
+      .attr('fill', '#CC0000')
 
     g.append('text')
       .attr('x', scoreX)
@@ -112,28 +119,37 @@ const renderChart = () => {
     const cutoffValues = props.cutoff.map(Number)
     const minCutoff = Math.min(...cutoffValues)
     const maxCutoff = Math.max(...cutoffValues)
+    console.log('Cutoff values:', { minCutoff, maxCutoff })
     legendItems = [
-      { label: "Loss-of-function", color: "#0072B2", fill: d3.range(xMin - 2, minCutoff + 0.01, 0.01) },
-      { label: "Gain-of-function", color: "#D55E00", fill: d3.range(maxCutoff, xMax + 0.01, 0.01) }
+      { label: 'Loss-of-function', color: '#0072B2', range: [xMin, minCutoff] },
+      { label: 'Gain-of-function', color: '#CC0000', range: [maxCutoff, xMax] }
     ]
   } else if (props.selectionStrategy === 'positive') {
-    legendItems = [{ label: "Gain-of-function", color: "#D55E00", fill: d3.range(+props.cutoff, xMax + 0.01, 0.01) }]
+    const cutoff = Number(props.cutoff)
+    console.log('Cutoff value:', cutoff)
+    legendItems = [{ label: 'Gain-of-function', color: '#CC0000', range: [cutoff, xMax] }]
   } else if (props.selectionStrategy === 'negative') {
-    legendItems = [{ label: "Loss-of-function", color: "#0072B2", fill: d3.range(xMin, +props.cutoff + 0.01, 0.01) }]
+    const cutoff = Number(props.cutoff)
+    console.log('Cutoff value:', cutoff)
+    legendItems = [{ label: 'Loss-of-function', color: '#0072B2', range: [xMin, cutoff] }]
   }
 
-  legendItems.forEach(({ color, fill }) => {
-    const filledData = density.filter(d => fill.includes(Math.round(d[0] * 100) / 100))
+  legendItems.forEach(({ color, range, label }) => {
+    const [start, end] = range
+    const filledData = density.filter(d => d[0] >= start && d[0] <= end)
     if (filledData.length > 0) {
-      filledData.unshift({ 0: fill[0], 1: 0 })
-      filledData.push({ 0: fill.at(-1), 1: 0 })
+      const path = d3.path()
+      path.moveTo(xScale(start), yScale(0)) // Start at bottom-left
+      path.lineTo(xScale(start), yScale(filledData[0][1])) // Vertical line up
+      filledData.forEach(d => path.lineTo(xScale(d[0]), yScale(d[1]))) // Follow density curve
+      path.lineTo(xScale(end), yScale(filledData[filledData.length - 1][1])) // End at density
+      path.lineTo(xScale(end), yScale(0)) // Vertical line down
+      path.closePath()
+
+      console.log(`Drawing ${label} area: start=${start}, end=${end}, points=${filledData.length}`)
+
       g.append('path')
-        .datum(filledData)
-        .attr('d', d3.area()
-          .x(d => xScale(d[0]))
-          .y0(yScale(0))
-          .y1(d => yScale(d[1]))
-          .curve(d3.curveBasis))
+        .attr('d', path)
         .attr('fill', color)
         .attr('opacity', 0.8)
     }
@@ -150,18 +166,17 @@ const renderChart = () => {
     .attr('fill', 'gray')
     .attr('opacity', 0.6)
 
-  // Modified legend to stack items vertically
-  const itemHeight = 15 // Height per legend item
+  const itemHeight = 15
   const rectWidth = 12
   const fontSize = 10
   const legend = g.append('g')
-    .attr('transform', `translate(${width / 2 - 60}, ${height + 35})`) // Center legend horizontally, move up slightly
+    .attr('transform', `translate(${width / 2 - 60}, ${height + 35})`)
 
   legend.selectAll('.legend-item')
     .data(legendItems)
     .enter()
     .append('g')
-    .attr('transform', (d, i) => `translate(6, ${i * itemHeight + 5})`) // Stack vertically
+    .attr('transform', (d, i) => `translate(6, ${i * itemHeight + 5})`)
     .each(function (d) {
       const item = d3.select(this)
       item.append('rect')
@@ -182,6 +197,7 @@ function kernelDensityEstimator(kernel, X) {
     return X.map(x => [x, d3.mean(V, v => kernel(x - v))])
   }
 }
+
 function epanechnikov(h) {
   return x => Math.abs(x /= h) <= 1 ? 0.75 * (1 - x * x) / h : 0
 }
