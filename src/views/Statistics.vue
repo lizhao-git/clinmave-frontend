@@ -152,7 +152,7 @@ const sections = computed(() => [
     borderColor: 'primary',
     charts: [
       { id: 'gene-accumulation', title: 'Gene Accumulation', component: GeneAccumulative, props: { data: geneAccumulativeData.value }, loading: geneAccumulativeLoading.value, cols: 6, md: 6 },
-      { id: 'intensity-proportion', title: 'Intensity Proportion', component: IntensityProportion, props: { data: intensityProportionData.value }, loading: intensityProportionLoading.value, cols: 6, md: 6 },
+      { id: 'intensity-proportion', title: 'Intensity Proportion', component: IntensityProportion, props: { data: intensityProportionData.value, colors: { Strong: '#fb9a99', Moderate: '#fdbf6f', Weak: '#a6cee3'}}, loading: intensityProportionLoading.value, cols: 6, md: 6 },
       { id: 'gene-intensity-dist', title: 'Gene Intensity Distribution', component: DoubleAxisBar, props: { data: geneIntensityDistData.value }, loading: geneIntensityDistLoading.value, cols: 12, md: 12 }
     ]
   },
