@@ -225,7 +225,7 @@ const breadcrumbs = [
 
 // Filters 保持不变
 const filters = ref({
-  geneName: 'BAP1',
+  geneName: 'VHL',
   consequenceClass: null,
 })
 

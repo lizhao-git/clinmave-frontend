@@ -376,9 +376,9 @@ const breadcrumbs = [
 
 // Filters
 const filters = ref({
-  geneName: 'BRAF',
+  geneName: 'BAP1',
   mutagenesisStrategy: null,
-  experimentModel: 'E. coli',
+  experimentModel: null,
   phenotype: null,
 })
 
@@ -697,7 +697,6 @@ const downloadRocCurvePDF = async () => {
 
 watch(datasetId, (newDatasetId) => {
   if (newDatasetId) {
-    console.log('[Dataset ID changed]', newDatasetId)
     debouncedFetchCompareConsequenceBox(newDatasetId)
     debouncedFetchRocCurve(newDatasetId)
   }

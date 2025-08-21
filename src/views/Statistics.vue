@@ -101,10 +101,9 @@ const breadcrumbs = ref([
 // Sidebar state
 const activeSection = ref('data-flow')
 const sidebarItems = ref([
-  { title: 'Overall summary', value: 'data-flow' },
-  { title: 'Variant Analysis', value: 'variant-analysis' },
-  { title: 'Gene and Intensity', value: 'gene-intensity' },
-  { title: 'Assay Comparison', value: 'assay-comparison' }
+  { title: '1. Overall summary', value: 'data-flow' },
+  { title: '2. Statistics of clinically relevant genes', value: 'gene-intensity' },
+  { title: '3. Cross-assay statistics', value: 'assay-comparison' }
 ])
 
 // Chart data and loading states
@@ -130,39 +129,37 @@ const geneIntensityDistLoading = ref(true)
 const sections = computed(() => [
   {
     id: 'data-flow',
-    title: 'Overall summary',
+    title: '1. Overall summary',
     borderColor: 'error',
     charts: [
-      { id: 'sankey', title: 'Sankey Diagram', component: Sanky, props: { rawData: sankeyData.value }, loading: sankeyLoading.value, cols: 6, md: 6 },
-      { id: 'sunburst', title: 'Sunburst Chart', component: Sunburst, props: {}, loading: sunburstLoading.value, cols: 6, md: 6 }
+      { id: 'sankey', title: '1.1 Variant distribution across functional classifications', component: Sanky, props: { rawData: sankeyData.value }, loading: sankeyLoading.value, cols: 6, md: 6 },
+      { id: 'sunburst', title: '1.2 Distribution of 49 studies among MAVE techniques and subcategories', component: Sunburst, props: {}, loading: sunburstLoading.value, cols: 6, md: 6 }
     ]
   },
   {
-    id: 'variant-analysis',
-    title: 'Variant Analysis',
     borderColor: 'success',
     charts: [
-      { id: 'consequence-proportion', title: 'Consequence Proportion', component: ConsequenceProporiton, props: { data: consequenceProportionData.value }, loading: consequenceProportionLoading.value, cols: 6, md: 6 },
-      { id: 'dataset-accumulation', title: 'Dataset Accumulation', component: ScatterAccumulative, props: { data: datasetAccumulationData.value }, loading: datasetAccumulationLoading.value, cols: 6, md: 6 }
+      { id: 'consequence-proportion', title: '1.3 Dataset summary: cumulative variant numbers with functional abnormality proportions', component: ConsequenceProporiton, props: { data: consequenceProportionData.value }, loading: consequenceProportionLoading.value, cols: 6, md: 6 },
+      { id: 'dataset-accumulation', title: '1.4 Sankey plot of 818 curated genes with established disease and clinical roles', component: ScatterAccumulative, props: { data: datasetAccumulationData.value }, loading: datasetAccumulationLoading.value, cols: 6, md: 6 }
     ]
   },
   {
     id: 'gene-intensity',
-    title: 'Gene and Intensity',
+    title: '2. Statistics of clinically relevant genes',
     borderColor: 'primary',
     charts: [
-      { id: 'gene-accumulation', title: 'Gene Accumulation', component: GeneAccumulative, props: { data: geneAccumulativeData.value }, loading: geneAccumulativeLoading.value, cols: 6, md: 6 },
-      { id: 'intensity-proportion', title: 'Intensity Proportion', component: IntensityProportion, props: { data: intensityProportionData.value, colors: { Strong: '#fb9a99', Moderate: '#fdbf6f', Weak: '#a6cee3'}}, loading: intensityProportionLoading.value, cols: 6, md: 6 },
-      { id: 'gene-intensity-dist', title: 'Gene Intensity Distribution', component: DoubleAxisBar, props: { data: geneIntensityDistData.value }, loading: geneIntensityDistLoading.value, cols: 12, md: 12 }
+      { id: 'gene-accumulation', title: '2.1 Summary of 45 clinically relevant genes: dataset and variant statistics across MAVE techniques.', component: GeneAccumulative, props: { data: geneAccumulativeData.value }, loading: geneAccumulativeLoading.value, cols: 6, md: 6 },
+      { id: 'intensity-proportion', title: '2.2 OddsPath statistics', component: IntensityProportion, props: { data: intensityProportionData.value, colors: { Strong: '#fb9a99', Moderate: '#fdbf6f', Weak: '#a6cee3'}}, loading: intensityProportionLoading.value, cols: 6, md: 6 },
+      { id: 'gene-intensity-dist', title: '2.3 Summary of variant-level functional intensity tiers', component: DoubleAxisBar, props: { data: geneIntensityDistData.value }, loading: geneIntensityDistLoading.value, cols: 12, md: 12 }
     ]
   },
   {
     id: 'assay-comparison',
-    title: 'Assay Comparison',
+    title: '3. Cross-assay statistics',
     borderColor: 'warning',
     charts: [
-      { id: 'venn', title: 'Venn Diagram', component: Venn, props: { data: vennData.value }, loading: vennLoading.value, cols: 6, md: 6 },
-      { id: 'assay-proportion', title: 'Assay Proportion', component: IntensityProportion, props: { data: assayProportionData.value, colors: { 'shared': '#fb9a99', 'single assay': '#a6cee3' } }, loading: assayProportionLoading.value, cols: 6, md: 6 }
+      { id: 'venn', title: '3.1 Overlap of genes covered by DMS- and CRISPR-based MAVEs', component: Venn, props: { data: vennData.value }, loading: vennLoading.value, cols: 6, md: 6 },
+      { id: 'assay-proportion', title: '3.2 Distribution of variant proportion by cross-assay frequency', component: IntensityProportion, props: { data: assayProportionData.value, colors: { 'shared': '#fb9a99', 'single assay': '#a6cee3' } }, loading: assayProportionLoading.value, cols: 6, md: 6 }
     ]
   }
 ])
