@@ -461,7 +461,7 @@ function drawChart(rawData) {
 
   // Calculate ticks dynamically with 0.1 or 0.5 step
   const tickStep = range < 2 ? 0.1 : 0.5
-  const yTicks = d3.range(yMin, yMax + tickStep, tickStep).map(d => Number(d.toFixed(2)))
+  const yTicks = d3.range(yMin, yMax, tickStep).map(d => Number(d.toFixed(2)))
   console.log(`Y axis range: [${yMin.toFixed(2)}, ${yMax.toFixed(2)}], tickStep=${tickStep}, ticks=${yTicks}`)
 
   // Generate finer yTicks for KDE

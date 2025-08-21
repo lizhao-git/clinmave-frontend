@@ -92,7 +92,7 @@ const props = defineProps({
     default: () => ({
       'Gain-of-function': '#CC0000',
       'Loss-of-function': '#0072B2',
-      'Functional neutral': '#bcbcbc'
+      'Functionally normal': '#bcbcbc'
     })
   },
   titleFlag: {

@@ -79,8 +79,18 @@
           <v-col cols="12" v-if="!isInSilicoEmpty">
         <v-card flat height="100%">
           <v-card-title>
-            <v-icon icon="mdi-dna" class="mr-2" color="primary"></v-icon>
-            <span class="text-h6 font-weight-bold">In-silico prediction</span>
+            <div class="title-wrapper">
+              <v-icon icon="mdi-dna" class="mr-2" color="primary"></v-icon>
+              <span class="text-h6 font-weight-bold">In-silico prediction</span>
+              <v-tooltip location="top">
+                <template v-slot:activator="{ props }">
+                  <div v-bind="props">
+                    <v-icon style="font-size: 16px;">mdi-help-circle-outline</v-icon>
+                  </div>
+                </template>
+                <span>Integrate variant effect prediction tools and calibrated classifications to provide consistent, ACMG/AMP-aligned evidence for variant interpretation (See documents for further details).</span>
+              </v-tooltip>
+            </div>
           </v-card-title>
           <v-card-text>
            <vxe-table 
@@ -213,8 +223,18 @@
            <v-col cols="12" v-if="!isGadSummaryEmpty">
         <v-card flat height="100%">
           <v-card-title class="py-3">
-            <v-icon icon="mdi-account-group" class="mr-2" color="blue"></v-icon>
-            <span class="text-h6 font-weight-bold">Population frequency</span>
+            <div class="title-wrapper">
+              <v-icon icon="mdi-account-group" class="mr-2" color="blue"></v-icon>
+              <span class="text-h6 font-weight-bold">Population frequency</span>
+              <v-tooltip location="top">
+                <template v-slot:activator="{ props }">
+                  <div v-bind="props">
+                    <v-icon style="font-size: 16px;">mdi-help-circle-outline</v-icon>
+                  </div>
+                </template>
+                <span>Population-level allele frequency in gnomAD (v4.1)</span>
+              </v-tooltip>
+            </div>
           </v-card-title>
           <v-card-text>
             <vxe-table 
@@ -226,6 +246,19 @@
                   :data="variantData.gadSummary"
                 >
                   <vxe-column title="Mean allele frequency" width="200">
+                    <template #header>
+                      <div class="title-wrapper" style="margin-bottom: 0;">
+                        Mean allele frequency
+                        <v-tooltip location="top">
+                          <template v-slot:activator="{ props }">
+                            <div v-bind="props">
+                              <v-icon style="font-size: 16px;">mdi-help-circle-outline</v-icon>
+                            </div>
+                          </template>
+                          <span>Average frequency across all available populations;</span>
+                        </v-tooltip>
+                      </div>
+                    </template>
                     <template #default="{ row }">
                       <span class="text-body-1">
                         {{ row.gadFrequencyInfo === 'NA' || !row.gadFrequencyInfo ? '——' : row.gadFrequencyInfo }}
@@ -234,6 +267,19 @@
                   </vxe-column>
                   
                   <vxe-column title="#Homozygote" min-width="100">
+                    <template #header>
+                      <div class="title-wrapper" style="margin-bottom: 0;">
+                        #Homozygote
+                        <v-tooltip location="top">
+                          <template v-slot:activator="{ props }">
+                            <div v-bind="props">
+                              <v-icon style="font-size: 16px;">mdi-help-circle-outline</v-icon>
+                            </div>
+                          </template>
+                          <span>Total number of homozygous carriers;</span>
+                        </v-tooltip>
+                      </div>
+                    </template>
                     <template #default="{ row }">
                       <span class="text-body-1">
                         {{ row.gadNhomalt === 'NA' ? '——' : row.gadNhomalt }}
@@ -242,6 +288,19 @@
                   </vxe-column>
 
                   <vxe-column title="Highest population allele frequency" min-width="200">
+                    <template #header>
+                      <div class="title-wrapper" style="margin-bottom: 0;">
+                        Highest population allele frequency
+                        <v-tooltip location="top">
+                          <template v-slot:activator="{ props }">
+                            <div v-bind="props">
+                              <v-icon style="font-size: 16px;">mdi-help-circle-outline</v-icon>
+                            </div>
+                          </template>
+                          <span>Maximum allele frequency observed in any single population, reported with population label (EAS: East Aisa; AFR:African/African American;EUR: European; AMR: Latino/Admixed American; SAS: South Asian; NFE: Non-Finnish European; MID:Middle Eastern; FIN:Finnish)</span>
+                        </v-tooltip>
+                      </div>
+                    </template>
                     <template #default="{ row }">
                       <span class="text-body-1">
                         {{ row.gadPopmax === 'NA' ? '——' : row.gadPopmax }}
@@ -269,7 +328,7 @@
                   </span>
                 </template>
                 <span class="tooltip-text">
-                  Variant-level functional annotation, including functional classification within specific assays, cross-study reproducibility and within-study validation evidence.
+                  Variant-level functional annotation, including cross-assay summary, functional characterization within specific assays and validation evidence.
                 </span>
               </v-tooltip>
             </span>
@@ -448,83 +507,106 @@
             </v-card-title>
             
             <div class="bordered-container">
-              <span class="border-label">Odds of Pathogenicity (OddsPath) Statistics</span>
+              <div class="border-label title-wrapper">
+                <span>Structured calibration scheme</span>
+                <v-tooltip location="top">
+                  <template v-slot:activator="{ props }">
+                    <div v-bind="props">
+                      <v-icon style="font-size: 16px;">mdi-help-circle-outline</v-icon>
+                    </div>
+                  </template>
+                  <span>Combined strategy for variant pathogenicity classification through integration of assay- and variant-level metrics.</span>
+                </v-tooltip>
+              </div>
 
               <v-row align="center">
 
                 <v-col cols="12" sm="6">
-                  <vxe-table 
-                    border="inner"
-                    show-header
-                    auto-resize
-                    size="medium"
-                    class="no-border"
-                    :data="calibrationData"
-                  >
-                    <vxe-column field="oddsPath" width="120" align="center">
-                      <template #header>
-                        <v-tooltip>
-                          <template v-slot:activator="{ props }">
-                            <span v-bind="props" class="title-hover" style="cursor: pointer; display: inline-flex; align-items: center">
-                              OddsPath
-                              <v-icon style="font-size: 16px; margin-left: 4px">mdi-help-circle-outline</v-icon>
+                  <div ref="container" class="nature-container">
+                    <div class="title-wrapper">
+                      <span class="chart-title">{{ titleText }}</span>
+                      <v-tooltip location="top">
+                        <template v-slot:activator="{ props }">
+                          <div v-bind="props">
+                            <v-icon style="font-size: 16px;">mdi-help-circle-outline</v-icon>
+                          </div>
+                        </template>
+                        <span>Assay-level quantitative measure of functional evidence strength.</span>
+                      </v-tooltip>
+                    </div>
+                    <vxe-table 
+                      border="inner"
+                      show-header
+                      auto-resize
+                      size="medium"
+                      class="no-border"
+                      :data="calibrationData"
+                    >
+                      <vxe-column field="oddsPath" width="120" align="center">
+                        <template #header>
+                          <v-tooltip>
+                            <template v-slot:activator="{ props }">
+                              <span v-bind="props" class="title-hover" style="cursor: pointer; display: inline-flex; align-items: center">
+                                OddsPath
+                                <v-icon style="font-size: 16px; margin-left: 4px">mdi-help-circle-outline</v-icon>
+                              </span>
+                            </template>
+                            <span class="tooltip-text">
+                              A quantifiable metric that maps the strength of functional evidence according to the recommendations of the ClinGen Sequence Variant Interpretation (SVI) Working Group. See documentation for further details on calculation.
                             </span>
-                          </template>
-                          <span class="tooltip-text">
-                            A quantifiable metric that maps the strength of functional evidence according to the recommendations of the ClinGen Sequence Variant Interpretation (SVI) Working Group. See documentation for further details on calculation.
-                          </span>
-                        </v-tooltip>
-                      </template>
+                          </v-tooltip>
+                        </template>
 
-                      <template #default="{ row }">
-                        <span class="text-body-1">{{ row.oddsPath ?? '-' }}</span>
-                      </template>
-                    </vxe-column>
-                    
-                    <vxe-column field="tpCount" width="200" align="center">
-                      <template #header>
-                        <v-tooltip>
-                          <template v-slot:activator="{ props }">
-                            <span v-bind="props" class="title-hover" style="cursor: pointer; display: inline-flex; align-items: center">
-                              #(Likely-) pathogenicity
-                              <v-icon style="font-size: 16px; margin-left: 4px">mdi-help-circle-outline</v-icon>
+                        <template #default="{ row }">
+                          <span class="text-body-1">{{ row.oddsPath ?? '-' }}</span>
+                        </template>
+                      </vxe-column>
+                      
+                      <vxe-column field="tpCount" width="200" align="center">
+                        <template #header>
+                          <v-tooltip>
+                            <template v-slot:activator="{ props }">
+                              <span v-bind="props" class="title-hover" style="cursor: pointer; display: inline-flex; align-items: center">
+                                #(Likely-) pathogenicity
+                                <v-icon style="font-size: 16px; margin-left: 4px">mdi-help-circle-outline</v-icon>
+                              </span>
+                            </template>
+                            <span class="tooltip-text">
+                              Number of variants classified as Pathogenic/Likely pathogenic (P/LP) in ClinVar.
                             </span>
-                          </template>
-                          <span class="tooltip-text">
-                            Number of variants classified as Pathogenic/Likely pathogenic (P/LP) in ClinVar.
-                          </span>
-                        </v-tooltip>
-                      </template>
+                          </v-tooltip>
+                        </template>
 
-                      <template #default="{ row }">
-                        <span class="text-body-1">
-                          {{ row.tpCount }}
-                        </span>
-                      </template>
-                    </vxe-column>
-                    
-                    <vxe-column field="tnCount" min-width="100" align="center">
-                      <template #header>
-                        <v-tooltip>
-                          <template v-slot:activator="{ props }">
-                            <span v-bind="props" class="title-hover" style="cursor: pointer; display: inline-flex; align-items: center">
-                              #(Likely-) benign
-                              <v-icon style="font-size: 16px; margin-left: 4px">mdi-help-circle-outline</v-icon>
+                        <template #default="{ row }">
+                          <span class="text-body-1">
+                            {{ row.tpCount }}
+                          </span>
+                        </template>
+                      </vxe-column>
+                      
+                      <vxe-column field="tnCount" min-width="100" align="center">
+                        <template #header>
+                          <v-tooltip>
+                            <template v-slot:activator="{ props }">
+                              <span v-bind="props" class="title-hover" style="cursor: pointer; display: inline-flex; align-items: center">
+                                #(Likely-) benign
+                                <v-icon style="font-size: 16px; margin-left: 4px">mdi-help-circle-outline</v-icon>
+                              </span>
+                            </template>
+                            <span class="tooltip-text">
+                              Number of variants classified as Benign/Likely benign (B/LB) in ClinVar.
                             </span>
-                          </template>
-                          <span class="tooltip-text">
-                            Number of variants classified as Benign/Likely benign (B/LB) in ClinVar.
-                          </span>
-                        </v-tooltip>
-                      </template>
+                          </v-tooltip>
+                        </template>
 
-                      <template #default="{ row }">
-                        <span class="text-body-1">
-                          {{ row.tnCount }}
-                        </span>
-                      </template>
-                    </vxe-column>
-                  </vxe-table>
+                        <template #default="{ row }">
+                          <span class="text-body-1">
+                            {{ row.tnCount }}
+                          </span>
+                        </template>
+                      </vxe-column>
+                    </vxe-table>
+                  </div>
                 </v-col>
                 
                 <v-col cols="12" sm="6" class="mt-3 flex-col d-flex justify-center">
@@ -629,6 +711,25 @@
     font-weight: 500;
     color: black; /* 匹配边框颜色 */
   }
+  .nature-container {
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .chart-title {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333333;
+    text-align: center;
+  }
 
 </style>
 
@@ -639,6 +740,7 @@
   import axios from 'axios';
   import DensityPlot from '@/components/Visualization/densityPlot.vue';
   import EffectBar from '@/components/Visualization/EffectBar.vue';
+import { template } from 'lodash';
 
   // Reactive state for variant details
   const variantData = ref({
@@ -672,7 +774,7 @@
     clvStar: null,
     
   });
-
+  const titleText = 'Odds of Pathogenicity (OddsPath) Statistics'
   // Table state
   const toolbarRef = ref()
   const tableRef = ref()

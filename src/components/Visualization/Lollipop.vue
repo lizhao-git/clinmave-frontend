@@ -459,7 +459,7 @@ function drawTrack() {
           x: event.clientX + 10,
           y: event.clientY + 10
         }
-        const content = `Ref: ${mutation.ref || ''}<br>Position: ${mutation.start}<br>Score: ${mutation.score}<br>Class: ${mutationType}<br>Consequence: ${consequenceClass}`
+        const content = `HGVS.p: ${mutation.ref || ''}<br>Position: ${mutation.start}<br>Score: ${mutation.score}<br>Classification: ${mutationType}<br>Consequence: ${consequenceClass}`
         const lines = content.split('<br>')
         const data = lines.map(line => {
           const [key, value = ''] = line.split(':').map(s => s.trim())

@@ -142,7 +142,8 @@ function renderScatter() {
       tooltipContent.value = {
         data: [
           { key: 'Gene', value: d.geneName },
-          { key: 'Odds Path', value: d.oddsPath },
+          { key: 'Dataset Id', value: d.datasetId },
+          { key: 'OddsPath', value: d.oddsPath },
           { key: 'Classification', value: d.classification }
         ]
       }

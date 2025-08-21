@@ -47,7 +47,7 @@
           </v-sheet>
           
           <v-sheet class="pa-6 mt-4" elevation="2">
-            <h2 class="text-h5 mb-4">Download by gene</h2>
+            <h2 class="text-h5 mb-4">Retrieve variants by Gene</h2>
             <v-form @submit.prevent="downloadCSV">
               <v-autocomplete
                 v-model="geneName"

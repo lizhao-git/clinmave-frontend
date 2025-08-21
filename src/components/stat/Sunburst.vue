@@ -243,7 +243,7 @@ function renderSunburst() {
         .attr('y', currentY - (svgHeight - totalLegendHeight) / 2 + legendRectSize * 0.6)
         .attr('font-size', 12)
         .attr('fill', '#444')
-        .text(child.name)
+        .text(`${child.name} (${child.value})`)
 
       currentY += legendRectSize + legendSpacing
     })
@@ -261,7 +261,7 @@ onMounted(() => {
 <style scoped>
 .sunburst-chart {
   position: relative;
-  width: 400px;
+  width: 500px;
   height: 400px;
   margin-top: 40px;
 }

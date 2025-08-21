@@ -25,8 +25,10 @@
             <div class="d-flex flex-wrap">
               <span class="font-weight-bold mr-2">Tips:</span>
               <div class="flex-grow-1">
-                <div class="mb-1">(1) Use filters to narrow the datasets table by gene, Mutagenesis strategy, experimental model and phenotype;</div>
-                <div>(2) Click the ‘Visualize’ button to:</div>
+                <div class="mb-1">(1) Use filters to narrow the datasets table by gene, mutagenesis strategy, experimental model and phenotype and click 'Apply';</div>
+                <div>(2) Select 'Compare Consequence' to measure MAVE functional scores with widely used in silico predictive tools;</div>
+                <div>(3) Select 'RocCurve Plot' to evaluate the ability of functional score to distinguish ClinVar classified pathogenic (P/LP) and benign (B/LB) variants.</div>
+                <!-- <div>(2) Click the ‘Visualize’ button to:</div>
                 <ul class="list-disc pl-5 mt-1 mb-0">
                   <li class="d-flex items-center">
                     <v-icon color="black" size="12" class="mr-2" style="margin-top:5px">mdi-circle</v-icon>
@@ -36,7 +38,7 @@
                     <v-icon color="black" size="12" class="mr-2" style="margin-top:5px">mdi-circle</v-icon>
                     Compare functional scores in MAVE with widely used in-silico prediction tools.
                   </li>
-                </ul>
+                </ul> -->
               </div>
             </div>
           </v-alert>
