@@ -196,7 +196,7 @@
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
               ClinVar assessed the variant-level strength of pathogenicity under the assumptions that (1) ClinVar-classified Pathogenic/Likely Pathogenic (P/LP) variants (TPs) tend to exhibit greater functional abnormality than B/LB variants (TNs), and (2) the magnitude of functional abnormality can therefore serve as a proxy for pathogenicity. To quantify the degree of pathogenicity for each variant i, ClinVar calculated the difference of its mahalanobis distance between TP and TN variants distribution, denoted as Dist_score i. The distance score was further normalized using hyperbolic tangent function (tanh) with the following formula:
               <div v-mathjax>
-                $$ \text{OddsPath} = \frac{P_2}{P_1} \cdot \frac{1 - P_1}{1 - P_2} $$
+                $$ \tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}} $$
               </div>
               <!-- <ul>
                 <li>+1 indicates high similarity to pathogenic variants (strong functional abnormality)</li>
