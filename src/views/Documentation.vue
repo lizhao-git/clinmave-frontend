@@ -62,7 +62,7 @@
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
               ClinMAVE is a curated database for the clinical application of data from multiplexed assays of variant effect (MAVEs). 
               ClinMAVE bridges the gap between functional effect of variants and their clinical impact by systematically curating MAVE datasets and rigorously transforming the experimental assessment into strength of evidence supporting the pathogenicity classification. 
-              ClinMAVE also integrates available variant annotations from public repositories (e.g., <a href="https://www.ncbi.nlm.nih.gov/clinvar" target="_blank">ClinVar</a>, <a href="https://gnomad.broadinstitute.org/" target="_blank">gnomAD</a>, <a href="" target="_blank">TCGA</a>) and provides a user-friendly interface to support visualization and analysis modules for further exploration. 
+              ClinMAVE also integrates available variant annotations from public repositories (e.g., <a href="https://www.ncbi.nlm.nih.gov/clinvar/" target="_blank">ClinVar</a> , <a href="https://gnomad.broadinstitute.org/" target="_blank">gnomAD</a>, <a href="https://www.cancer.gov/ccg/research/genome-sequencing/tcga" target="_blank">TCGA</a>) and provides a user-friendly interface to support visualization and analysis modules for further exploration.
             </p>
           </v-alert>
 
@@ -76,37 +76,37 @@
             <h1 class="mt-4 mb-2">Data Collection and Processing</h1>
             <h2 class="mt-2 mb-1" id="data-collection-1">1. Data collection</h2>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
-              ClinMAVE compiles a comprehensive collection of Multiplexed Assays of Variant Effect (MAVE) studies, encompassing both deep mutational scanning and CRISPR-based genome editing techniques.
+              ClinMAVE compiles a comprehensive collection of Multiplexed Assays of Variant Effect (MAVE) studies, encompassing both deep mutational scanning (DMS) and CRISPR-based genome editing techniques.
             </p>
             <h3 class="mt-2 mb-1" id="data-collection-1-1">1.1 Deep mutation scanning MAVE</h3>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
-              We collected deep mutational scanning data primarily from MAVEdb, a centralized repository of multiplexed functional assay results. Notably, raw protein-level variants are uniformly mapped to genomic DNA coordinates by Ensembl, enabling standardized genomic annotation for downstream analyses. To ensure data quality and relevance, only datasets with more than 100 variants and an associated peer-reviewed publication or publicly available preprint are retained. This filtering guarantees that included studies meet a minimum threshold of experimental scale, scientific rigor, and transparency.
+              We collected deep mutational scanning data primarily from <a href="https://mavedb.org/" target="_blank">MaveDB</a> , a centralized MAVE repository that rigorously mapped raw MAVE variants to human reference sequence (GRCh38) while preserving the original sequence context. Notably, raw protein-level variants are uniformly mapped to genomic DNA coordinates and deposited in <a href="https://ftp.ensembl.org/pub/current_variation/MaveDB/" target="_blank">Ensembl</a> , enabling the standardized genomic annotation. To ensure data quality and relevance, only datasets with more than 100 variants and an associated peer-reviewed publication or publicly available preprint are retained. This filtering guarantees that included studies meet a minimum threshold of experimental scale, scientific rigor, and transparency.
             </p>
             <h3 class="mt-2 mb-1" id="data-collection-1-2">1.2 CRISPR-based genome editing MAVE</h3>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
-              For CRISPR-based genome editing datasets, we collect studies primarily through searches in PubMed. Only datasets that report more than 100 variants are retained to ensure adequate scale. For base-editing studies, the reported protein- or transcript-level changes are mapped to genomic DNA coordinates, rather than relying on guide RNA target sites. For Prime editing and Saturated Genome Editing (SGE) studies, the DNA-level coordinates are directly extracted from the supplementary materials provided with the publications.
+              For CRISPR-based genome editing datasets, we collect studies primarily through searches on PubMed using the keywords 'high-throughput screening' AND ('base editing', 'prime editing', 'saturation genome editing'). Only datasets that report more than 100 variants are retained to ensure adequate scale. For base-editing studies, the reported protein- or transcript-level changes are mapped to genomic DNA coordinates, rather than relying on guide RNA target sites. For Prime editing and Saturated Genome Editing (SGE) studies, the DNA-level coordinates are directly extracted from the supplementary materials provided with the publications.
             </p>
             <h2 class="mt-2 mb-1" id="data-collection-2">2. Processing</h2>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
               ClinMAVE employs a unified variant processing suite designed to standardize and enrich variant-level data across all studies. This suite integrates two key components:
             </p>
-            <h3 class="mt-2 mb-1" id="data-collection-2-1">2.1 Genomic annotation</h3>
+            <h3 class="mt-2 mb-1" id="data-collection-2-1">2.1 Variant annotation</h3>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
               Variants are mapped to genomic DNA coordinates and annotated using the MANE (Matched Annotation from NCBI and EMBL-EBI) transcript to ensure clinical consistency. Each variant is then formatted according to HGVS (Human Genome Variation Society) nomenclature for structured and interoperable representation.
             </p>
-            <h3 class="mt-2 mb-1" id="data-collection-2-2">2.2 External Annotation Integration</h3>
+            <h3 class="mt-2 mb-1" id="data-collection-2-2">2.2 External annotation integration</h3>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
-              To provide biological and clinical context, the pipeline incorporates external annotations from clinical relevant resources, including:
+              To provide biological and clinical context, the pipeline incorporates external annotations from clinically relevant resources, including:
               <ul>
-                <li>(1) ClinVar: clinical significance interpretations;</li>
-                <li>(2) gnomAD: population allele frequencies;</li>
-                <li>(3) TCGA: Somatic variant frequencies from cancer cohorts;</li>
-                <li>(4) In silico predictors: Scores from variant effect prediction tools such as CADD, EVE, and REVEL;</li>
-                <li>(5) dbSNP: standardized reference IDs that facilitate cross-referencing with external genomic databases.</li>
+                <li>(1) <a href="https://www.ncbi.nlm.nih.gov/clinvar/" target="_blank">ClinVar</a>: clinical significance interpretations;</li>
+                <li>(2) <a href="https://gnomad.broadinstitute.org/" target="_blank">gnomAD</a>: population allele frequencies;</li>
+                <li>(3) <a href="https://www.cancer.gov/ccg/research/genome-sequencing/tcga" target="_blank">TCGA</a>: cancer somatic variant frequencies retrieved from <a href="https://www.cbioportal.org/" target="_blank">Cbioportal</a>;</li>
+                <li>(4) In silico predictors: scores from variant effect prediction tools such as <a href="https://cadd.gs.washington.edu/" target="_blank">CADD</a>, <a href="https://alphamissense.hegelab.org/" target="_blank">AlphaMissense</a>, and <a href="https://sites.google.com/site/revelgenomics/" target="_blank">REVEL</a>;</li>
+                <li>(5) <a href="https://www.ncbi.nlm.nih.gov/snp/" target="_blank">dbSNP</a>: standardized reference IDs that facilitate cross-referencing with external genomic databases.</li>
               </ul>
             </p>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
-              In addition, in silico predictor scores were translated into ACMG-style pathogenicity classifications based on the recommended thresholds provided by VarSome.
+              In addition, in silico predictor scores were translated into ACMG-style pathogenicity classifications based on the recommended thresholds provided by <a href="https://varsome.com/about/resources/germline-implementation/#insilicopredictions" target="_blank">VarSome</a>.
             </p>
             <v-data-table
               :headers="InsilicoCutoffHeader"
@@ -162,28 +162,28 @@
             </v-data-table>
             <h2 class="mt-2 mb-1" id="data-curation-2">2. MAVE quantitative calibration</h2>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
-              ClinMAVE organizes functional data to support variant interpretation at both the dataset level and the individual variant level, aligning with ACMG/AMP recommendations for evaluating experimental evidence (e.g., PS3/BS3 criteria). To compute this, we define the control sets as follows:
+              ClinMAVE organizes functional data to support variant interpretation using both assay-level and individual variant-level metrics, aligning with ACMG/AMP recommendations for evaluating experimental evidence (Pathogenic Strong criterion 3 [PS3]). To compute this, we define the control sets as follows:
               <ul>
-                <li>Clinvar-classified Pathogenic/Likely Pathogenic (P/LP) variants as true positives (TPs); </li>
-                <li>Clinvar-classified Benign/Likely Benign (B/LB) variants as true negatives (TNs); </li>
+                <li>ClinVar-classified Pathogenic/Likely Pathogenic (P/LP) variants as true positives (TPs); </li>
+                <li>ClinVar-classified Benign/Likely Benign (B/LB) variants as true negatives (TNs); </li>
               </ul>
             </p>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
               To ensure statistical reliability, we only conduct evidence strength evaluations for datasets that meet the following minimum requirements:
               <ul>
                 <li>A total of at least 11 benchmark variants (TPs + TNs ≥ 11); </li>
-                <li>At least 4 TPs and 4 TNs, respectively;</li>
+                <li>At least 4 TPs and 4 TNs, respectively; </li>
               </ul>
             </p>
-            <h3 class="mt-2 mb-1" id="data-curation-2-1">2.1 Dataset-level strength of evidence</h3>
+            <h3 class="mt-2 mb-1" id="data-curation-2-1">2.1 Assay-level strength of evidence:</h3>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
-              The ClinGen Sequence Variant Interpretation (SVI) Working Group (2022) introduced the use of the Odds of Pathogenicity (OddsPath) to quantify the strength of functional evidence at the dataset level. This approach enables a standardized, quantitative mapping of functional assay results to ACMG/AMP evidence strength levels (e.g., PS3/BS3). 
+              The ClinGen Sequence Variant Interpretation (SVI) Working Group (2022) introduced the use of the Odds of Pathogenicity (OddsPath) to quantify the strength of functional evidence. This approach enables a standardized, quantitative mapping of functional assay results to ACMG/AMP evidence strength levels.
             </p>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
-              OddsPath is calculated using two conditional probabilities:
+              OddsPath is calculated using two ratios:
               <ul>
                 <li>P1: The proportion of pathogenic variants (TPs) in the control sets (TPs + TNs);</li>
-                <li>P2: The proportion of pathogenic variants (TPs) with abnormal functionality (including both loss-of-function and gain-of-function) out of all abnormal variants.</li>
+                <li>•	P2: The proportion of pathogenic variants (TPs) with abnormal functionality (including both LoF and GoF) out of all abnormal variants in control sets.</li>
               </ul>
             </p>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
@@ -194,18 +194,21 @@
             </div>
             <h3 class="mt-2 mb-1" id="data-curation-2-2">2.2 Per-variant level strength of evidence</h3>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
-              ClinMAVE assigns functional evidence strength at the per-variant level by quantifying how similar a variant’s functional score is to known pathogenic (TP) and benign (TN) variants within the same dataset. This is achieved using a distance–based scoring method, which accounts for score distribution and variance. Each variant’s score is transformed into a normalized "distance_score" on a [–1, 1] scale, where:
-              <ul>
+              ClinVar assessed the variant-level strength of pathogenicity under the assumptions that (1) ClinVar-classified Pathogenic/Likely Pathogenic (P/LP) variants (TPs) tend to exhibit greater functional abnormality than B/LB variants (TNs), and (2) the magnitude of functional abnormality can therefore serve as a proxy for pathogenicity. To quantify the degree of pathogenicity for each variant i, ClinVar calculated the difference of its mahalanobis distance between TP and TN variants distribution, denoted as Dist_score i. The distance score was further normalized using hyperbolic tangent function (tanh) with the following formula:
+              <div v-mathjax>
+                $$ \text{OddsPath} = \frac{P_2}{P_1} \cdot \frac{1 - P_1}{1 - P_2} $$
+              </div>
+              <!-- <ul>
                 <li>+1 indicates high similarity to pathogenic variants (strong functional abnormality)</li>
                 <li>–1 indicates high similarity to benign variants (normal function)</li>
-              </ul>
+              </ul> -->
             </p>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
-              For datasets eligible for ACMG-style strength scaling, variants classified as functionally abnormal are assigned one of the following evidence levels:
+              The tanh normalization maps the raw Dist_score i into [-1, 1] scale, where values closer to +1 indicate high similarity to pathogenic variants (i.e., strong functional abnormality). MAVE variants classified as functionally abnormal are further assigned levels of evidence strength based on the tanh-normalized distance score:
               <ul>
-                <li>Strong: distance_score ≥ 0.9</li>
-                <li>Moderate: distance_score ≥ 0.75</li>
-                <li>Weak: distance_score < 0.75</li>
+                <li>Strong if tanh(Dist_score) ≥ 0.95</li>
+                <li>Moderate if tanh(Dist_score) ≥ 0.5</li>
+                <li>Weak if tanh(Dist_score) < 0.5</li>
               </ul>
             </p>
           </v-alert>
@@ -219,20 +222,29 @@
           >
             <h1 class="mt-4 mb-2">Database Usage</h1>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
-              The ClinMAVE database provides an interactive platform for browsing, searching, visualizing, and analyzing curated functional evidence from MAVE. The portal is organized into four core modules.
+              The ClinMAVE database provides an interactive platform for browsing, searching, visualizing, analyzing and downloading curated functional evidence from MAVE. The portal is organized into five core modules.
             </p>
-            <h2 class="mt-2 mb-1" id="database-usage-1">1. Browse module</h2>
+            <h2 class="mt-2 mb-1" id="database-usage-2">1. Search Module</h2>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
-              The Browser Module in ClinMAVE provides a flexible and user-friendly interface for navigating curated MAVE datasets. Users can explore data through multiple entry points—from gene- and technique-level overviews to detailed variant-level records—using either the homepage search bar or the dedicated browser interface.
-            </p>
-            <h2 class="mt-2 mb-1" id="database-usage-2">2. Search Module</h2>
-            <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
-              ClinMAVE offers robust search capabilities to help users efficiently locate relevant functional variant data across genes, variants, and MAVE techniques. Accessible from the homepage, the quick search bar supports intuitive, keyword-based searches. Users can search using:
+              ClinMAVE offers robust search capabilities to help users efficiently locate relevant functional variant data across genes, variants, and MAVE datasets. Accessible from the homepage, the quick search bar supports intuitive, keyword-based searches. Users can search using:
               <ul>
                 <li>Gene symbol (e.g., BRCA1, TP53)</li>
-                <li>Gene ID (e.g., Ensembl Gene ID)</li>
-                <li>HGVS-formatted variant notation (e.g., NM_000059.3:c.4035del)</li>
-                <li>MAVE technique (e.g., "deep mutational scanning", "CRISPR-based genome editing")</li>
+                <li>Gene ID (e.g., ENSG00000139618)</li>
+                <li>HGVS-formatted variant notation (e.g., NM_000551.4(VHL):c.263G>A (p.Trp88Ter); BAP1:c.535C>T)</li>
+                <li>Dataset ID (e.g., dataset0171;dataset0104)</li>
+              </ul>
+            </p>
+            <h2 class="mt-2 mb-1" id="database-usage-1">2. Browser module</h2>
+            <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+              The ClinMAVE Browser module offers a flexible, user-friendly interface for navigating curated MAVE datasets. Users can explore data through multiple entry points—ranging from gene- and technique-level overviews to detailed variant-level records—accessible either via the homepage statistics interface or through the dedicated browser bar. The browser provides two main categories of information:
+              <ul>
+                <li>MAVE Functional Annotation - comprehensive variant-level annotation that integrates cross-assay summaries, assay-specific functional characterization, and supporting validation evidence.</li>
+                <li>MAVE Calibration - standardized calibration metrics at two levels:
+                  <ul>
+                    <li>Assay-level: OddsPath statistics for quantitative assessment of functional assay performance.</li>
+                    <li>Variant-level: Functional intensity tiers that classify variants according to the strength and abnormality of functional impact.</li>
+                  </ul>
+                </li>
               </ul>
             </p>
             <h2 class="mt-2 mb-1" id="database-usage-3">3. Visualization module</h2>
@@ -243,7 +255,8 @@
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
               Each MAVE dataset includes interactive plots that integrate functional scores with key biological annotations:
               <ul>
-                <li>MAVE score distribution plots, color-coded by: (1). molecular consequence (e.g., missense, nonsense, synonymous); (2). ClinVar classification (e.g., pathogenic, benign, VUS).</li>
+                <li>Interactive lollipop plots show the positional distribution of MAVE functional scores and functional classifications overlaid with domain annotations;</li>
+                <li>MAVE score distribution plots, color-coded by molecular consequence (e.g., missense, nonsense, synonymous);</li>
                 <li>Scatterplots or violin plots illustrate how variant functional scores correlate with population allele frequency from gnomAD.</li>
               </ul>
             </p>
@@ -253,15 +266,19 @@
             </p>
             <h2 class="mt-2 mb-1" id="database-usage-4">4. Analysis module</h2>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
-              The Analysis Module in ClinMAVE provides tools for evaluating how well functional scores from MAVE experiments align with computational predictions and clinical classifications. This supports benchmarking of variant effect predictors and assessment of functional assay reliability.
+              The analysis module in ClinMAVE provides tools for evaluating how well functional scores from MAVE experiments align with computational predictions and clinical classifications. This supports benchmarking of variant effect predictors and assessment of functional assay reliability.
             </p>
-            <h3 class="mt-2 mb-1" id="database-usage-4-1">4.1 MAVE score vs. In-silico Predictors</h3>
+            <h3 class="mt-2 mb-1" id="database-usage-4-1">4.1 MAVE score vs. in-silico predictors</h3>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
-              Users can compare MAVE-derived functional scores with widely used in silico predictors.
+              Users can compare MAVE-derived functional scores with widely used in silico predictors. The statistical significance is determined by Wilcoxon test.
             </p>
-            <h3 class="mt-2 mb-1" id="database-usage-4-2">4.2 Clinical classification analysis</h3>
+            <h3 class="mt-2 mb-1" id="database-usage-4-2">4.2 ROC analysis</h3>
             <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
-              ClinMAVE enables quantitative benchmarking of functional assays by measuring their ability to distinguish clinically classified variants. Receiver Operating Characteristic (ROC) curves are generated to evaluate the ability of MAVE scores to separate (Likely-) pathogenic from (Likely-) benign variants.
+              ClinMAVE enables quantitative benchmarking of functional assays by measuring their ability to distinguish clinically classified variants. Receiver Operating Characteristic (ROC) curves are generated to evaluate the ability of MAVE scores to separate (Likely-) pathogenic from (Likely-) benign variants. Dataset with at least 10 benign and pathogenic variants were included in this analysis.
+            </p>
+            <h2 class="mt-2 mb-1" id="database-usage-4">5. Download module</h2>
+            <p style="line-height: 1.7; text-indent: 2em; text-align: justify;">
+              The ClinMAVE download module enables users to obtain curated MAVE metadata as well as detailed variant-level functional classifications.
             </p>
           </v-alert>
 
@@ -539,18 +556,19 @@
   ];
 
   const SoftwareItems = [
-    { software: 'ANNOVAR', version: 'V2.3.0' },
+    { software: 'VEP', version: 'V114.2' },
+    // { software: 'ANNOVAR', version: 'V2.3.0' },
     { software: 'MANE', version: 'GRCh38 v1.4' },
-    { software: 'dbSNP', version: 'avSNP150' },
-    { software: 'gnomAD', version: 'V2.1.1' },
+    { software: 'dbSNP', version: 'dbSNP156' },
+    { software: 'gnomAD', version: 'V4.1' },
     { software: 'AlphaMissense', version: 'dbNSFP v4.7a' },
     { software: 'CADD', version: 'dbNSFP v4.7a' },
-    { software: 'EVE', version: 'dbNSFP v4.7a' },
     { software: 'MetaSVM', version: 'dbNSFP v4.7a' },
     { software: 'REVEL', version: 'dbNSFP v4.7a' },
     { software: 'Polyphen2', version: 'dbNSFP v4.7a' },
     { software: 'Cbioportal', version: 'Accessed on 2025/05/22' },
     { software: 'Varsome', version: 'Accessed on 2025/05/12' },
+    // { software: 'EVE', version: 'dbNSFP v4.7a' },
   ];
 
   const CurationModelHeader = [
@@ -563,47 +581,47 @@
     {
       datatype: 'Gene',
       description: 'Gene identifier',
-      value: 'BRCA1',
+      value: 'e.g. BRCA1',
     },
     {
       datatype: 'Functional score',
       description: 'Quantification of the functional impact of a specific genetic variant',
-      value: '0.34',
+      value: 'e.g. 0.34',
     },
     {
       datatype: 'Functional classification',
       description: 'Controlled vocabulary',
-      value: 'Loss-of-function, Gain-of-function, Functional neutral',
+      value: 'Loss-of-function, Gain-of-function, Functionally normal',
     },
     {
       datatype: 'MAVE technique',
       description: 'Controlled vocabulary',
-      value: 'Deep mutational scanning,CRISPR-based genome editing',
+      value: 'Deep mutational scanning, CRISPR-based genome editing',
     },
     {
       datatype: 'Mutagenesis strategy',
       description: 'Controlled vocabulary',
-      value: 'Prime editing,Base editing,Saturation genome editing,Oligonucleotide synthesis,Mutagenic PCR',
+      value: 'Prime editing, Base editing, Saturation genome editing, Oligonucleotide synthesis, Mutagenic PCR',
     },
-    {
-      datatype: 'Functional assay',
-      description: 'Controlled vocabulary',
-      value: 'Protein abundance and stability,Protein binding,Specialized molecular function,Cellular fitness',
-    },
+    // {
+    //   datatype: 'Functional assay',
+    //   description: 'Controlled vocabulary',
+    //   value: 'Protein abundance and stability,Protein binding,Specialized molecular function,Cellular fitness',
+    // },
     {
       datatype: 'Experiment model',
       description: 'The cell types used to perform MAVE',
-      value: 'HAP1',
+      value: 'e.g. HAP1',
     },
     {
       datatype: 'Phenotype',
       description: 'The specific biological outcome measured by a MAVE experiment',
-      value: 'MLH1 mediated mismatch repair function',
+      value: 'e.g. MLH1 mediated mismatch repair function',
     },
     {
       datatype: 'Direction of Effect',
-      description: 'how a variant alters the measured phenotype relative to the wild-type or reference allele',
-      value: 'diminished, enhanced',
+      description: 'How a variant alters the measured phenotype relative to the wild-type or reference allele',
+      value: 'e.g. diminished, enhanced',
     },
   ];
 
@@ -621,28 +639,28 @@
   const TabularItems = [
     {
       gap: 'Lack of standardized variant-level annotations',
-      how: 'ClinMAVE provides DNA-level annotations, mapping functional data to specific genomic coordinates and HGVS nomenclature',
-      contribution: 'Enables variant look-up and direct ACMG/AMP PS3/BS3 application',
+      how: 'Provides DNA-level annotations and HGVS nomenclature',
+      contribution: 'Enables variant look-up and cross-referencing with clinically relevant resources and databases.',
     },
     {
       gap: 'Missing metadata about assay validation, controls, and reproducibility',
-      how: 'ClinMAVE includes structured metadata such as assay system, validation status, strength of effect, and reproducibility',
-      contribution: 'Supports evidence grading (e.g., strong/moderate/supporting) per Brnich et al. and ClinGen SVI guidance',
-    },
-    {
-      gap: 'Poor data discoverability and inconsistent nomenclature',
-      how: 'ClinMAVE standardizes gene/variant identifiers, links to ClinVar, gnomAD, and other clinical databases',
-      contribution: 'Improves interoperability and searchability for clinicians and labs',
+      how: 'Includes structured metadata such as assay system, validation status, strength of effect, and reproducibility',
+      contribution: 'Supports functional annotation and clinical evidence grading in alignment with ClinGen SVI guidance',
     },
     {
       gap: 'Lack of harmonization across studies',
-      how: 'ClinMAVE curates studies using a unified schema, applying consistent criteria for variant effect strength and significance',
+      how: 'Curates studies using a unified schema, applying consistent criteria for variant effect strength',
       contribution: 'Facilitates cross-study comparison and evidence aggregation',
     },
     {
+      gap: 'Poor data discoverability and inconsistent nomenclature',
+      how: 'Standardizes gene/variant identifiers, links to ClinVar, gnomAD, and other clinical databases',
+      contribution: 'Improves interoperability and searchability for clinicians and labs',
+    },
+    {
       gap: 'Limited accessibility for clinical users',
-      how: 'ClinMAVE offers user-friendly query tools, interactive visualization, and ACMG-ready evidence summaries',
-      contribution: 'Makes functional data directly usable in variant curation workflows',
+      how: 'Offers user-friendly query tools, interactive visualization, and ACMG-ready evidence summaries',
+      contribution: 'Makes functional data directly interpretable and usable in clinical variant assessment',
     },
   ];
 </script>
